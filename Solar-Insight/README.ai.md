@@ -73,7 +73,7 @@ parseXLSX(buf)
 calcSum(rows, date)
   → Compute: solar, load, imp, exp, onPeakImp, offPeakImp
   → Compute: costOn, costOff, costTotal (with VAT 7%)
-  → Compute: sellKwh (exp + estimated clipping)
+  → Compute: sellKwh (exp + clipping allowance, Capped at 5kWh/day)
   → Compute: socMin, temps, voltages, pv1, pv2
   → Returns: summary object
       │
@@ -166,7 +166,8 @@ Critical logic:
 - ใช้ค่า meter ณ เวลา 09:00 และ 22:00 เพื่อแยก On/Off-peak
 - `touActive(date)` เช็คว่าวันนั้นใช้ TOU แล้วหรือยัง (เปรียบเทียบกับ `CFG.touStart`)
 - `THAI_HOLIDAYS.includes(date)` เช็ควันหยุด → ถ้าใช่ ให้ใช้ Off-peak rate ทั้งวัน
-- Clipping ประมาณจาก `SOC >= 95% AND batt > -100W AND solar > 200W`
+- **Clipping Detection:** นับจำนวนช่วง 5 นาทีที่ `SOC >= 95% AND batt > -100W AND solar > 200W` แล้วแปลงเป็น kWh (ให้สูงสุด 1.5kW rate, Capped ที่ 5kWh/day)
+- ค่า Clipping นี้จะถูกบวกเข้าไปใน `sellKwh` ทันที เพื่อใช้จำลองการขายไฟ (ถ้าปลดกันย้อน)
 - VAT 7% คูณกับทุก cost item
 
 ### `updateCalibrationFactor(all)` → sets `kwhFactor`, `costFactor`
@@ -190,8 +191,14 @@ Priority logic สำหรับแท่งสีเทา (ก่อนติ
 1. ดู `actualBills` ที่เป็น Pre-Solar ก่อน
 2. ถ้าไม่มี ใช้ `histBills` (12-month baseline)
 
+### `renderHourlyAnalysis(days)`
+วิเคราะห์รายชั่วโมงเพื่อหา **Potential P90** (ศักยภาพสูงสุดของระบบ)
+- นำข้อมูลทุกวันมากองรวมกันแยกตามชั่วโมง (เช่น 13:00 น. ของทุกวัน)
+- หาค่า **Percentile 90 (P90)** ของการผลิต (ตัด 10% ยอดแหลมที่อาจเป็น Noise ทิ้ง)
+- ใช้เส้น P90 นี้เป็น Baseline เทียบกับการผลิตจริง (Actual) เพื่อวาดกราฟหาช่วงที่เกิด Clipping
+
 ### `billPeriodKey(date)` → `"YYYY-MM"` string
-แปลงวันที่เป็น billing period key ตาม `CFG.billDay`
+แปลวันที่เป็น billing period key ตาม `CFG.billDay`
 - ถ้าวันที่ >= billDay → period = เดือนถัดไป
 - ถ้าวันที่ < billDay → period = เดือนปัจจุบัน
 
@@ -232,15 +239,16 @@ Column matching ใช้ case-insensitive substring search:
 ## 8. Known Issues & Technical Debt
 
 ### แก้ไขแล้ว ✅
-| Bug | การแก้ไข |
+| Bug / Feature | การแก้ไข |
 |-----|---------|
 | `renderHistROI` ใช้ inverter estimate แทน MEA bill จริง | เพิ่ม `postSolarActualCost` lookup จาก `actualBills` |
 | `mkPie` ไม่ถูกนิยาม → Tab "ทั้งหมด" crash | เพิ่ม `function mkPie(id,labels,data,colors)` |
 | `HOLIDAYS` hardcoded ปี 2026 เท่านั้น | ย้ายเป็น `const THAI_HOLIDAYS` ครอบคลุมถึงปี 2027 |
 | May 16-17 patch รัน global (ไม่ระบุปี) | เปลี่ยนเป็น `=== '2026-05-16'` exact match |
-| `renderSelfTrend` อ้าง element ที่ไม่มี | ลบ dead call ออก |
-| Status text typo `'กำลังinverter data...'` | แก้เป็น `'กำลังนำเข้าข้อมูล...'` |
 | Modal บิลไม่แสดง Pre/Post Solar status | เพิ่ม `getStatusBadge()` + badge UI |
+| ชื่อ Heatmap ไม่สื่อความหมาย | สลับ Title เป็น "พึ่งตัวเอง %" และ Subtitle เป็น "Calendar Heatmap" |
+| ผู้ใช้ไม่ทราบว่าฟิลด์ไหนสำคัญ | เพิ่ม Asterisk สีแดง (`*`) ที่ฟิลด์ config ที่ระบบนำไปคำนวณจริง |
+| Tooltip & Glossary อธิบายขายไฟไม่ชัดเจน | อัปเดตข้อความให้ระบุชัดเจนว่ารวม Clipping (สมมติปลดกันย้อน) แล้ว |
 
 ### ยังมีอยู่ ⚠️
 | ปัญหา | ตำแหน่ง | Priority |
@@ -359,6 +367,13 @@ actualBills classification:
 ---
 
 ## 13. File Modification Safety Guidelines
+
+### 🛑 Code Safety Guidelines (กฎสำคัญสำหรับ AI)
+
+1. **ห้ามเปลี่ยนโครงสร้างข้อมูล IndexedDB:** (ถ้าไม่จำเป็นจริงๆ) เพราะผู้ใช้อาจมีข้อมูลเก่าอยู่แล้ว
+2. **ห้ามย้าย logic ออกจากไฟล์ `app.html`:** จุดประสงค์คือ Single-File Dashboard
+3. **ฟังก์ชันที่ห้ามแก้ถ้าไม่เข้าใจ 100%:** `calcSum()`, `processFile()`, `renderYear()`
+4. **Git Push:** **⚠️ ต้องถามผู้ใช้ (Ask for permission) ก่อนทำการ `git push` ทุกครั้ง ห้าม push อัตโนมัติเด็ดขาด**
 
 เมื่อแก้ไข `app.html` ให้ระวัง:
 
