@@ -2863,15 +2863,17 @@ async function renderYear(){
      cOff += d.s.costOff||0;
   });
 
+  const eqM = days.length > 0 ? (days.length / 30.4) : 1;
+
   document.getElementById('yCards').innerHTML=`
     <div class="card cs"><div class="card-lbl">☀️ ผลิตทั้งปี</div><div><span class="card-val">${fn(tot('solar'))}</span><span class="card-unit">kWh</span></div><div class="card-sub">${days.length} วัน</div></div>
-    <div class="card cl"><div class="card-lbl">🏠 ใช้ทั้งปี</div><div><span class="card-val">${fn(tot('load'))}</span><span class="card-unit">kWh</span></div><div class="card-sub" title="เฉลี่ยการใช้ไฟต่อเดือน">เฉลี่ย ${fn(tot('load')/12,1)} kWh/เดือน</div></div>
+    <div class="card cl"><div class="card-lbl">🏠 ใช้ทั้งปี</div><div><span class="card-val">${fn(tot('load'))}</span><span class="card-unit">kWh</span></div><div class="card-sub" title="เฉลี่ยการใช้ไฟต่อเดือน">เฉลี่ย ${fn(tot('load')/eqM,1)} kWh/เดือน</div></div>
     <div class="card cv"><div class="card-lbl">🌿 พึ่งตัวเองรายรอบ</div><div><span class="card-val">${fn(avgSelf,0)}</span><span class="card-unit">%</span></div><div class="card-sub">ค่าเฉลี่ยของปี</div></div>
     <div style="grid-column: span 1; min-width:0; padding:0; border:0; background:transparent"></div>
-    <div class="card" style="border-color:#10b981"><div class="card-lbl" style="color:#10b981" title="คิดจากหน่วยไฟฟ้าที่ Export ออกสายส่งเฉลี่ยต่อปี × 2.20 บาท/หน่วย">💡 ขายไฟ(if)</div><div><span class="card-val" style="color:#10b981">${fn(tot('sellKwh'))}</span><span class="card-unit" style="color:#10b981">kWh</span></div><div class="card-price" style="color:#10b981">฿${fn(tot('sellCost'),2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนเดือน">เฉลี่ย ฿${fn(tot('sellCost')/12,1)}/เดือน</div></div>
-    <div class="card cg"><div class="card-lbl">⚡ On-peak ซื้อ</div><div><span class="card-val">${fn(tot('onPeakImp'))}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(cOn,2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนเดือน">เฉลี่ย ฿${fn(cOn/12,1)}/เดือน</div></div>
-    <div class="card co"><div class="card-lbl">🌙 Off-peak ซื้อ</div><div><span class="card-val">${fn(tot('offPeakImp'))}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(cOff,2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนเดือน">เฉลี่ย ฿${fn(cOff/12,1)}/เดือน</div></div>
-    <div class="card cy"><div class="card-lbl">🛒 รวมซื้อ</div><div><span class="card-val">${fn(tot('imp'))}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(yCost,2)}</div><div class="card-sub" title="YoY = Year over Year (เทียบปีนี้กับปีที่แล้ว)">เฉลี่ย ฿${fn(yCost/12,1)}/เดือน<br>YoY ${yoy==null?'—':(yoy>=0?'+':'')+fn(yoy,1)+'%'}</div></div>`
+    <div class="card" style="border-color:#10b981"><div class="card-lbl" style="color:#10b981" title="คิดจากหน่วยไฟฟ้าที่ Export ออกสายส่งเฉลี่ยต่อปี × 2.20 บาท/หน่วย">💡 ขายไฟ(if)</div><div><span class="card-val" style="color:#10b981">${fn(tot('sellKwh'))}</span><span class="card-unit" style="color:#10b981">kWh</span></div><div class="card-price" style="color:#10b981">฿${fn(tot('sellCost'),2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนเดือนจริง">เฉลี่ย ฿${fn(tot('sellCost')/eqM,1)}/เดือน</div></div>
+    <div class="card cg"><div class="card-lbl">⚡ On-peak ซื้อ</div><div><span class="card-val">${fn(tot('onPeakImp'))}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(cOn,2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนเดือนจริง">เฉลี่ย ฿${fn(cOn/eqM,1)}/เดือน</div></div>
+    <div class="card co"><div class="card-lbl">🌙 Off-peak ซื้อ</div><div><span class="card-val">${fn(tot('offPeakImp'))}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(cOff,2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนเดือนจริง">เฉลี่ย ฿${fn(cOff/eqM,1)}/เดือน</div></div>
+    <div class="card cy"><div class="card-lbl">🛒 รวมซื้อ</div><div><span class="card-val">${fn(tot('imp'))}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(yCost,2)}</div><div class="card-sub" title="YoY = Year over Year (เทียบปีนี้กับปีที่แล้ว)">เฉลี่ย ฿${fn(yCost/eqM,1)}/เดือน<br>YoY ${yoy==null?'—':(yoy>=0?'+':'')+fn(yoy,1)+'%'}</div></div>`
   const lbl=TH_M
   const yEnergyDs=[{label:'Solar',data:agg.map(a=>a.solar),bg:'rgba(74,222,128,.75)'},{label:'ใช้ไป',data:agg.map(a=>a.load),bg:'rgba(251,146,60,.75)'}]
   const yCostDs=[{label:'ค่าไฟ ฿',data:agg.map(a=>a.costTotal),bg:'rgba(251,191,36,.8)'}]
