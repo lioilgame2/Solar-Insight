@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script>console.log("New Version 2.0.1");</script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -365,7 +366,7 @@ body{
         <div class="card-group" style="margin-bottom:0">
           <div class="card-group-lbl">💰 ค่าไฟ</div>
           <div class="cards">
-            <div class="card" style="border-color:#10b981"><div class="card-lbl" style="color:#10b981" title="คิดจากหน่วยไฟฟ้าที่ Export ออกสายส่งเฉลี่ยต่อปี × 2.20 บาท/หน่วย">💡 ขายไฟ(if)</div><div><span class="card-val" id="cSellKwh" style="color:#10b981">—</span><span class="card-unit" style="color:#10b981">kWh</span></div><div class="card-price" style="color:#10b981">฿<span id="cSellCost">—</span></div><div class="card-sub" id="cSellAvg" style="color:var(--success)"></div></div>
+            <div class="card" style="border-color:#10b981"><div class="card-lbl" style="color:#10b981" title="คิดจากไฟ Export ปกติ + ประเมินไฟ Clipping ที่จะขายได้ (ถ้าปลดกันย้อน)">💡 ขายไฟ(if)</div><div><span class="card-val" id="cSellKwh" style="color:#10b981">—</span><span class="card-unit" style="color:#10b981">kWh</span></div><div class="card-price" style="color:#10b981">฿<span id="cSellCost">—</span></div><div class="card-sub" id="cSellAvg" style="color:var(--success)"></div></div>
             <div class="card cg">
               <div class="card-lbl">⚡ On-peak ซื้อ</div>
               <div><span class="card-val" id="cOnImp">—</span><span class="card-unit">kWh</span></div>
@@ -816,28 +817,31 @@ body{
           <div id="histSummary" style="font-size:0.85rem;margin-bottom:8px;"></div>
           <div class="cwrap-sm" style="max-height:250px; margin-top: 0 !important;"><canvas id="histChart"></canvas></div>
         </div>
-        <div class="an-box" style="background: rgba(56, 189, 248, 0.05);">
+        <div class="an-box" style="background: rgba(56, 189, 248, 0.05); grid-column: 1 / -1;">
           <div class="an-ttl" style="color:var(--text);border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:12px;">📖 หลักการคำนวณ (Glossary)</div>
-          <div style="font-size:0.85rem;line-height:1.6;color:var(--muted);display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:12px;">
+          <div style="font-size:0.85rem;line-height:1.6;color:var(--muted);display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:16px;margin-top:0 !important;">
             <div>
               <b style="color:var(--text)">Trend Snapshot:</b><br>
               เปรียบเทียบข้อมูลสัปดาห์นี้ vs สัปดาห์ก่อนหน้า เพื่อดูแนวโน้มการผลิตและใช้ไฟ
             </div>
             <div>
-              <b style="color:var(--text)">Simulation:</b><br>
-              คำนวณการประหยัดไฟเพิ่ม หากติด Optimizer (ดึงพลังงานที่หายไปจาก String Imbalance กลับมา 50%) หรือเพิ่มแบตเตอรี่ (เก็บพลังงานส่วนเกินจาก Clipping มาใช้แทน On-Peak)
+              <b style="color:var(--text)">Potential P90 & Clipping:</b><br>
+              ระบบกวาดข้อมูล <b>"ทั้งหมดที่คุณอัปโหลด"</b> มาหากำลังผลิตสูงสุดที่น่าเชื่อถือ (Percentile ที่ 90 ตัดความผิดปกติ 10% บนทิ้ง) เป็นเส้น <b>Potential P90</b> 
+              หากการผลิตจริงต่ำกว่าเส้นนี้ในขณะที่ <b>"แบตเต็ม"</b> ระบบจะถือว่าเกิด <b>Clipping</b> (พลังงานทิ้งเปล่า)
             </div>
             <div>
-              <b style="color:var(--text)">Potential P90:</b><br>
-              ค่าศักยภาพการผลิต 90% (ตัดยอดพีคสุด 10% ออก) เพื่อเป็นเส้นฐาน (Baseline) ในการคำนวณหาปริมาณพลังงานที่สูญเสีย (Clipping)
-            </div>
-            <div>
-              <b style="color:var(--text)">Clipping:</b><br>
-              พลังงานแสงอาทิตย์ส่วนที่ผลิตได้เกินความจุของ Inverter/Battery ทำให้ถูกตัดทิ้ง
+              <b style="color:var(--text)">🔮 Simulation (จำลองผลลัพธ์):</b><br>
+              <ul style="padding-left: 18px; margin: 4px 0 0 0;">
+                <li><b>+ ติด Optimizer:</b> สมมติว่าดึงพลังงาน Clipping (ที่เกิดจาก Imbalance) กลับมาใช้ได้ 50%</li>
+                <li><b>+ ขายไฟให้ MEA:</b> เอาพลังงาน Export ปกติ มารวมกับ <b>"พลังงาน Clipping (สมมติว่าปลดกันย้อน)"</b> แล้วคูณเรทรับซื้อ</li>
+                <li><b>+ แบตเตอรี่เพิ่ม:</b> สมมติว่าเก็บ Clipping ที่เหลือไปใส่แบตก้อนใหม่ เพื่อเอามาใช้แทนไฟ On-Peak ช่วงหัวค่ำ</li>
+              </ul>
             </div>
             <div>
               <b style="color:var(--text)">ROI / จุดคุ้มทุน:</b><br>
-              คำนวณจากการประหยัดไฟ (On-Peak + Off-Peak) เทียบกับเงินลงทุน (Solar + TOU - เงินอุดหนุน)
+              คำนวณจากการประหยัดไฟ (On-Peak + Off-Peak) เทียบกับเงินลงทุน (Solar + TOU - ลดหย่อนภาษี)<br><br>
+              <b style="color:var(--text)">ประหยัดเฉลี่ย/วัน:</b><br>
+              คิดจากผลรวมเงินที่ประหยัดได้ทั้งหมด (Total Saving) หารด้วย "จำนวนวันจริง" ที่มีข้อมูลในระบบ
             </div>
           </div>
         </div>
@@ -930,42 +934,53 @@ body{
         <span>ข้อมูล XLSX ถูกเก็บใน IndexedDB ของ browser ไม่ได้ฝังในไฟล์ HTML</span>
       </div>
       <div id="sysView" style="margin-bottom:14px"></div>
+      <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:12px">
+        <span style="color:#ef4444">*</span> หมายถึงข้อมูลที่จำเป็นต้องกรอกเพื่อใช้ในการคำนวณส่วนอื่นๆ ของระบบ
+      </div>
       <div class="an-grid">
         <div class="an-box">
           <div class="an-ttl">Spec / Date</div>
-          <div class="roi-input" style="grid-column: 1 / -1;"><label>Inverter</label><input id="sysInvModel" type="text" style="width:100%" value="DEYE SUN-5K-SG04LP1-EU-SM2"></div>
+          <div class="roi-input" style="grid-column: 1 / -1;">
+            <label>Inverter</label>
+            <input id="sysInvModel" type="text" style="width:100%" value="DEYE SUN-5K-SG04LP1-EU-SM2" list="inverterList" oninput="handleInvModelChange()">
+            <datalist id="inverterList"></datalist>
+          </div>
           <div class="roi-input"><label>ขนาด (kW)</label><input id="sysInvKw" type="number" value="5"></div>
           <div class="roi-input"><label>Max I (A)</label><input id="sysInvMaxI" type="number" value="13"></div>
           <div class="roi-input"><label>Max V (V)</label><input id="sysInvMaxV" type="number" value="500"></div>
-          <div class="roi-input"><label>Panels</label><input id="sysPanels" type="number"></div>
-          <div class="roi-input"><label>W/panel</label><input id="sysWp" type="number"></div>
-          <div class="roi-input"><label>PV model</label><input id="sysPvModel" type="text" style="width:230px;text-align:left"></div>
+          <div class="roi-input"><label>Panels <span style="color:#ef4444">*</span></label><input id="sysPanels" type="number"></div>
+          <div class="roi-input"><label>W/panel <span style="color:#ef4444">*</span></label><input id="sysWp" type="number"></div>
+          <div class="roi-input">
+            <label>PV model</label>
+            <input id="sysPvModel" type="text" style="width:230px;text-align:left" list="pvList" oninput="handlePvModelChange()">
+            <datalist id="pvList"></datalist>
+          </div>
           <div class="roi-input"><label>PV eff %</label><input id="sysPvEff" type="number" step="0.1"></div>
           <div class="roi-input"><label>Voc / Vmp</label><input id="sysPvVoc" type="number" step="0.01" style="width:104px"><input id="sysPvVmp" type="number" step="0.01" style="width:104px"></div>
           <div class="roi-input"><label>Isc / Imp</label><input id="sysPvIsc" type="number" step="0.01" style="width:104px"><input id="sysPvImp" type="number" step="0.01" style="width:104px"></div>
-          <div class="roi-input"><label>Peak sun h</label><input id="sysPeakSun" type="number" step="0.1"></div>
+          <div class="roi-input"><label>Peak sun h <span style="color:#ef4444">*</span></label><input id="sysPeakSun" type="number" step="0.1"></div>
           <div class="roi-input"><label>Battery kWh</label><input id="sysBattKwh" type="number" step="0.01"></div>
-          <div class="roi-input"><label>Start date</label><input id="sysStartDate" type="date"></div>
-          <div class="roi-input"><label>TOU date</label><input id="sysTouStart" type="date"></div>
-          <div class="roi-input"><label>Bill day</label><input id="sysBillDay" type="number" min="1" max="28"></div>
+          <div class="roi-input"><label>Start date <span style="color:#ef4444">*</span></label><input id="sysStartDate" type="date"></div>
+          <div class="roi-input"><label>TOU date <span style="color:#ef4444">*</span></label><input id="sysTouStart" type="date"></div>
+          <div class="roi-input"><label>Bill day <span style="color:#ef4444">*</span></label><input id="sysBillDay" type="number" min="1" max="28"></div>
         </div>
         <div class="an-box">
           <div class="an-ttl">Electricity Rates</div>
-          <div class="roi-input"><label>On-peak</label><input type="number" id="cfgOn" value="5.7982" step="0.0001" onchange="rerenderAll()"></div>
-          <div class="roi-input"><label>Off-peak</label><input type="number" id="cfgOff" value="2.6369" step="0.0001" onchange="rerenderAll()"></div>
-          <div class="roi-input"><label>Flat</label><input type="number" id="cfgFlat" value="4.4217" step="0.0001" onchange="rerenderAll()"></div>
-          <div class="roi-input"><label>Ft</label><input type="number" id="cfgFt" value="0.0972" step="0.0001" onchange="rerenderAll()"></div>
-          <div class="roi-input"><label>บริการ/เดือน</label><input type="number" id="cfgSrv" value="24.62" step="0.01" onchange="rerenderAll()"></div>
-          <div class="roi-input"><label>ขายคืน/kWh</label><input type="number" id="cfgSell" value="2.20" step="0.01" onchange="rerenderAll()"></div>
+          <div class="roi-input"><label>On-peak <span style="color:#ef4444">*</span></label><input type="number" id="cfgOn" value="5.7982" step="0.0001" onchange="rerenderAll()"></div>
+          <div class="roi-input"><label>Off-peak <span style="color:#ef4444">*</span></label><input type="number" id="cfgOff" value="2.6369" step="0.0001" onchange="rerenderAll()"></div>
+          <div class="roi-input"><label>Flat <span style="color:#ef4444">*</span></label><input type="number" id="cfgFlat" value="4.4217" step="0.0001" onchange="rerenderAll()"></div>
+          <div class="roi-input"><label>Ft <span style="color:#ef4444">*</span></label><input type="number" id="cfgFt" value="0.0972" step="0.0001" onchange="rerenderAll()"></div>
+          <div class="roi-input"><label>บริการ/เดือน <span style="color:#ef4444">*</span></label><input type="number" id="cfgSrv" value="24.62" step="0.01" onchange="rerenderAll()"></div>
+          <div class="roi-input"><label>ขายคืน/kWh <span style="color:#ef4444">*</span></label><input type="number" id="cfgSell" value="2.20" step="0.01" onchange="rerenderAll()"></div>
         </div>
         <div class="an-box">
           <div class="an-ttl">Cost / Notes</div>
-          <div class="roi-input"><label>Solar cost</label><input id="sysSolarCost" type="number"></div>
-          <div class="roi-input"><label>TOU cost</label><input id="sysTouCost" type="number"></div>
-          <div class="roi-input"><label>Tax deduction</label><input id="sysTaxDeduct" type="number"></div>
+          <div class="roi-input"><label>Solar cost <span style="color:#ef4444">*</span></label><input id="sysSolarCost" type="number"></div>
+          <div class="roi-input"><label>TOU cost <span style="color:#ef4444">*</span></label><input id="sysTouCost" type="number"></div>
+          <div class="roi-input"><label>Tax deduction <span style="color:#ef4444">*</span></label><input id="sysTaxDeduct" type="number"></div>
           <div class="roi-input"><label>String A</label><input id="sysStringA" type="text" style="width:230px;text-align:left" placeholder="เช่น 5 West"></div>
           <div class="roi-input"><label>String B</label><input id="sysStringB" type="text" style="width:230px;text-align:left" placeholder="เช่น 3S+2W"></div>
-          <div class="roi-input"><label>Partial days</label><input id="sysPartialDays" type="text" style="width:230px;text-align:left" placeholder="2026-04-10,2026-05-16"></div>
+          <div class="roi-input"><label>Partial days <span style="color:#ef4444">*</span></label><input id="sysPartialDays" type="text" style="width:230px;text-align:left" placeholder="2026-04-10,2026-05-16"></div>
           <div class="roi-input"><label>System note</label><input id="sysNote" type="text" style="width:230px;text-align:left"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-primary" onclick="saveSystemInfo()">บันทึกข้อมูลระบบ</button>
@@ -1503,6 +1518,58 @@ async function loadSystemInfo(){
   }
   applySystemInfo(saved||{})
 }
+const SPEC_DB = {
+  inverters: [
+    { model: "DEYE SUN-5K-SG04LP1-EU-SM2", kw: 5, maxI: 13, maxV: 500 },
+    { model: "HUAWEI SUN2000-5KTL-L1", kw: 5, maxI: 12.5, maxV: 600 },
+    { model: "GROWATT MIN 5000TL-X", kw: 5, maxI: 13.5, maxV: 550 },
+    { model: "SUNGROW SG5.0RS", kw: 5, maxI: 16, maxV: 600 }
+  ],
+  pvs: [
+    { model: "LONGi LR7-72HYD-645M", wp: 645, eff: 23.9, voc: 54.12, vmp: 44.77, isc: 15.06, imp: 14.41 },
+    { model: "LONGi Hi-MO X6 LR5-72HTH-580M", wp: 580, eff: 22.5, voc: 52.06, vmp: 43.91, isc: 14.20, imp: 13.21 },
+    { model: "Jinko Tiger Neo 72HL4 580W", wp: 580, eff: 22.45, voc: 51.21, vmp: 42.44, isc: 14.37, imp: 13.67 },
+    { model: "Trina Solar Vertex DE19 580W", wp: 580, eff: 21.5, voc: 33.8, vmp: 31.6, isc: 18.52, imp: 18.36 },
+    { model: "Canadian Solar HiKu6 CS6W-580MB-AG", wp: 580, eff: 22.5, voc: 41.3, vmp: 34.9, isc: 18.21, imp: 16.62 },
+    { model: "AIKO-A600-MAH72Mw (ABC 600W)", wp: 600, eff: 23.2, voc: 53.29, vmp: 44.81, isc: 13.92, imp: 13.40 },
+    { model: "AIKO-A610-MAH72Mw (ABC 610W)", wp: 610, eff: 23.6, voc: 53.49, vmp: 45.01, isc: 14.04, imp: 13.56 }
+  ]
+};
+
+function initDatalists() {
+  const invList = document.getElementById('inverterList');
+  if (invList && invList.children.length === 0) {
+    invList.innerHTML = SPEC_DB.inverters.map(i => `<option value="${i.model}">`).join('');
+  }
+  const pvList = document.getElementById('pvList');
+  if (pvList && pvList.children.length === 0) {
+    pvList.innerHTML = SPEC_DB.pvs.map(p => `<option value="${p.model}">`).join('');
+  }
+}
+
+function handleInvModelChange() {
+  const val = document.getElementById('sysInvModel').value;
+  const spec = SPEC_DB.inverters.find(i => i.model === val);
+  if (spec) {
+    document.getElementById('sysInvKw').value = spec.kw;
+    document.getElementById('sysInvMaxI').value = spec.maxI;
+    document.getElementById('sysInvMaxV').value = spec.maxV;
+  }
+}
+
+function handlePvModelChange() {
+  const val = document.getElementById('sysPvModel').value;
+  const spec = SPEC_DB.pvs.find(p => p.model === val);
+  if (spec) {
+    document.getElementById('sysWp').value = spec.wp;
+    document.getElementById('sysPvEff').value = spec.eff;
+    document.getElementById('sysPvVoc').value = spec.voc;
+    document.getElementById('sysPvVmp').value = spec.vmp;
+    document.getElementById('sysPvIsc').value = spec.isc;
+    document.getElementById('sysPvImp').value = spec.imp;
+  }
+}
+
 function fillSystemInfoForm(){
   const info=currentSystemInfo()
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v}
@@ -1526,6 +1593,7 @@ function fillSystemInfoForm(){
   ].map(([l,v])=>`<div class="an-row"><span>${l}</span><b>${v}</b></div>`).join('')
 }
 function openSystemInfo(){
+  initDatalists()
   fillSystemInfoForm()
   document.getElementById('sysModal').style.display='flex'
 }
@@ -2101,14 +2169,6 @@ function rerenderAll(){
 function renderHistROI(days) {
   if(!document.getElementById('histChart')) return;
   const bd = CFG.billDay || 15;
-  // Build inverter-estimated monthly cost (post-solar, from raw inverter data)
-  const mCostInv = {};
-  days.forEach(d => {
-    if (!CFG.startDate || d.date < CFG.startDate) return;
-    const ym = d.date.substring(0,7);
-    if(!mCostInv[ym]) mCostInv[ym] = 0;
-    mCostInv[ym] += (d.s.costTotal || 0);
-  });
 
   // Build post-solar actual bills lookup: ym -> cost (from real MEA bill)
   const postSolarActualCost = {};
@@ -2122,8 +2182,8 @@ function renderHistROI(days) {
     }
   });
 
-  // Merge: use all ym keys from either inverter data or post-solar actual bills
-  const allYmKeys = Array.from(new Set([...Object.keys(mCostInv), ...Object.keys(postSolarActualCost)])).sort();
+  // Merge: use only ym keys from post-solar actual bills
+  const allYmKeys = Array.from(new Set([...Object.keys(postSolarActualCost)])).sort();
   
   const lbls = [];
   const dsHist = [];
@@ -2153,13 +2213,8 @@ function renderHistROI(days) {
     }
 
     // --- Blue bar: "หลังติด" actual cost ---
-    // Priority: use real MEA post-solar bill if entered, else inverter estimate
-    let actCost = null;
-    if (postSolarActualCost[ym] != null) {
-      actCost = postSolarActualCost[ym]; // real bill from MEA/PEA
-    } else if (mCostInv[ym] != null) {
-      actCost = mCostInv[ym]; // inverter estimate (fallback)
-    }
+    // Use real MEA post-solar bill
+    let actCost = postSolarActualCost[ym];
     
     if (histCost !== null && !isNaN(histCost) && actCost !== null && !isNaN(actCost)) {
       lbls.push(`${TH_M[m-1]} ${(parseInt(y)+543).toString().substring(2)}`);
@@ -2493,7 +2548,7 @@ async function renderWeek(date){
     <div class="card cl"><div class="card-lbl">🏠 ใช้สัปดาห์</div><div><span class="card-val">${fn(tL)}</span><span class="card-unit">kWh</span></div><div class="card-sub">เฉลี่ย ${fn(tL/wk.length,1)} kWh/วัน</div></div>
     <div class="card cv"><div class="card-lbl">🌿 พึ่งพาตัวเองรายรอบ</div><div><span class="card-val">${fn(avgSelf,0)}</span><span class="card-unit">%</span></div><div class="card-sub">ค่าเฉลี่ยของรอบ</div></div>
     <div style="width:20px;flex-shrink:0;"></div>
-    <div class="card" style="border-color:#10b981"><div class="card-lbl" style="color:#10b981" title="คิดจากหน่วยไฟฟ้าที่ Export ออกสายส่งเฉลี่ยต่อปี × 2.20 บาท/หน่วย">💡 ขายไฟ(if)</div><div><span class="card-val" style="color:#10b981">${fn(tSellK)}</span><span class="card-unit" style="color:#10b981">kWh</span></div><div class="card-price" style="color:#10b981">฿${fn(tSellC,2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน">เฉลี่ย ฿${fn(tSellC/wk.length,1)}/วัน</div></div>
+    <div class="card" style="border-color:#10b981"><div class="card-lbl" style="color:#10b981" title="คิดจากไฟ Export ปกติ + ประเมินไฟ Clipping ที่จะขายได้ (ถ้าปลดกันย้อน)">💡 ขายไฟ(if)</div><div><span class="card-val" style="color:#10b981">${fn(tSellK)}</span><span class="card-unit" style="color:#10b981">kWh</span></div><div class="card-price" style="color:#10b981">฿${fn(tSellC,2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน">เฉลี่ย ฿${fn(tSellC/wk.length,1)}/วัน</div></div>
     <div class="card cg"><div class="card-lbl">⚡ On-peak ซื้อ</div><div><span class="card-val">${fn(tOnI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tOn/1.07,2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน">เฉลี่ย ฿${fn(tOn/1.07/wk.length,1)}/วัน</div></div>
     <div class="card co"><div class="card-lbl">🌙 Off-peak ซื้อ</div><div><span class="card-val">${fn(tOffI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tOff/1.07,2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน">เฉลี่ย ฿${fn(tOff/1.07/wk.length,1)}/วัน</div></div>
     <div class="card cy"><div class="card-lbl">🛒 รวมซื้อ</div><div><span class="card-val">${fn(tI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tCost,2)}</div><div class="card-sub" title="WoW = Week over Week (เทียบสัปดาห์นี้กับสัปดาห์ที่แล้ว)">เฉลี่ย ฿${fn(tCost/wk.length,1)}/วัน<br>WoW ${wow==null?'-':(wow>=0?'+':'')+fn(wow,1)+'%'}</div></div>`
@@ -2629,7 +2684,7 @@ async function renderMonth(){
     <div class="card cl"><div class="card-lbl">🏠 ใช้รวม</div><div><span class="card-val">${fn(totAll('load'))}</span><span class="card-unit">kWh</span></div><div class="card-sub" title="เฉลี่ยการใช้ไฟต่อวันในรอบบิลนี้">เฉลี่ย ${fn(totAll('load')/selected.days,1)} kWh/วัน</div></div>
     <div class="card cv"><div class="card-lbl">🌿 พึ่งพาตัวเอง</div><div><span class="card-val">${fn(avgSelf,0)}</span><span class="card-unit">%</span></div><div class="card-sub">ค่าเฉลี่ยของรอบ</div></div>
     <div style="width:20px;flex-shrink:0;"></div>
-    <div class="card" style="border-color:#10b981"><div class="card-lbl" style="color:#10b981" title="คิดจากหน่วยไฟฟ้าที่ Export ออกสายส่งเฉลี่ยต่อปี × 2.20 บาท/หน่วย">💡 ขายไฟ(if)</div><div><span class="card-val" style="color:#10b981">${fn(totAll('sellKwh'))}</span><span class="card-unit" style="color:#10b981">kWh</span></div><div class="card-price" style="color:#10b981">฿${fn(totAll('sellCost'),2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน">เฉลี่ย ฿${fn(totAll('sellCost')/selectedDays.length,1)}/วัน</div></div>
+    <div class="card" style="border-color:#10b981"><div class="card-lbl" style="color:#10b981" title="คิดจากไฟ Export ปกติ + ประเมินไฟ Clipping ที่จะขายได้ (ถ้าปลดกันย้อน)">💡 ขายไฟ(if)</div><div><span class="card-val" style="color:#10b981">${fn(totAll('sellKwh'))}</span><span class="card-unit" style="color:#10b981">kWh</span></div><div class="card-price" style="color:#10b981">฿${fn(totAll('sellCost'),2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน">เฉลี่ย ฿${fn(totAll('sellCost')/selectedDays.length,1)}/วัน</div></div>
     <div class="card cg"><div class="card-lbl">⚡ On-peak ซื้อ</div><div><span class="card-val">${fn(tOnI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tOn/1.07,2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน">เฉลี่ย ฿${fn(tOn/1.07/selectedDays.length,1)}/วัน</div></div>
     <div class="card co"><div class="card-lbl">🌙 Off-peak ซื้อ</div><div><span class="card-val">${fn(tOffI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tOff/1.07,2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน">เฉลี่ย ฿${fn(tOff/1.07/selectedDays.length,1)}/วัน</div></div>
     <div class="card cy"><div class="card-lbl">🛒 รวมซื้อ</div><div><span class="card-val">${fn(tI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tC,2)}</div><div class="card-sub" title="MoM = Month over Month (เทียบเดือนนี้กับเดือนที่แล้ว)">เฉลี่ย ฿${fn(tC/selectedDays.length,1)}/วัน<br>MoM ${mom==null?'—':(mom>=0?'+':'')+fn(mom,1)+'%'}</div></div>`
@@ -2870,7 +2925,7 @@ async function renderYear(){
     <div class="card cl"><div class="card-lbl">🏠 ใช้ทั้งปี</div><div><span class="card-val">${fn(tot('load'))}</span><span class="card-unit">kWh</span></div><div class="card-sub" title="เฉลี่ยการใช้ไฟต่อเดือน">เฉลี่ย ${fn(tot('load')/eqM,1)} kWh/เดือน</div></div>
     <div class="card cv"><div class="card-lbl">🌿 พึ่งตัวเองรายรอบ</div><div><span class="card-val">${fn(avgSelf,0)}</span><span class="card-unit">%</span></div><div class="card-sub">ค่าเฉลี่ยของปี</div></div>
     <div style="grid-column: span 1; min-width:0; padding:0; border:0; background:transparent"></div>
-    <div class="card" style="border-color:#10b981"><div class="card-lbl" style="color:#10b981" title="คิดจากหน่วยไฟฟ้าที่ Export ออกสายส่งเฉลี่ยต่อปี × 2.20 บาท/หน่วย">💡 ขายไฟ(if)</div><div><span class="card-val" style="color:#10b981">${fn(tot('sellKwh'))}</span><span class="card-unit" style="color:#10b981">kWh</span></div><div class="card-price" style="color:#10b981">฿${fn(tot('sellCost'),2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนเดือนจริง">เฉลี่ย ฿${fn(tot('sellCost')/eqM,1)}/เดือน</div></div>
+    <div class="card" style="border-color:#10b981"><div class="card-lbl" style="color:#10b981" title="คิดจากไฟ Export ปกติ + ประเมินไฟ Clipping ที่จะขายได้ (ถ้าปลดกันย้อน)">💡 ขายไฟ(if)</div><div><span class="card-val" style="color:#10b981">${fn(tot('sellKwh'))}</span><span class="card-unit" style="color:#10b981">kWh</span></div><div class="card-price" style="color:#10b981">฿${fn(tot('sellCost'),2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนเดือนจริง">เฉลี่ย ฿${fn(tot('sellCost')/eqM,1)}/เดือน</div></div>
     <div class="card cg"><div class="card-lbl">⚡ On-peak ซื้อ</div><div><span class="card-val">${fn(tot('onPeakImp'))}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(cOn,2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนเดือนจริง">เฉลี่ย ฿${fn(cOn/eqM,1)}/เดือน</div></div>
     <div class="card co"><div class="card-lbl">🌙 Off-peak ซื้อ</div><div><span class="card-val">${fn(tot('offPeakImp'))}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(cOff,2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนเดือนจริง">เฉลี่ย ฿${fn(cOff/eqM,1)}/เดือน</div></div>
     <div class="card cy"><div class="card-lbl">🛒 รวมซื้อ</div><div><span class="card-val">${fn(tot('imp'))}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(yCost,2)}</div><div class="card-sub" title="YoY = Year over Year (เทียบปีนี้กับปีที่แล้ว)">เฉลี่ย ฿${fn(yCost/eqM,1)}/เดือน<br>YoY ${yoy==null?'—':(yoy>=0?'+':'')+fn(yoy,1)+'%'}</div></div>`
@@ -3078,7 +3133,7 @@ async function renderAllTime(){
     <div class="card cl"><div class="card-lbl">🏠 ใช้รวมทั้งหมด</div><div><span class="card-val">${fn(tot('load'))}</span><span class="card-unit">kWh</span></div></div>
     <div class="card cv"><div class="card-lbl">🌿 พึ่งพาตัวเอง</div><div><span class="card-val">${fn(avgSelf,0)}</span><span class="card-unit">%</span></div><div class="card-sub">เฉลี่ยรวม</div></div>
     <div style="grid-column: span 1; min-width:0; padding:0; border:0; background:transparent"></div>
-    <div class="card" style="border-color:#10b981"><div class="card-lbl" style="color:#10b981" title="คิดจากหน่วยไฟฟ้าที่ Export ออกสายส่งเฉลี่ยต่อปี × 2.20 บาท/หน่วย">💡 ขายไฟ(if)</div><div><span class="card-val" style="color:#10b981">${fn(tot('sellKwh'))}</span><span class="card-unit" style="color:#10b981">kWh</span></div><div class="card-price" style="color:#10b981">฿${fn(tot('sellCost'),2)}</div></div>
+    <div class="card" style="border-color:#10b981"><div class="card-lbl" style="color:#10b981" title="คิดจากไฟ Export ปกติ + ประเมินไฟ Clipping ที่จะขายได้ (ถ้าปลดกันย้อน)">💡 ขายไฟ(if)</div><div><span class="card-val" style="color:#10b981">${fn(tot('sellKwh'))}</span><span class="card-unit" style="color:#10b981">kWh</span></div><div class="card-price" style="color:#10b981">฿${fn(tot('sellCost'),2)}</div></div>
     <div class="card" style="border-color:#f59e0b"><div class="card-lbl" style="color:#f59e0b">⚡ ค่าไฟ On-Peak</div><div class="card-price" style="color:#f59e0b">฿${fn(cOn,2)}</div><div class="card-sub">ซื้อเฉพาะ Peak</div></div>
     <div class="card" style="border-color:#9ca3af"><div class="card-lbl" style="color:#9ca3af">🌙 ค่าไฟ Off-Peak</div><div class="card-price" style="color:#9ca3af">฿${fn(cOff,2)}</div><div class="card-sub">ซื้อช่วง Off-Peak</div></div>
     <div class="card cy"><div class="card-lbl">🛒 ค่าไฟรวมทั้งหมด</div><div class="card-price">฿${fn(tCost,2)}</div></div>`
@@ -3533,15 +3588,17 @@ function calcROI(){
     document.getElementById('roiYears').innerHTML='—<span style="font-size:1rem;font-family:var(--font-ui)"> ปี</span>'
     document.getElementById('roiSub').textContent=cv>0?'ข้อมูลไม่พอคำนวณ':'กรอกต้นทุนเพื่อคำนวณ'
   }
+  const sellRate = getP().sell || 2.20;
   const tSellCost = allDaysSummary.reduce((s,x)=>s+(x.s.sellCost||0),0);
   const sellPerYear = allDaysSummary.length ? (tSellCost / allDaysSummary.length) * 365 : 0;
   const roiPerYear = saving * 365;
   const simSellEl = document.getElementById('simSellRoi');
   if (simSellEl) {
     if(roiPerYear > 0 && sellPerYear > 0 && cv > 0) {
+      const sellRate = getP().sell || 2.20;
       const ySell = cv / (roiPerYear + sellPerYear);
       const yys = Math.floor(ySell), mms = Math.round((ySell-yys)*12);
-      simSellEl.innerHTML = `${yys} ปี ${mms} เดือน <span title="คิดจากหน่วยไฟฟ้าที่ Export ออกสายส่งเฉลี่ยต่อปี × 2.20 บาท/หน่วย" style="font-size:0.8rem;cursor:help;color:var(--muted)">ℹ️</span>`;
+      simSellEl.innerHTML = `${yys} ปี ${mms} เดือน <span title="คิดจากไฟ Export ปกติ + ประเมินไฟ Clipping ที่จะขายได้ (ถ้าปลดกันย้อน) แล้วนำมาคูณ ${sellRate} ฿/หน่วย" style="font-size:0.8rem;cursor:help;color:var(--muted)">ℹ️</span>`;
     } else {
       simSellEl.textContent = '—';
     }
