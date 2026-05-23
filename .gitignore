@@ -1,0 +1,39 @@
+# ── Dependencies ──────────────────────────────
+node_modules/
+
+# ── Dev/Patch scripts (ใช้ระหว่างพัฒนา ไม่จำเป็นสำหรับ production) ──
+patch*.js
+inject*.js
+extract*.js
+restore*.js
+fix-*.js
+debug*.js
+verify*.js
+script*.js
+sim.js
+write_*.js
+test*.js
+roi-tooltips.js
+temp_*.js
+
+# ── Atlas project folders (ไม่เกี่ยวกับ Solar Dashboard) ──
+Multi-Agent-Brand-Atlas/
+Multi-Agent-Project-Atlas/
+
+# ── Other HTML files (ไม่ใช่ project นี้) ──
+Multi\ Agent\ Brand\ Project\ Rules.html
+Multi\ Agents\ Project\ Starter.html
+My\ Running.html
+
+# ── OS & Editor ───────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# ── Logs ──────────────────────────────────────
+*.log
+npm-debug.log*
