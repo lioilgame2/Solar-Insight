@@ -2020,7 +2020,10 @@ function updateCalibrationFactor(rows = memoryDays.values()) {
     
     let cFactor = 1.0;
     if (invSums[cycleKey] && invSums[cycleKey].cost > 0) {
-      cFactor = parseFloat(b.cost) / invSums[cycleKey].cost;
+      const parsedCost = parseFloat(b.cost.toString().replace(/,/g, ''));
+      if (!isNaN(parsedCost) && parsedCost >= 0) {
+        cFactor = parsedCost / invSums[cycleKey].cost;
+      }
     }
     
     calibrationMap[cycleKey] = { costFactor: cFactor, isOverridden: true };
