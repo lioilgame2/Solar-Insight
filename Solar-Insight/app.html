@@ -2610,8 +2610,10 @@ async function renderMonth(){
     if(!byMonth[k])byMonth[k]=[]
     if(x.cols)Object.assign(C,x.cols)
     const s=calcSum(x.rows,x.date)||x.summary
-    if(s) applyCalibration(s, billPeriodKey(x.date))
-    s.probs = getDayProblems(s, x.rows)
+    if(s) {
+      applyCalibration(s, billPeriodKey(x.date))
+      s.probs = getDayProblems(s, x.rows)
+    }
     byMonth[k].push({...s,date:x.date})
   })
   const months=Object.keys(byMonth).sort()
@@ -2851,10 +2853,12 @@ async function renderYear(){
   const days=all.filter(x=>toDate(x.date).getFullYear()===curYear).map(x=>{
     if(x.cols)Object.assign(C,x.cols)
     const s = calcSum(x.rows,x.date)||x.summary
-    if(s) applyCalibration(s, billPeriodKey(x.date))
-    s.probs = getDayProblems(s, x.rows)
+    if(s) {
+      applyCalibration(s, billPeriodKey(x.date))
+      s.probs = getDayProblems(s, x.rows)
+    }
     return{date:x.date,s}
-  })
+  }).filter(d=>d.s)
   const byM=Array.from({length:12},()=>[])
   days.forEach(d=>{ d.s._date = d.date; byM[toDate(d.date).getMonth()].push(d.s); })
   const agg=byM.map(ss=>{
@@ -3055,9 +3059,9 @@ async function renderAllTime(){
   const days=all.map(x=>{
     if(x.cols)Object.assign(C,x.cols)
     const s = calcSum(x.rows,x.date)||x.summary
-    s.probs = getDayProblems(s, x.rows)
+    if(s) s.probs = getDayProblems(s, x.rows)
     return{date:x.date,s}
-  })
+  }).filter(d=>d.s)
 
   const byY={}
   days.forEach(d=>{
@@ -3382,7 +3386,7 @@ async function renderAnalysis(){
   const days=all.sort((a,b)=>a.date.localeCompare(b.date)).map(x=>{
     if(x.cols)Object.assign(C,x.cols)
     return{date:x.date,s:calcSum(x.rows,x.date)||x.summary,rows:x.rows}
-  })
+  }).filter(d=>d.s)
   // Full days only (ตัด partial days ออกจาก efficiency / min-max)
   const fullDays=days.filter(d=>!CFG.partialDays.includes(d.date))
   const calcDays=fullDays.length>0?fullDays:days
