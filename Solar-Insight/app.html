@@ -1237,7 +1237,7 @@ async function dbAll(){
   const P = getP();
   function applyCalibration(s, cycleKey) {
     if (!s) return s;
-    const calib = calibrationMap[cycleKey] || { costFactor: fallbackCostFactor };
+    const calib = calibrationMap[cycleKey] || { costFactor: 1.0 };
     
     if (!s._orig) {
       s._orig = {
