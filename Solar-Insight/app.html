@@ -2679,15 +2679,18 @@ async function renderMonth(){
   const tS=totAll('solar'),tI=totAll('imp'),tOnI=totAll('onPeakImp'),tOffI=totAll('offPeakImp')
   const tOn=+totAll('costOn').toFixed(2),tOff=+totAll('costOff').toFixed(2),tC=+(tOn+tOff).toFixed(2)
   const avgSelf=selected.self
-  document.getElementById('mCards').innerHTML=`
+    const isOverridden = selectedDays.some(s => s.summary && s.summary.isOverridden);
+    const mark = isOverridden ? '<span style="color:#f59e0b" title="ยอดนี้รวมข้อมูลที่ถูกปรับให้ตรงกับบิลจริง">*</span>' : '';
+    
+    document.getElementById('mCards').innerHTML=`
     <div class="card cs"><div class="card-lbl">☀️ ผลิตรอบบิล</div><div><span class="card-val">${fn(tS)}</span><span class="card-unit">kWh</span></div><div class="card-sub">${selected.days} วันในรอบนี้</div></div>
     <div class="card cl"><div class="card-lbl">🏠 ใช้รวม</div><div><span class="card-val">${fn(totAll('load'))}</span><span class="card-unit">kWh</span></div><div class="card-sub" title="เฉลี่ยการใช้ไฟต่อวันในรอบบิลนี้">เฉลี่ย ${fn(totAll('load')/selected.days,1)} kWh/วัน</div></div>
     <div class="card cv"><div class="card-lbl">🌿 พึ่งพาตัวเอง</div><div><span class="card-val">${fn(avgSelf,0)}</span><span class="card-unit">%</span></div><div class="card-sub">ค่าเฉลี่ยของรอบ</div></div>
     <div style="width:20px;flex-shrink:0;"></div>
     <div class="card" style="border-color:#10b981"><div class="card-lbl" style="color:#10b981" title="คิดจากไฟ Export ปกติ + ประเมินไฟ Clipping ที่จะขายได้ (ถ้าปลดกันย้อน)">💡 ขายไฟ(if)</div><div><span class="card-val" style="color:#10b981">${fn(totAll('sellKwh'))}</span><span class="card-unit" style="color:#10b981">kWh</span></div><div class="card-price" style="color:#10b981">฿${fn(totAll('sellCost'),2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน">เฉลี่ย ฿${fn(totAll('sellCost')/selectedDays.length,1)}/วัน</div></div>
-    <div class="card cg"><div class="card-lbl">⚡ On-peak ซื้อ</div><div><span class="card-val">${fn(tOnI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tOn/1.07,2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน">เฉลี่ย ฿${fn(tOn/1.07/selectedDays.length,1)}/วัน</div></div>
-    <div class="card co"><div class="card-lbl">🌙 Off-peak ซื้อ</div><div><span class="card-val">${fn(tOffI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tOff/1.07,2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน">เฉลี่ย ฿${fn(tOff/1.07/selectedDays.length,1)}/วัน</div></div>
-    <div class="card cy"><div class="card-lbl">🛒 รวมซื้อ</div><div><span class="card-val">${fn(tI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tC,2)}</div><div class="card-sub" title="MoM = Month over Month (เทียบเดือนนี้กับเดือนที่แล้ว)">เฉลี่ย ฿${fn(tC/selectedDays.length,1)}/วัน<br>MoM ${mom==null?'—':(mom>=0?'+':'')+fn(mom,1)+'%'}</div></div>`
+    <div class="card cg"><div class="card-lbl">⚡ On-peak ซื้อ ${mark}</div><div><span class="card-val">${fn(tOnI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tOn,2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน">เฉลี่ย ฿${fn(tOn/selectedDays.length,1)}/วัน</div></div>
+    <div class="card co"><div class="card-lbl">🌙 Off-peak ซื้อ ${mark}</div><div><span class="card-val">${fn(tOffI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tOff,2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน">เฉลี่ย ฿${fn(tOff/selectedDays.length,1)}/วัน</div></div>
+    <div class="card cy"><div class="card-lbl">🛒 รวมซื้อ ${mark}</div><div><span class="card-val">${fn(tI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tC,2)}</div><div class="card-sub" title="MoM = Month over Month (เทียบเดือนนี้กับเดือนที่แล้ว)">เฉลี่ย ฿${fn(tC/selectedDays.length,1)}/วัน<br>MoM ${mom==null?'—':(mom>=0?'+':'')+fn(mom,1)+'%'}</div></div>`
   const weekDict={};
   selectedDays.forEach(s=>{
     const wk = weekStartKey(s.date);
