@@ -1235,40 +1235,45 @@ async function dbAll(){
   if(!res.length) res = [...memoryDays.values()];
   updateCalibrationFactor(res);
   const P = getP();
+  function applyCalibration(s, cycleKey) {
+    if (!s) return s;
+    const calib = calibrationMap[cycleKey] || { costFactor: fallbackCostFactor };
+    
+    if (!s._orig) {
+      s._orig = {
+        imp: s.imp || 0,
+        onPeakImp: s.onPeakImp || 0,
+        offPeakImp: s.offPeakImp || 0,
+        costOn: s.costOn || 0,
+        costOff: s.costOff || 0,
+        costTotal: s.costTotal || 0,
+        load: s.load || 0
+      };
+    }
+    
+    const orig = s._orig;
+    
+    s.imp = orig.imp;
+    s.onPeakImp = orig.onPeakImp;
+    s.offPeakImp = orig.offPeakImp;
+    s.load = orig.load;
+    
+    s.costOn = orig.costOn * calib.costFactor;
+    s.costOff = orig.costOff * calib.costFactor;
+    s.costTotal = orig.costTotal * calib.costFactor;
+    s.isOverridden = calib.isOverridden === true;
+    
+    return s;
+  }
+
   res.forEach(x => {
     if (x.summary && x.summary.sellKwh === undefined) {
       x.summary.sellKwh = x.summary.exp || 0;
       x.summary.sellCost = x.summary.sellKwh * P.sell;
     }
     
-    // Apply Calibration Factor
     if (x.summary) {
-      if (!x.summary._orig) {
-         x.summary._orig = {
-            imp: x.summary.imp || 0,
-            onPeakImp: x.summary.onPeakImp || 0,
-            offPeakImp: x.summary.offPeakImp || 0,
-            costOn: x.summary.costOn || 0,
-            costOff: x.summary.costOff || 0,
-            costTotal: x.summary.costTotal || 0,
-            load: x.summary.load || 0
-         };
-      }
-      
-      const orig = x.summary._orig;
-      
-      x.summary.imp = orig.imp * kwhFactor;
-      x.summary.onPeakImp = orig.onPeakImp * kwhFactor;
-      x.summary.offPeakImp = orig.offPeakImp * kwhFactor;
-      x.summary.load = orig.load + (x.summary.imp - orig.imp);
-      
-      x.summary.costOn = orig.costOn * costFactor;
-      x.summary.costOff = orig.costOff * costFactor;
-      x.summary.costTotal = orig.costTotal * costFactor;
-      
-      if (x.summary.solar > 0 && x.summary.load > 0) {
-         x.summary.self = Math.min(100, Math.max(0, (x.summary.load - x.summary.imp) / x.summary.load * 100));
-      }
+      applyCalibration(x.summary, billPeriodKey(x.date));
     }
   });
   return res;
@@ -1827,6 +1832,7 @@ async function renderDay(date){
   const all=await dbAll();
   if(day.rows&&day.rows.length) detectC(day.rows[0])
   const s=calcSum(day.rows,date)||day.summary
+  if(s) applyCalibration(s, billPeriodKey(date))
   const isPartial=CFG.partialDays.includes(date)
 
   document.getElementById('dEmpty').style.display='none'
@@ -1987,66 +1993,38 @@ function renderVoltageChart(s, lbl24, va24){
 
 let histBills = [];
 let actualBills = [];
-let kwhFactor = 1.0;
-let costFactor = 1.0;
+let calibrationMap = {};
 
 function updateCalibrationFactor(rows = memoryDays.values()) {
-  kwhFactor = 1.0;
-  costFactor = 1.0;
+  calibrationMap = {};
   if (!actualBills || !actualBills.length) return;
-  const sorted = [...actualBills].filter(b=>(b.kwh || b.cost)).sort((a,b)=>b.y!==a.y?b.y-a.y:b.m-a.m);
-  if (!sorted.length) return;
-
-  const bd = CFG.billDay || 15;
   
-  // Fallback to first day in database if CFG.startDate is not explicitly set
-  let sysStartDate = CFG.startDate;
-  if (!sysStartDate) {
-     const arr = Array.from(rows);
-     if (arr.length > 0) {
-        arr.sort((a,b) => a.date.localeCompare(b.date));
-        sysStartDate = arr[0].date;
-     }
-  }
-
-  let latestPostSolar = null;
-  for(let b of sorted) {
-    let py = b.y, pm = b.m - 1;
-    if(pm<=0) { pm=12; py--; }
-    const endStr = `${b.y}-${String(b.m).padStart(2,'0')}-${String(bd-1).padStart(2,'0')}`;
-    if (sysStartDate && endStr >= sysStartDate) {
-       latestPostSolar = b;
-       break;
+  const bd = CFG.billDay || 15;
+  const invSums = {};
+  
+  // Calculate raw uncalibrated sums for each billing period
+  Array.from(rows).forEach(d => {
+    const cycleKey = billPeriodKey(d.date);
+    if (!invSums[cycleKey]) invSums[cycleKey] = { imp: 0, cost: 0 };
+    if (d.summary) {
+      invSums[cycleKey].cost += (d.summary._orig ? d.summary._orig.costTotal : (d.summary.costTotal || 0));
     }
-  }
+  });
 
-  if (latestPostSolar) {
-    let py = latestPostSolar.y, pm = latestPostSolar.m - 1;
+  // Create calibration factors for each bill
+  actualBills.forEach(b => {
+    if (!b.cost) return;
+    let py = b.y, pm = b.m - 1;
     if(pm<=0) { pm=12; py--; }
     const cycleKey = `${py}-${String(pm).padStart(2,'0')}-${String(bd).padStart(2,'0')}`;
     
-    let invImp = 0;
-    let invCost = 0;
-    Array.from(rows).forEach(d => {
-       if (billPeriodKey(d.date) === cycleKey) {
-          if (d.summary) {
-             // always use _orig if exists to calculate true uncalibrated sum
-             invImp += (d.summary._orig ? d.summary._orig.imp : (d.summary.imp || 0));
-             invCost += (d.summary._orig ? d.summary._orig.costTotal : (d.summary.costTotal || 0));
-          }
-       }
-    });
+    let cFactor = 1.0;
+    if (invSums[cycleKey] && invSums[cycleKey].cost > 0) {
+      cFactor = parseFloat(b.cost) / invSums[cycleKey].cost;
+    }
     
-    if (invImp > 0) {
-       const meaImp = parseFloat(latestPostSolar.kwh);
-       if (meaImp > 0) kwhFactor = meaImp / invImp;
-    }
-    if (invCost > 0) {
-       const meaCost = parseFloat(latestPostSolar.cost);
-       if (meaCost > 0) costFactor = meaCost / invCost;
-    }
-    console.log("Calibration factors:", {kwhFactor, costFactor, invCost, meaCost: parseFloat(latestPostSolar.cost), invImp});
-  }
+    calibrationMap[cycleKey] = { costFactor: cFactor, isOverridden: true };
+  });
 }
 
 async function loadHistBills() {
@@ -2514,7 +2492,7 @@ async function renderWeek(date){
   document.getElementById('wEmpty').style.display='none';document.getElementById('wContent').style.display=''
   const fm=d=>`${d.getDate()} ${TH_M[d.getMonth()]} ${d.getFullYear()+543}`
 
-  const ss=wk.map(x=>{if(x.cols)Object.assign(C,x.cols);return calcSum(x.rows,x.date)||x.summary})
+  const ss=wk.map(x=>{if(x.cols)Object.assign(C,x.cols); const s = calcSum(x.rows,x.date)||x.summary; if(s) applyCalibration(s, billPeriodKey(x.date)); return s; })
   // Patch for May 16-17 system downtime (approximate by summing both half-days)
   const p16 = wk.findIndex(x => x.date === '2026-05-16'), p17 = wk.findIndex(x => x.date === '2026-05-17');
   if(p16 >= 0 && p17 >= 0) {
@@ -2539,7 +2517,7 @@ async function renderWeek(date){
   
   const prevStart=new Date(mon);prevStart.setDate(mon.getDate()-7)
   const prevEnd=new Date(sun);prevEnd.setDate(sun.getDate()-7)
-  const prev=all.filter(x=>{const dd=toDate(x.date);return dd>=prevStart&&dd<=prevEnd}).map(x=>calcSum(x.rows,x.date)||x.summary)
+  const prev=all.filter(x=>{const dd=toDate(x.date);return dd>=prevStart&&dd<=prevEnd}).map(x=>{ const s = calcSum(x.rows,x.date)||x.summary; if(s) applyCalibration(s, billPeriodKey(x.date)); return s; })
   const prevCost=prev.reduce((s,x)=>s+(x.costTotal||0),0)
   const wow=prevCost>0?((tCost-prevCost)/prevCost*100):null
 
@@ -2629,6 +2607,7 @@ async function renderMonth(){
     if(!byMonth[k])byMonth[k]=[]
     if(x.cols)Object.assign(C,x.cols)
     const s=calcSum(x.rows,x.date)||x.summary
+    if(s) applyCalibration(s, billPeriodKey(x.date))
     s.probs = getDayProblems(s, x.rows)
     byMonth[k].push({...s,date:x.date})
   })
@@ -2869,6 +2848,7 @@ async function renderYear(){
   const days=all.filter(x=>toDate(x.date).getFullYear()===curYear).map(x=>{
     if(x.cols)Object.assign(C,x.cols)
     const s = calcSum(x.rows,x.date)||x.summary
+    if(s) applyCalibration(s, billPeriodKey(x.date))
     s.probs = getDayProblems(s, x.rows)
     return{date:x.date,s}
   })
