@@ -1,163 +1,224 @@
-# ⚡ SolarInsight Dashboard
+# SolarInsight Dashboard
 
-> **แดชบอร์ดวิเคราะห์ระบบโซลาร์เซลล์แบบ Offline-First**  
-> ไม่ต้องติดตั้ง · ไม่ต้องมี Server · เปิดไฟล์เดียวใช้ได้เลย
+> Offline-first solar analytics for home hybrid inverter owners.
+> One HTML file. No server. No login. Your inverter data stays in your browser.
 
-[![HTML](https://img.shields.io/badge/HTML-Single_File-orange?style=flat-square&logo=html5)](app.html)
-[![Chart.js](https://img.shields.io/badge/Chart.js-4.4-pink?style=flat-square)](https://www.chartjs.org/)
-[![IndexedDB](https://img.shields.io/badge/Storage-IndexedDB-blue?style=flat-square)](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
-[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+[![HTML](https://img.shields.io/badge/App-Single%20HTML-orange?style=flat-square&logo=html5)](app.html)
+[![Chart.js](https://img.shields.io/badge/Charts-Chart.js%204.4-pink?style=flat-square)](https://www.chartjs.org/)
+[![Storage](https://img.shields.io/badge/Storage-IndexedDB-blue?style=flat-square)](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
 
----
+## What It Is
 
-## 🌟 ทำไมต้องใช้ SolarInsight?
+SolarInsight is a browser-based dashboard for people who want to understand their solar system beyond the default inverter app.
 
-ระบบ Solar ส่วนใหญ่มี App ของตัวเองจากผู้ผลิต แต่มักมีข้อจำกัด:  
-❌ ดูได้แค่ real-time ไม่มี deep analysis  
-❌ ไม่สามารถเปรียบเทียบค่าไฟก่อน-หลังติดได้  
-❌ ต้องอาศัย Cloud ถ้า Server ล่มก็ดูไม่ได้  
-❌ ไม่รองรับการนำเข้าบิลจริงจาก MEA/PEA  
+It turns exported inverter XLSX files and real electricity bills into practical answers:
 
-**SolarInsight แก้ปัญหาทั้งหมดนี้ด้วยไฟล์ HTML ไฟล์เดียว**
+- Is my solar system actually reducing the bill?
+- When does the battery run out?
+- Which PV string is underperforming?
+- Is the inverter getting hot?
+- How much should my monthly bill be after calibration with real MEA/PEA bills?
+- What is the payback period if my current usage pattern continues?
 
----
+The app is built for a real home solar setup, but the structure is generic enough for other hybrid inverter exports with similar columns.
 
-## ✨ ฟีเจอร์หลัก
+## Why This Exists
 
-### 📊 วิเคราะห์หลายมิติ
-| มุมมอง | สิ่งที่เห็นได้ |
-|--------|--------------|
-| **รายวัน** | กราฟพลังงาน 24 ชั่วโมง · อุณหภูมิ · แรงดัน · กระแส |
-| **รายสัปดาห์** | เปรียบเทียบ WoW · String A vs B · Self-sufficiency |
-| **รายเดือน (รอบบิล)** | วิเคราะห์ตามรอบบิลจริง · Calendar Heatmap |
-| **รายปี** | YoY · Production trend · Battery cycle count |
-| **ทั้งหมด** | ROI คืนทุน · Simulation · System health |
-| **วิเคราะห์** | เปรียบเทียบค่าไฟก่อน/หลังติด Solar · Clipping detection |
+Most inverter apps are good at showing live data, but weak at long-term ownership questions.
 
-### 🔑 จุดเด่น
-- **📋 บิลจริง MEA/PEA** — กรอกบิลจริงเพื่อเปรียบเทียบกับ baseline ก่อนติด Solar
-- **🎯 Calibration Factor** — ปรับค่า kWh ให้ตรงกับ meter จริงโดยอัตโนมัติ
-- **🔋 Battery Health** — ติดตาม cycle count, SOC minimum, อุณหภูมิ
-- **⚡ Clipping Detection** — ตรวจจับพลังงานที่สูญเสียเมื่อแบตเต็ม
-- **🌡️ Smart Alerts** — แจ้งเตือน String Imbalance, อุณหภูมิสูง, Voltage ผิดปกติ
-- **💰 ROI Calculator** — คำนวณคืนทุนจากข้อมูลจริง พร้อม Simulation
-- **🗓️ TOU Rate Support** — รองรับอัตรา TOU (On-peak/Off-peak) ของ MEA
-- **📱 Offline-First** — ข้อมูลเก็บใน Browser ไม่ส่งไปที่ไหน
+| Problem | SolarInsight Approach |
+|---|---|
+| Cloud dashboards focus on real-time views | Local daily, weekly, monthly, yearly, and all-time analysis |
+| Electricity bills rarely match inverter estimates | Real bill calibration and K-Factor adjustment |
+| ROI is usually guessed | ROI uses actual imported load and cost data |
+| Battery behavior is hard to read | Battery empty time, SOC trend, and cycle estimation |
+| PV string issues are hidden | String A/B comparison and imbalance detection |
+| Data privacy matters | Data is stored locally in browser IndexedDB |
 
----
+## Key Features
 
-## 🚀 เริ่มใช้งานใน 3 ขั้นตอน
+### Energy Views
 
-### ขั้นตอนที่ 1 — เปิดไฟล์
-```
-เปิด app.html ด้วย Chrome หรือ Edge (แนะนำ Chrome ล่าสุด)
-```
-> ⚠️ ต้องเปิดผ่าน Browser โดยตรง ไม่รองรับการเปิดใน iframe หรือ WebView
+| View | Purpose |
+|---|---|
+| Daily | 24-hour solar, load, grid, battery, SOC, temperature, voltage, and current |
+| Weekly | Week comparison, string production, self-sufficiency, and cost trend |
+| Monthly | Billing-cycle analysis, daily cost heatmap, self-sufficiency heatmap, and grouped charts |
+| Yearly | Month-by-month yearly trend and year-level summaries |
+| All Time | Long-range totals and health patterns |
+| Analysis | ROI, simulation, battery cycle, trend snapshot, and before/after bill comparison |
 
-### ขั้นตอนที่ 2 — ตั้งค่าระบบ
-กดปุ่ม **⚙️ ระบบ** แล้วกรอก:
-- ข้อมูล Inverter / Panel / Battery
-- **วันที่เริ่มใช้ Solar** (สำคัญมาก!)
-- **วันที่เปลี่ยนมิเตอร์ TOU**
-- ต้นทุนการติดตั้ง (สำหรับคำนวณ ROI)
+### Bill And ROI Intelligence
 
-### ขั้นตอนที่ 3 — นำเข้าข้อมูล Inverter
-1. ดาวน์โหลดไฟล์ XLSX จาก **Deye Cloud** (หรือ Inverter App ที่รองรับ)
-2. กดปุ่ม **📁 Inverter Data** แล้วเลือกไฟล์
-3. รอสักครู่ → ข้อมูลจะแสดงผลทันที
+- Real MEA/PEA bill input after solar installation
+- 12-month pre-solar baseline support
+- Before-vs-after monthly bill comparison
+- K-Factor calibration from real bill kWh vs inverter kWh
+- Marked calibrated values using `*`
+- ROI payback using actual imported data
+- Monthly bill target heatmap, currently oriented around a ฿600/month goal
 
----
+### Technical Diagnostics
 
-## 📱 Inverter ที่รองรับ
+- PV String A vs B comparison
+- Battery empty-time detection after meaningful recharge
+- Battery Equivalent Full Cycle (EFC) estimation
+- AC temperature band chart
+- Clipping and potential recovery estimate
+- TOU on-peak/off-peak cost separation
+- Weekend and holiday off-peak handling
 
-| ผู้ผลิต | รุ่น | รูปแบบข้อมูล |
-|---------|------|-------------|
-| **DEYE** | SUN-5K-SG04LP1 และ Series ใกล้เคียง | XLSX จาก Deye Cloud |
-| อื่นๆ | Hybrid Inverter ที่ Export XLSX | ต้องมีคอลัมน์เวลา + kWh |
+## Quick Start
 
-> Inverter ที่ Export ข้อมูล XLSX พร้อมคอลัมน์พลังงาน Solar / Grid / Load สามารถ Map ได้อัตโนมัติ
+1. Download or clone this repository.
+2. Open `app.html` in Chrome or Edge.
+3. Click **ระบบ** and set your system information:
+   - Solar start date
+   - TOU meter start date
+   - Inverter size
+   - Battery size
+   - Electricity rates
+   - Investment cost for ROI
+4. Export an XLSX report from your inverter platform.
+5. Click **inverter data** and import the file.
+6. Open **ประวัติบิล** and add real electricity bills when available.
 
----
+No build step is required.
 
-## 💡 ฟีเจอร์พิเศษ — เปรียบเทียบค่าไฟก่อน/หลัง Solar
+## Supported Data
 
-กดปุ่ม **💰 ประวัติบิล** แล้ว:
-1. กรอก **บิลก่อนติด Solar** (12 เดือนที่แล้วสำหรับ Baseline)
-2. กรอก **บิลจริงจาก MEA/PEA หลังติด** ทุกเดือน
-3. ระบบจะแสดงกราฟเปรียบเทียบ พร้อมยอดประหยัดสะสม
+The app was developed around a DEYE hybrid inverter export from Deye Cloud.
 
-แดชบอร์ดจะแสดง badge **"หลังติด ⚡"** หรือ **"ก่อนติด 📋"** บนบิลแต่ละรายการให้ชัดเจน
+| Source | Status |
+|---|---|
+| DEYE XLSX day report | Supported |
+| MEA/PEA actual bills | Supported by manual input |
+| Other hybrid inverter XLSX exports | Possible if the columns are similar |
 
----
+If your inverter export has time, solar, grid purchase, grid export, load, battery, PV string, SOC, and temperature columns, it is likely adaptable.
 
-## 🛠️ Tech Stack
+## How The Main Calculations Work
 
-```
-Frontend Only — ไม่มี Backend ไม่มี Server
-├── HTML5 / CSS3 / Vanilla JavaScript
-├── Chart.js 4.4        — กราฟทุกประเภท
-├── SheetJS (XLSX)       — อ่านไฟล์ Excel จาก Inverter
-├── IndexedDB            — เก็บข้อมูลใน Browser (persistent)
-└── Google Fonts         — Outfit + JetBrains Mono
-```
+### Electricity Cost
 
-**ขนาดไฟล์**: ~225 KB (HTML เดียว รวมทุกอย่าง)  
-**Dependencies**: โหลดจาก CDN (ต้องมี internet ครั้งแรก)
+TOU cost is calculated from imported grid energy:
 
----
-
-## 📁 โครงสร้างไฟล์
-
-```
-Test/
-├── app.html          ← ไฟล์หลัก (ทุกอย่างอยู่ที่นี่)
-├── README.md         ← คุณกำลังอ่านอยู่
-└── README.ai.md      ← เอกสารสำหรับ AI/Developer
+```text
+OnCost  = OnPeak_kWh  × (OnRate  + Ft) × 1.07
+OffCost = (OffPeak_kWh × (OffRate + Ft) + ServiceFee / 30.4) × 1.07
 ```
 
----
+If a real bill exists, the app calibrates the displayed cost:
 
-## 🔒 Privacy & Security
+```text
+BillRatio = ActualBill / EstimatedBill
+CalibratedDailyCost = RawDailyCost × BillRatio
+```
 
-- **ข้อมูลทั้งหมดอยู่ใน Browser ของคุณ** — ไม่มีการส่งข้อมูลออกไปที่ Server ใดๆ
-- เก็บใน `IndexedDB` ของ Browser เฉพาะเครื่องและ Origin นั้น
-- ต้องการ Internet เฉพาะตอนโหลด CDN ครั้งแรก (Chart.js, SheetJS)
+If no bill exists yet, the app can apply K-Factor:
 
----
+```text
+K_on  = BillOnPeak_kWh  / InverterOnPeak_kWh
+K_off = BillOffPeak_kWh / InverterOffPeak_kWh
+```
 
-## ⚠️ ข้อจำกัดที่ต้องรู้
+The kWh values remain raw inverter data. The `*` marker means the currency value was adjusted by a real bill override or K-Factor projection.
 
-- **Single Browser Origin** — ถ้าเปิดจากหลาย path/URL จะเห็น IndexedDB คนละฐาน
-- **ข้อมูลอยู่ที่ Browser นั้น** — ถ้า Clear browser data จะหายทั้งหมด
-- **วันหยุดราชการ** — ครอบคลุมถึงปี 2027 (ต้องอัปเดต `THAI_HOLIDAYS` ในโค้ดเมื่อมีปีใหม่)
-- **ทดสอบกับ DEYE** — Inverter ยี่ห้ออื่นอาจต้องปรับ Column Mapping
+### ROI
 
----
+ROI uses a no-solar baseline based on the same actual load:
 
-## 🗺️ Roadmap
+```text
+NoSolarCostPerDay = (Load_kWh × (FlatRate + Ft) + ServiceFee / 30.4) × 1.07
+SavingPerDay = max(0, NoSolarCostPerDay - ActualSolarCostPerDay)
+PaybackYears = Investment / (SavingPerDay × 365)
+```
 
-- [ ] Export ข้อมูลเป็น PDF/Excel
-- [ ] Multi-system support (หลายบ้าน)
-- [ ] Notification Alert (Low Battery, High Temp)
-- [ ] วันหยุดราชการ configurable ใน UI
-- [ ] รองรับ Inverter อื่นเพิ่มเติม (Growatt, Solis, etc.)
-- [ ] Progressive Web App (PWA) — ใช้แบบ Offline บน Mobile
+The Analysis tab also shows the day-level formula directly, for example:
 
----
+```text
+฿142/day before solar - ฿55/day after solar = ฿87/day saved
+```
 
-## 🤝 Contributing
+### Before vs After Bill Comparison
 
-Pull Requests ยินดีต้อนรับ! กรุณาอ่าน `README.ai.md` ก่อนเพื่อเข้าใจ Architecture  
-แล้ว open Issue เพื่อพูดคุยก่อน implement
+The before/after chart pairs the same billing month:
 
----
+```text
+Before: May 2025 bill or May baseline
+After : May 2026 real post-solar bill
+```
 
-## 📄 License
+As more real post-solar bills are added, the chart grows month by month until it can show a full 12-month comparison.
 
-MIT License — ใช้ได้อิสระ ทั้งส่วนตัวและเชิงพาณิชย์
+### Battery Cycle
 
----
+Battery usage is estimated with Equivalent Full Cycle (EFC):
 
-<p align="center">
-  Made with ☀️ for solar system owners who want real insights, not just pretty graphs.
-</p>
+```text
+EFC = (Charge_kWh + Discharge_kWh) / (2 × Battery_kWh × 0.9)
+```
+
+This is better than using charge-only energy because it reflects total battery throughput.
+
+### Simulation
+
+The simulation cards are directional estimates, not promises.
+
+| Simulation | Main Idea |
+|---|---|
+| Optimizer | Estimate recoverable imbalance clipping, then assume 50% is practically recovered |
+| Sell to MEA | Add possible sell value from export and estimated clipping |
+| Bigger battery | Estimate how much export/clipping can be shifted into night usage |
+
+## Privacy
+
+SolarInsight is offline-first:
+
+- No backend
+- No account
+- No database server
+- No telemetry
+- Data is stored in your browser using IndexedDB
+
+Important: browser data is local to the browser and file origin. If you clear browser storage, the saved dashboard data can be removed.
+
+## Project Structure
+
+```text
+Solar-Insight/
+├── app.html      # Main application
+├── README.md     # Public project overview
+└── README.ai.md  # Developer and AI handoff notes
+```
+
+## Best Fit
+
+SolarInsight is useful for:
+
+- Home solar owners with battery storage
+- Hybrid inverter users who can export XLSX data
+- People on TOU electricity plans
+- Owners who want to verify the real financial impact of solar
+- Solar installers who want a lightweight local analysis tool for customers
+
+It is not meant to replace official billing records or certified metering.
+
+## Roadmap
+
+- Export summary reports to PDF or Excel
+- Configurable public holidays
+- Better inverter column mapping UI
+- More inverter presets
+- Optional backup/restore for IndexedDB data
+- Progressive Web App packaging
+
+## Contributing
+
+Issues and pull requests are welcome.
+
+For implementation context, see `README.ai.md`.
+
+## License
+
+MIT-style usage is intended, but a formal `LICENSE` file should be added before treating the repository as fully licensed for public reuse.

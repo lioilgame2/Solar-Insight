@@ -213,6 +213,9 @@ body{
 
 /* ANALYSIS */
 .an-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));grid-auto-rows:1fr;gap:14px;margin-bottom:14px}
+.an-grid-flow{grid-auto-rows:auto;align-items:start}
+.an-grid-flow .an-box{height:auto}
+.an-grid-flow .an-box > div:last-child{margin-top:0}
 .an-box{background:var(--surface);border-radius:var(--r);padding:17px;border:1px solid var(--border)}
 .an-ttl{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:11px}
 .an-big{font-size:2.2rem;font-weight:700;line-height:1;font-family:var(--font-num);letter-spacing:-.03em}
@@ -539,7 +542,7 @@ body{
         </div>
       </div>
       <div class="cbox"><div class="ctitle">เวลาที่แบตเตอรี่หมด</div><div id="wSocSummary" class="chart-summary"></div><div class="cwrap-md"><canvas id="wSoc"></canvas></div></div>
-      <div class="cbox"><div class="ctitle">Battery ที่อุณหภูมิสูง</div><div id="wTempSummary" class="chart-summary"></div><div class="cwrap-md"><canvas id="wTemp"></canvas></div></div>
+      <div class="cbox"><div class="ctitle">อุณหภูมิ</div><div id="wTempSummary" class="chart-summary"></div><div class="cwrap-md"><canvas id="wTemp"></canvas></div></div>
       <div class="cbox cwide"><div class="ctitle">Self-Sufficiency อัตราพึ่งพาตัวเอง (%)</div><div id="wSelfSummary" class="chart-summary"></div><div class="cwrap-md"><canvas id="wSelf"></canvas></div></div>
     </div>
   </div>
@@ -550,7 +553,7 @@ body{
   <div id="mEmpty" class="empty"><h2>ต้องการข้อมูลอย่างน้อย 1 วันในรอบบิล</h2></div>
   <div id="mContent" style="display:none">
     <div class="cards" id="mCards" style="margin-bottom:14px"></div>
-    <div class="heatmap-pair">
+    <div class="heatmap-pair" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
       <div class="cbox" style="flex:1">
         <div class="ctitle"><span style="font-size:1.15em">🗓️ พึ่งตัวเอง %</span><br><span style="font-size:0.85em;color:var(--muted);font-weight:400">Calendar Heatmap</span></div>
         <div id="mHeatmap" class="hmap-wrap"></div>
@@ -571,6 +574,10 @@ body{
         <div class="hmap-legend" style="justify-content:center">
           <div class="hmap-leg-c" style="background:#ef4444" title="มีปัญหา"></div><span style="margin-left:6px">พบปัญหา</span>
         </div>
+      </div>
+      <div class="cbox" style="flex:1;min-width:250px;">
+        <div class="ctitle"><span style="font-size:1.15em">💸 ค่าไฟรายวัน</span><br><span style="font-size:0.85em;color:var(--muted);font-weight:400">Calendar Heatmap</span></div>
+        <div id="mCostHeatmap" class="hmap-wrap"></div>
       </div>
     </div>
     <div class="cgrid">
@@ -611,7 +618,7 @@ body{
         </div>
       </div>
       <div class="cbox"><div class="ctitle">เวลาที่แบตเตอรี่หมด</div><div id="mSocSummary" class="chart-summary"></div><div class="cwrap-md"><canvas id="mSoc"></canvas></div></div>
-      <div class="cbox"><div class="ctitle">Battery ที่อุณหภูมิสูง</div><div id="mTempSummary" class="chart-summary"></div><div class="cwrap-md"><canvas id="mTemp"></canvas></div></div>
+      <div class="cbox"><div class="ctitle">อุณหภูมิ (AC)</div><div id="mTempSummary" class="chart-summary"></div><div class="cwrap-md"><canvas id="mTemp"></canvas></div></div>
       <div class="cbox cwide"><div class="ctitle">Self-Sufficiency อัตราพึ่งพาตัวเอง (%)</div><div id="mSelfSummary" class="chart-summary"></div><div class="cwrap-md"><canvas id="mSelf"></canvas></div></div>
     </div>
   </div>
@@ -683,7 +690,7 @@ body{
         </div>
       </div>
       <div class="cbox"><div class="ctitle">เวลาที่แบตเตอรี่หมด</div><div id="ySocSummary" class="chart-summary"></div><div class="cwrap-md"><canvas id="ySoc"></canvas></div></div>
-      <div class="cbox"><div class="ctitle">BATTERY ที่อุณหภูมิสูง</div><div id="yTempSummary" class="chart-summary"></div><div class="cwrap-md"><canvas id="yTemp"></canvas></div></div>
+      <div class="cbox"><div class="ctitle">อุณหภูมิ (AC)</div><div id="yTempSummary" class="chart-summary"></div><div class="cwrap-md"><canvas id="yTemp"></canvas></div></div>
       <div class="cbox cwide"><div class="ctitle">Self-Sufficiency รายเดือน (%)</div><div id="ySelfSummary" class="chart-summary"></div><div class="cwrap-md"><canvas id="ySelf"></canvas></div></div>
     </div>
   </div>
@@ -718,7 +725,7 @@ body{
         </div>
       </div>
       <div class="cbox"><div class="ctitle">เวลาที่แบตเตอรี่หมด</div><div id="tSocSummary" class="chart-summary"></div><div class="cwrap-md"><canvas id="tSoc"></canvas></div></div>
-      <div class="cbox"><div class="ctitle">Battery ที่อุณหภูมิสูง</div><div id="tTempSummary" class="chart-summary"></div><div class="cwrap-md"><canvas id="tTemp"></canvas></div></div>
+      <div class="cbox"><div class="ctitle">อุณหภูมิ (AC)</div><div id="tTempSummary" class="chart-summary"></div><div class="cwrap-md"><canvas id="tTemp"></canvas></div></div>
       <div class="cbox cwide"><div class="ctitle">Self-Sufficiency สัดส่วนพึ่งพาตัวเอง (%)</div><div id="tSelfSummary" class="chart-summary"></div><div class="cwrap-md"><canvas id="tSelf"></canvas></div></div>
     </div>
   </div>
@@ -763,6 +770,13 @@ body{
           <div id="trendRows" style="font-size:.83rem; margin-top: 12px !important;"></div>
         </div>
       </div>
+      <div class="an-grid an-grid-flow" style="margin-bottom: 20px;">
+        <div class="an-box">
+          <div class="an-ttl">📉 เปรียบเทียบค่าไฟ (ก่อน vs หลังติดโซลาร์)</div>
+          <div id="histSummary" style="font-size:0.85rem;margin-bottom:8px;"></div>
+          <div class="cwrap-sm" style="max-height:250px; margin-top: 0 !important;"><canvas id="histChart"></canvas></div>
+        </div>
+      </div>
       <div class="an-grid" style="margin-bottom: 20px;">
         <div class="an-box">
           <div class="an-ttl" title="คำนวณการคืนทุนจากค่าไฟที่ประหยัดได้ต่อปี เทียบกับเงินลงทุนระบบ (Solar + ค่าเปลี่ยนมิเตอร์ TOU)">💰 ROI / คุ้มทุน (ประมาณการ) <span style="font-size:0.8rem;color:var(--muted);cursor:help">ℹ️</span></div>
@@ -778,6 +792,9 @@ body{
             <div class="an-row"><span>เริ่มใช้ระบบ</span><b id="sysStartRow">10 เม.ย. 2569</b></div>
             <div class="an-row"><span>อายุระบบ</span><b id="sysAge">-</b></div>
             <div class="an-row"><span title="คิดจากยอดประหยัดสะสมทั้งหมด หารด้วยจำนวนวันของข้อมูลทั้งหมด">ประหยัดเฉลี่ย/วัน <span style="font-size:0.8rem;color:var(--muted);cursor:help">ℹ️</span></span><b id="roiPerDay">-</b></div>
+            <div class="an-row"><span>ก่อน Solar เฉลี่ย/วัน</span><b id="roiBaseDay">-</b></div>
+            <div class="an-row"><span>หลัง Solar เฉลี่ย/วัน</span><b id="roiActualDay">-</b></div>
+            <div class="an-row"><span>วิธีคิด / วัน</span><b id="roiFormulaDay">-</b></div>
             <div class="an-row"><span title="คิดจากประหยัดเฉลี่ย/วัน คูณด้วย 30.4 วัน (ค่าเฉลี่ยจำนวนวันต่อเดือน)">ประมาณการ/เดือน <span style="font-size:0.8rem;color:var(--muted);cursor:help">ℹ️</span></span><b id="roiPerMonth">-</b></div>
             <div class="an-row"><span title="คิดจากประหยัดเฉลี่ย/วัน คูณด้วย 365 วัน">ประมาณการ/ปี <span style="font-size:0.8rem;color:var(--muted);cursor:help">ℹ️</span></span><b id="roiPerYear">-</b></div>
           </div>
@@ -811,45 +828,85 @@ body{
         </div>
       </div>
 
-      <div class="an-grid" style="margin-bottom: 20px;">
-        <div class="an-box">
-          <div class="an-ttl">📉 เปรียบเทียบค่าไฟ (ก่อน vs หลังติดโซลาร์)</div>
-          <div id="histSummary" style="font-size:0.85rem;margin-bottom:8px;"></div>
-          <div class="cwrap-sm" style="max-height:250px; margin-top: 0 !important;"><canvas id="histChart"></canvas></div>
-        </div>
+      <div class="an-grid an-grid-flow" style="margin-bottom: 20px;">
         <div class="an-box" style="background: rgba(56, 189, 248, 0.05); grid-column: 1 / -1;">
           <div class="an-ttl" style="color:var(--text);border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:12px;">📖 หลักการคำนวณ (Glossary)</div>
           <div style="font-size:0.85rem;line-height:1.6;color:var(--muted);display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:16px;margin-top:0 !important;">
             <div>
-              <b style="color:var(--text)">Trend Snapshot:</b><br>
-              เปรียบเทียบข้อมูลสัปดาห์นี้ vs สัปดาห์ก่อนหน้า เพื่อดูแนวโน้มการผลิตและใช้ไฟ
+              <b style="color:var(--text)">ค่าไฟพื้นฐาน (Raw Cost):</b><br>
+              <b>TOU:</b> OnCost = On_kWh × (OnRate + Ft) × 1.07<br>
+              OffCost = (Off_kWh × (OffRate + Ft) + ServiceFee ÷ 30.4) × 1.07<br>
+              <b>ตัวอย่าง:</b> On 10 kWh → 10 × (5.7982 + 0.0972) × 1.07 = ฿63.08<br>
+              Off 20 kWh → (20 × (2.6369 + 0.0972) + 24.62 ÷ 30.4) × 1.07 = ฿59.06<br>
+              <i>kWh ที่โชว์ยังเป็นค่าจาก inverter; เฉพาะค่าเงินบาทที่มี * จะถูก override หรือ apply K-Factor</i>
             </div>
             <div>
-              <b style="color:var(--text)">Potential P90 & Clipping:</b><br>
-              ระบบกวาดข้อมูล <b>"ทั้งหมดที่คุณอัปโหลด"</b> มาหากำลังผลิตสูงสุดที่น่าเชื่อถือ (Percentile ที่ 90 ตัดความผิดปกติ 10% บนทิ้ง) เป็นเส้น <b>Potential P90</b> 
-              หากการผลิตจริงต่ำกว่าเส้นนี้ในขณะที่ <b>"แบตเต็ม"</b> หรือ <b>"แบตชาร์จชนลิมิต (Max Charge Ampere)"</b> ระบบจะถือว่าเกิด <b>Clipping</b> (พลังงานทิ้งเปล่า) <br>
-              <i style="font-size:0.9em; opacity:0.8;">* มูลค่า <b>"ขายไฟ(if)"</b> จะคิดจาก <b>(P90 - ผลิตจริง)</b> แต่ตั้งเพดานดึงกลับได้สูงสุดไม่เกิน 1.5 kW/ชั่วโมง และรวมทั้งวันไม่เกิน 5 kWh เพื่อป้องกันตัวเลขเพี้ยนในวันฝนตก/เมฆมาก</i>
-            </div>
-            <div>
-              <b style="color:var(--text)">🔮 Simulation (จำลองผลลัพธ์):</b><br>
-              <ul style="padding-left: 18px; margin: 4px 0 0 0;">
-                <li><b>+ ติด Optimizer:</b> สมมติว่าดึงพลังงาน Clipping (ที่เกิดจาก Imbalance) กลับมาใช้ได้ 50%</li>
-                <li><b>+ ขายไฟให้ MEA:</b> เอาพลังงาน Export ปกติ มารวมกับ <b>"พลังงาน Clipping (สมมติว่าปลดกันย้อน)"</b> แล้วคูณเรทรับซื้อ</li>
-                <li><b>+ แบตเตอรี่เพิ่ม:</b> สมมติว่าเก็บ Clipping ที่เหลือไปใส่แบตก้อนใหม่ เพื่อเอามาใช้แทนไฟ On-Peak ช่วงหัวค่ำ</li>
-              </ul>
+              <b style="color:var(--text)">ค่าไฟก่อนมี Solar (No-solar baseline):</b><br>
+              FullCost/day = (Load_kWh × (FlatRate + Ft) + ServiceFee ÷ 30.4) × 1.07<br>
+              Saving/day = max(0, FullCost/day - ActualCost/day)<br>
+              <b>ตัวอย่าง:</b> Load 20 kWh, Flat 4.4217, Ft 0.0972<br>
+              (20 × 4.5189 + 0.81) × 1.07 = ฿97.60/วัน<br>
+              ถ้าวันนั้นค่าไฟจริงหลัง solar = ฿35 → ประหยัด = ฿62.60/วัน
             </div>
             <div>
               <b style="color:var(--text)">ROI / จุดคุ้มทุน:</b><br>
-              คำนวณจากการประหยัดไฟ (On-Peak + Off-Peak) เทียบกับเงินลงทุน (Solar + TOU - ลดหย่อนภาษี)<br><br>
-              <b style="color:var(--text)">ประหยัดเฉลี่ย/วัน:</b><br>
-              คิดจากผลรวมเงินที่ประหยัดได้ทั้งหมด (Total Saving) หารด้วย "จำนวนวันจริง" ที่มีข้อมูลในระบบ
+              Investment = SolarCost + TOUCost - TaxDeduction<br>
+              PaybackYears = Investment ÷ (Saving/day × 365)<br>
+              MonthlySaving = Saving/day × 30.4<br>
+              <b>ตัวอย่าง:</b> Investment ฿152,350 และ Saving ฿80/วัน<br>
+              Payback = 152,350 ÷ (80 × 365) = 5.2 ปี<br>
+              <i>สูตรนี้เป็นประมาณการจากโหลดจริง ไม่ใช่การเทียบบิลเก่าจริง รายการ “ก่อน vs หลังติด solar” จะใช้บิลจริง/ฐานย้อนหลังถ้ามีข้อมูล</i>
+            </div>
+            <div>
+              <b style="color:var(--text)">🔮 Simulation: + ติด Optimizer</b><br>
+              RecoverableWh = max(0, min(max(PV1, PV2) × 2, InverterW) - SolarW) × Δt<br>
+              OptimizerWh = RecoverableWh × 50%<br>
+              Saving = min(OptimizerWh, GridImportWh) × ค่าไฟช่วงเวลานั้น<br>
+              <b>ตัวอย่าง:</b> ถ้า recoverable 4 kWh/วัน → ใช้ได้จริง 2 kWh<br>
+              และแทนไฟ on-peak ฿6.31/kWh ได้ → 2 × 6.31 × 30.4 = ฿384/เดือน
+            </div>
+            <div>
+              <b style="color:var(--text)">🔮 Simulation: + ขายไฟให้ MEA</b><br>
+              SellValue/day = (Export_kWh + EstimatedClipping_kWh) × SellRate<br>
+              PaybackWithSell = Investment ÷ (Saving/year + SellValue/year)<br>
+              <b>ตัวอย่าง:</b> Export+clip 3 kWh/วัน, SellRate ฿2.20/kWh<br>
+              SellValue/year = 3 × 2.20 × 365 = ฿2,409/ปี<br>
+              <i>ค่าที่โชว์คือ “จุดคุ้มทุนใหม่” ถ้าขายไฟได้ ไม่ใช่เงินประหยัดต่อเดือน</i>
+            </div>
+            <div>
+              <b style="color:var(--text)">🔮 Simulation: + แบตเตอรี่ 10 → 16 kWh</b><br>
+              ExtraUsableBatt = 6 × (1 - 0.21) = 4.74 kWh<br>
+              Storeable = min(Export_kWh + 2 kWh, ExtraUsableBatt)<br>
+              BatterySaving/day = min(Storeable, NightImport_kWh) × OffPeakRateWithVAT<br>
+              <b>ตัวอย่าง:</b> Export 3, NightImport 4 kWh<br>
+              min(3+2, 4.74, 4) × (2.6369+0.0972) × 1.07 = ฿11.70/วัน<br>
+              <i>ข้อนี้เป็น simulation หยาบ เพราะยังไม่ได้จำลอง SOC รายชั่วโมงของแบตก้อนใหม่จริง</i>
+            </div>
+            <div>
+              <b style="color:var(--text)">Potential P90 & Clipping:</b><br>
+              Potential P90 = กำลังผลิตระดับ Percentile 90 จากข้อมูลทั้งหมดที่อัปโหลด<br>
+              ClippingWh = min(max(0, P90 - ActualSolar), 1.5 kW) × Δt และจำกัดทั้งวันไม่เกิน 5 kWh<br>
+              <b>ตัวอย่าง:</b> P90 4.8 kW, ผลิตจริง 3.6 kW นาน 30 นาที<br>
+              Clipping = min(1.2, 1.5) × 0.5 = 0.6 kWh<br>
+              เงื่อนไขจะนับเมื่อแบตเต็ม หรือแบตชาร์จชนลิมิต เพื่อกันการนับวันเมฆมากผิดเป็น clipping
+            </div>
+            <div>
+              <b style="color:var(--text)">Battery Cycle (EFC):</b><br>
+              EFC/day = (Charge_kWh + Discharge_kWh) ÷ (2 × Battery_kWh × 0.9)<br>
+              <b>ตัวอย่าง Jun 1:</b> Charge 5.8, Discharge 4.5, Battery 10.24 kWh<br>
+              (5.8 + 4.5) ÷ (2 × 10.24 × 0.9) = 0.559 cycle<br>
+              <i>EFC = Equivalent Full Cycle หรือรอบใช้งานเทียบเท่าเต็มหนึ่งรอบ ใช้วัดการเสื่อมแบตคร่าว ๆ</i>
             </div>
             <div>
               <b style="color:var(--text)">⚖️ Real Bill Calibration (ปรับจูนบิลค่าไฟ):</b><br>
-              <ul style="padding-left: 18px; margin: 4px 0 0 0;">
-                <li><b>รอบที่มีบิลจริง:</b> ระบบนำยอดเงินรวม (บาท) จากบิลจริงมากระจายลงในแต่ละวันตามสัดส่วนการใช้พลังงาน ทำให้ยอดรวมรายเดือนตรงบิล 100% (คำนวณรวมค่าบริการและ VAT แล้ว)</li>
-                <li><b>รอบที่บิลยังไม่มา:</b> ระบบประเมินค่าไฟโดยใช้ <b>K-Factor</b> (ค่าความคลาดเคลื่อนระหว่างอินเวอร์เตอร์กับมิเตอร์การไฟฟ้า) จากบิลย้อนหลัง 3 เดือน เพื่อคาดการณ์ค่าไฟล่วงหน้าให้แม่นยำที่สุด</li>
-              </ul>
+              EstimatedBill = Σ RawCost(day, BillFt)<br>
+              BillRatio = ActualBill ÷ EstimatedBill<br>
+              CalibratedCost(day) = RawCost(day, BillFt) × BillRatio<br>
+              K_on = BillOn_kWh ÷ InverterOn_kWh, K_off = BillOff_kWh ÷ InverterOff_kWh<br>
+              <b>ตัวอย่าง:</b> บิลจริง ฿900 แต่ app ประเมิน ฿1,000 → Ratio 0.90<br>
+              วัน raw ฿40 จะโชว์ calibrated ฿36 และมี * กำกับ<br>
+              ถ้ายังไม่มีบิลจริง ระบบใช้ K-Factor ล่าสุดหรือค่าเฉลี่ย 3 บิลล่าสุดที่แกว่งไม่เกิน 0.10 เพื่อประเมินค่าไฟล่วงหน้า<br>
+              <i>รอบบิลควรมีข้อมูลรายวันครบพอสมควร ไม่อย่างนั้นยอดรวมอาจตรงบิล แต่รายวันอาจกระจายคลาดเคลื่อน</i>
               <div id="activeKDisplay" style="margin-top:8px;font-size:0.75rem;background:rgba(255,255,255,0.05);padding:6px;border-radius:4px;border:1px solid rgba(255,255,255,0.1)">กำลังคำนวณ...</div>
             </div>
           </div>
@@ -923,6 +980,18 @@ body{
 
     <!-- Year analysis -->
     <div id="aPaneYear" style="display:none">
+      <div class="an-grid">
+        <div class="an-box">
+          <div class="an-ttl">📈 YoY ค่าไฟ</div>
+          <div class="an-big" id="yoyMain">-<span style="font-size:1rem;font-family:var(--font-ui)">%</span></div>
+          <div class="an-sub" id="yoySub">เทียบเดือนล่าสุดกับเดือนเดียวกันในปีก่อนหน้า YoY</div>
+          <div style="margin-top:12px" id="yoyRows"></div>
+        </div>
+        <div class="an-box">
+          <div class="an-ttl">🌿 Self-Sufficiency Trend</div>
+          <div class="cwrap-sm" style="margin-top:10px"><canvas id="selfTrendChart"></canvas></div>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -1108,6 +1177,29 @@ function fmtD(s){const d=toDate(s);return `${d.getDate()} ${TH_M[d.getMonth()]} 
 function fmtDF(s){const d=toDate(s);return `${TH_D[d.getDay()]}ที่ ${d.getDate()} ${TH_M[d.getMonth()]} ${d.getFullYear()+543}`}
 function fn(v,d=1){return(v==null||isNaN(+v))?'—':(+v).toFixed(d)}
 function tMin(s){const[h,m]=(s||'00:00').split(':').map(Number);return h*60+m}
+const SOC_EMPTY_THRESHOLD = 21
+const SOC_RECHARGED_THRESHOLD = SOC_EMPTY_THRESHOLD + 4
+const MONTHLY_BILL_TARGET = 600
+const DAILY_BILL_TARGET = MONTHLY_BILL_TARGET / 30.4
+function batteryEmptyTime(s){
+  if(!s)return ''
+  return s.socEmptyT || ((s.socMin||100)<=SOC_EMPTY_THRESHOLD ? s.socMinT : '')
+}
+function batteryEmptyDec(t){
+  if(!t||t==='—'||t==='-')return null
+  const [h,m]=t.split(':').map(Number)
+  if(isNaN(h)||isNaN(m))return null
+  let d=h+m/60
+  if(d>12)d-=24
+  return d
+}
+function bandVal(o,k){
+  const b=o&&o.bands?o.bands:{}
+  return b[k]||b[k.replace('–','-')]||0
+}
+function tempBandVal(s,k){
+  return bandVal(s&&s.tempT?s.tempT:s&&s.dcT,k)
+}
 // แปลง minutes → "x ชม. y น."
 function fmtMin(m){if(m<1)return'<1น.';const h=Math.floor(m/60),mn=m%60;if(h===0)return mn+'น.';if(mn===0)return h+'ชม.';return`${h}ชม. ${mn}น.`}
 function lastItem(arr,offset=1){return arr&&arr.length>=offset?arr[arr.length-offset]:null}
@@ -1275,7 +1367,9 @@ function computeCycleCalibrations(validBills, P) {
               imp: 0,
               onPeakImp: 0,
               offPeakImp: 0,
-              invCostTotal: 0
+              invBaseNoFt: 0,
+              invFtKwh: 0,
+              daysInCycle: 0
           };
       }
       cycleSums[cycleKey].days++;
@@ -1293,23 +1387,24 @@ function computeCycleCalibrations(validBills, P) {
       const cEnd = new Date(cy, cm - 1, bd - 1);
       const daysInCycle = Math.round((cEnd - cStart) / (1000 * 60 * 60 * 24)) + 1;
       
-      const srvPerDay = P.srv / daysInCycle;
-      const vat = 1.07;
-      
       const isTou = touActive(x.date);
       const isOffDay = d.getDay()===0 || d.getDay()===6 || THAI_HOLIDAYS.includes(x.date);
       
-      let energyCost = 0;
+      let baseNoFt = 0, ftKwh = 0;
       if (isTou && !isOffDay) {
-          energyCost = (onPeakImp * (P.on + P.ft)) + (offPeakImp * (P.off + P.ft));
+          baseNoFt = (onPeakImp * P.on) + (offPeakImp * P.off);
+          ftKwh = onPeakImp + offPeakImp;
       } else if (isTou && isOffDay) {
-          energyCost = (offPeakImp * (P.off + P.ft));
+          baseNoFt = offPeakImp * P.off;
+          ftKwh = offPeakImp;
       } else {
-          energyCost = ((orig.imp || offPeakImp) * (P.flat + P.ft));
+          const flatKwh = orig.imp || offPeakImp;
+          baseNoFt = flatKwh * P.flat;
+          ftKwh = flatKwh;
       }
-      
-      const dayCost = (energyCost + srvPerDay) * vat;
-      cycleSums[cycleKey].invCostTotal += dayCost;
+      cycleSums[cycleKey].invBaseNoFt += baseNoFt;
+      cycleSums[cycleKey].invFtKwh += ftKwh;
+      cycleSums[cycleKey].daysInCycle = daysInCycle;
    }
    
    // 2. Match validBills to compute Ratio and K-factors
@@ -1319,17 +1414,20 @@ function computeCycleCalibrations(validBills, P) {
        const sum = cycleSums[cycleKey];
        
        if (sum && sum.days > 0) {
-           const realCost = b.cost !== undefined && b.cost !== '' ? parseFloat(b.cost) : null;
+           const parsedCost = b.cost !== undefined && b.cost !== '' ? parseFloat(b.cost) : NaN;
+           const realCost = Number.isFinite(parsedCost) ? parsedCost : null;
+           const billFt = b.ft !== undefined && !isNaN(parseFloat(b.ft)) ? parseFloat(b.ft) : P.ft;
+           const invCostTotal = (sum.invBaseNoFt + (sum.invFtKwh * billFt) + (P.srv / (sum.daysInCycle || 30.4) * sum.days)) * 1.07;
            let ratio = 1;
            let isZeroCost = false;
            let avgDailyCost = 0;
            
            if (realCost !== null) {
-               if (sum.invCostTotal === 0) {
+               if (invCostTotal === 0) {
                    isZeroCost = true;
                    avgDailyCost = realCost / sum.days;
                } else {
-                   ratio = realCost / sum.invCostTotal;
+                   ratio = realCost / invCostTotal;
                }
            }
            
@@ -1339,13 +1437,15 @@ function computeCycleCalibrations(validBills, P) {
            if (b.offPeakKwh !== undefined && sum.offPeakImp > 0) kF = parseFloat(b.offPeakKwh) / sum.offPeakImp;
            
            result[cycleKey] = {
-               hasBill: true,
+               hasBill: realCost !== null,
                ratio: ratio,
                isZeroCost: isZeroCost,
                avgDailyCost: avgDailyCost,
                kNormal: kN,
                kOn: kO,
                kOff: kF,
+               ft: billFt,
+               coverage: sum.days / (sum.daysInCycle || sum.days || 1),
                billObj: b
            };
            kHistory.push({ y: b.y, m: b.m, kN, kO, kF, cycleKey });
@@ -1412,15 +1512,15 @@ function applyCalibration(s, dateStr) {
   const isTou = touActive(dateStr);
   const isOffDay = d.getDay()===0 || d.getDay()===6 || THAI_HOLIDAYS.includes(dateStr);
   
-  const baseCostCalc = (k_n, k_o, k_f) => {
+  const baseCostCalc = (k_n, k_o, k_f, ft=P.ft) => {
       let eOn = 0, eOff = 0;
       if (isTou && !isOffDay) {
-          eOn = orig.onPeakImp * k_o * (P.on + P.ft);
-          eOff = orig.offPeakImp * k_f * (P.off + P.ft);
+          eOn = orig.onPeakImp * k_o * (P.on + ft);
+          eOff = orig.offPeakImp * k_f * (P.off + ft);
       } else if (isTou && isOffDay) {
-          eOff = orig.offPeakImp * k_f * (P.off + P.ft);
+          eOff = orig.offPeakImp * k_f * (P.off + ft);
       } else {
-          eOff = (orig.imp || orig.offPeakImp) * k_n * (P.flat + P.ft);
+          eOff = (orig.imp || orig.offPeakImp) * k_n * (P.flat + ft);
       }
       return {
           cOn: eOn * vat,
@@ -1437,7 +1537,7 @@ function applyCalibration(s, dateStr) {
           s.costOn = 0; s.costOff = 0; s.costTotal = cal.avgDailyCost;
           s.isBilledOverride = true;
       } else {
-          const raw = baseCostCalc(1, 1, 1);
+          const raw = baseCostCalc(1, 1, 1, cal.ft ?? P.ft);
           s.costOn = raw.cOn * cal.ratio;
           s.costOff = raw.cOff * cal.ratio;
           s.costTotal = raw.cTotal * cal.ratio;
@@ -1619,17 +1719,23 @@ function calcSum(rows, date){
   const pImp=peak.length?Math.max(0,nv(peak[peak.length-1],C.purchase)-nv(peak[0],C.purchase)):0
   const pLoad=peak.length?Math.max(0,nv(peak[peak.length-1],C.loadK)-nv(peak[0],C.loadK)):0
 
-  let socMin=Infinity,socMinT=''
+  let socMin=Infinity,socMinT='',socEmptyT='',socStartEmptyT='',socWasRecharged=false
   let clipRows=0;
   rows.forEach(r=>{
     const s=nv(r,C.soc);
     if(s>0&&s<socMin){socMin=s;socMinT=tStr(r)}
+    if(s>=SOC_RECHARGED_THRESHOLD)socWasRecharged=true
+    else if(s>0&&s<=SOC_EMPTY_THRESHOLD){
+      if(socWasRecharged&&!socEmptyT)socEmptyT=tStr(r)
+      else if(!socWasRecharged&&!socStartEmptyT)socStartEmptyT=tStr(r)
+    }
     
     const battAmp = CFG.sys.battAmp || 48;
     const maxChargeW = battAmp * 51.2;
     if(nv(r,C.solar)>200 && ((s>=95 && nv(r,C.batt)>-100) || (nv(r,C.batt) <= -(maxChargeW - 150)))) clipRows++;
   })
   if(socMin===Infinity)socMin=0
+  if(!socEmptyT)socEmptyT=socStartEmptyT
 
   const arr=k=>rows.map(r=>nv(r,k)).filter(v=>v>0)
   const mx=a=>a.length?Math.max(...a):0
@@ -1652,7 +1758,21 @@ function calcSum(rows, date){
     })
     return out
   }
+  const tempBands=(cols,specs)=>{
+    const active=cols.filter(Boolean)
+    const out={}
+    specs.forEach(([lo,hi])=>{
+      const key=hi?`${lo}–${hi}°C`:`>${lo}°C`
+      out[key]=Math.round(rows.filter(r=>{
+        const vals=active.map(col=>nv(r,col)).filter(v=>v>0)
+        const v=vals.length?Math.max(...vals):0
+        return hi?(v>=lo&&v<hi):v>=lo
+      }).length*intv)
+    })
+    return out
+  }
   const aBms=arr(C.bmsT),aBat=arr(C.batT),aDc=arr(C.dcT),aAc=arr(C.acT)
+  const aTempMax=rows.map(r=>Math.max(nv(r,C.batT),nv(r,C.dcT),nv(r,C.acT))).filter(v=>v>0)
 
   // voltage / current stats (optional columns)
   const vf=(col,lo=0)=>col?rows.map(r=>parseFloat(r[col])||0).filter(v=>v>lo):[]
@@ -1669,11 +1789,12 @@ function calcSum(rows, date){
     self:load>0?Math.min(100,Math.max(0,(load-imp)/load*100)):0,
     selfP:pLoad>0?Math.min(100,Math.max(0,(pLoad-pImp)/pLoad*100)):0,
     chg:nv(last,C.chgK),dis:nv(last,C.disK),
-    socS:nv(first,C.soc),socE:nv(last,C.soc),socMin,socMinT,
+    socS:nv(first,C.soc),socE:nv(last,C.soc),socMin,socMinT,socEmptyT,
     bmsT:{min:mn(aBms),avg:av(aBms),max:mx(aBms),bands:bands(C.bmsT,[[40,45],[45,null]])},
     batT:{min:mn(aBat),avg:av(aBat),max:mx(aBat),bands:bands(C.batT,[[40,45],[45,null]])},
     dcT: {min:mn(aDc), avg:av(aDc), max:mx(aDc), bands:bands(C.dcT, [[45,50],[50,55],[55,60],[60,null]])},
     acT: {min:mn(aAc), avg:av(aAc), max:mx(aAc), bands:bands(C.acT, [[45,50],[50,55],[55,60],[60,null]])},
+    tempT:{min:mn(aTempMax),avg:av(aTempMax),max:mx(aTempMax),bands:tempBands([C.batT,C.dcT,C.acT],[[45,50],[50,55],[55,60],[60,null]])},
     // voltage / current (null ถ้าไม่มีคอลัมน์)
     acV:voltStat(aAcV),gridV:voltStat(aGridV),
     battV:voltStat(aBattV),battA:voltStat(aBattAabs),
@@ -1881,6 +2002,7 @@ async function refresh(){
     ['Weekly',()=>renderWeek(cur)],
     ['Monthly',()=>renderMonth()],
     ['Yearly',()=>renderYear()],
+    ['All Time',()=>renderAllTime()],
     ['Analysis',()=>renderAnalysis()],
   ]){
     try{await fnc()}
@@ -1975,6 +2097,20 @@ function switchTab(t){
   if(document.getElementById('tabDateNavY')) document.getElementById('tabDateNavY').style.display=t==='Y'?'flex':'none';
   const periodRow=document.getElementById('periodSelectRow');
   if(periodRow) periodRow.style.display=(t==='D'||t==='W'||t==='M'||t==='Y')?'':'none'
+  renderVisibleTab(t).catch(e=>{
+    console.error('Tab render failed:',e)
+    const importEl=document.getElementById('importStatus')
+    if(importEl)importEl.textContent='โหลดกราฟแท็บนี้ไม่สำเร็จ'
+  })
+}
+async function renderVisibleTab(t){
+  if(!dates.length)return
+  if(t==='D')return renderDay(cur)
+  if(t==='W')return renderWeek(curWeekStart||cur)
+  if(t==='M')return renderMonth()
+  if(t==='Y')return renderYear()
+  if(t==='T')return renderAllTime()
+  if(t==='A')return renderAnalysis()
 }
 let analysisPeriod='overview'
 function switchAnalysis(p){
@@ -2065,7 +2201,7 @@ async function renderDay(date){
   const dynSellKwh = (s.exp || 0) + (hAnalysis.totalClipped || 0);
   const dynSellCost = dynSellKwh * getP().sell;
   set('cSellKwh',fn(dynSellKwh));set('cSellCost',fn(dynSellCost,2));set('cSellAvg', '')
-  const ovStr = (s.isBilledOverride || s.isProjectedOverride) ? '<span style="color:#ef4444" title="Calibrated">*</span>' : '';
+  const ovStr = s.isBilledOverride ? '<span style="color:#ef4444" title="ปรับตามบิลจริง">*</span>' : (s.isProjectedOverride ? '<span style="color:#ef4444" title="ประเมินด้วย K-Factor">*</span>' : '');
   const setHtml=(id,v)=>{const el=document.getElementById(id);if(el)el.innerHTML=v}
   setHtml('cLblOn', '⚡ On-peak ซื้อ');
   setHtml('cLblOff', '🌙 Off-peak ซื้อ');
@@ -2074,7 +2210,7 @@ async function renderDay(date){
   set('cOnImp',fn(s.onPeakImp));set('cOnCost',fn(s.costOn,2)+ovStr);set('cOnAvg', '')
   set('cOffImp',fn(s.offPeakImp));set('cOffCost',fn(s.costOff,2)+ovStr);set('cOffAvg', '')
   set('cTotalImp',fn(s.imp));set('cTotalCost',fn(s.costTotal,2)+ovStr);set('cTotalAvg', '')
-  set('cSocMin',fn(s.socMin,0));set('cSocMinT',s.socMinT||'—')
+  set('cSocMin',fn(s.socMin,0));set('cSocMinT',batteryEmptyTime(s)||'—')
   set('cChg',fn(s.chg));set('cDis',fn(s.dis))
   set('cSelf',fn(s.self,0));set('cSelfP',fn(s.selfP,0))
 
@@ -2321,11 +2457,6 @@ async function saveHistBills() {
     delete actualBills[i].kwh;
     delete actualBills[i].serviceFee;
     
-    // Compute K Factors immediately
-    const factors = calcBillKFactors(actualBills[i]);
-    actualBills[i].kNormal = factors.kNormal;
-    actualBills[i].kOn = factors.kOn;
-    actualBills[i].kOff = factors.kOff;
   }
   actualBills = actualBills.filter(b=>b.y && b.m);
   
@@ -2377,8 +2508,9 @@ function renderHistROI(days) {
   const allYmKeys = Array.from(new Set([...Object.keys(postSolarActualCost)])).sort();
   
   const lbls = [];
-  const dsHist = [];
-  const dsAct = [];
+  const chartLabels = [];
+  const chartValues = [];
+  const chartColors = [];
   let totalSaved = 0;
 
   allYmKeys.forEach(ym => {
@@ -2388,6 +2520,7 @@ function renderHistROI(days) {
     // --- Grey bar: "ก่อนติด" baseline ---
     // Priority: pre-solar actual bill with same month, then 12-month generic baseline
     let histCost = null;
+    let histLabel = ['ก่อน', TH_M[m-1]];
     const preSolarActuals = actualBills.filter(b => {
       if(b.m !== m || !b.cost) return false;
       const endStr = `${b.y}-${String(b.m).padStart(2,'0')}-${String(bd-1).padStart(2,'0')}`;
@@ -2396,10 +2529,12 @@ function renderHistROI(days) {
     if (preSolarActuals.length > 0) {
       preSolarActuals.sort((a,b) => b.y - a.y);
       histCost = parseFloat(preSolarActuals[0].cost);
+      histLabel = ['ก่อน', `${TH_M[m-1]} ${(preSolarActuals[0].y+543).toString().substring(2)}`];
     } else {
       const hist = histBills.find(x => x.m == m);
       if (hist && hist.cost) {
         histCost = parseFloat(hist.cost);
+        histLabel = ['ก่อน', `${TH_M[m-1]} ฐาน`];
       }
     }
 
@@ -2409,8 +2544,12 @@ function renderHistROI(days) {
     
     if (histCost !== null && !isNaN(histCost) && actCost !== null && !isNaN(actCost)) {
       lbls.push(`${TH_M[m-1]} ${(parseInt(y)+543).toString().substring(2)}`);
-      dsHist.push(histCost);
-      dsAct.push(actCost);
+      chartLabels.push(histLabel, ['หลัง', `${TH_M[m-1]} ${(parseInt(y)+543).toString().substring(2)}`]);
+      chartValues.push(histCost, actCost);
+      chartColors.push('rgba(156,163,175,0.65)', 'rgba(56,189,248,0.85)');
+      chartLabels.push('');
+      chartValues.push(null);
+      chartColors.push('rgba(0,0,0,0)');
       totalSaved += (histCost - actCost);
     }
   });
@@ -2422,13 +2561,15 @@ function renderHistROI(days) {
   }
 
   const usesRealBill = Object.keys(postSolarActualCost).length > 0;
-  mkChart('histChart','bar',lbls,[
-    {label:'ก่อนติด (อดีต)', data:dsHist, bg:'rgba(156,163,175,0.6)'},
-    {label:`หลังติด (${usesRealBill ? 'บิลจริง' : 'ประมาณการ'})`, data:dsAct, bg:'rgba(56,189,248,0.8)'}
-  ]);
-  const cal = getActiveCal(new Date().toISOString().split('T')[0], null, getP());
-  const kStr = `<span class="stat-chip" style="font-size:0.78rem;color:var(--muted)" title="ตัวคูณพยากรณ์ค่าไฟเดือนปัจจุบัน (จากบิล 3 เดือนล่าสุด)">🔮 Active K-Factors: On ${cal.kOn.toFixed(3)}, Off ${cal.kOff.toFixed(3)}</span>`;
-  document.getElementById('histSummary').innerHTML = `<span class="stat-chip">เปรียบเทียบ ${lbls.length} เดือนที่ผ่านมา ประหยัดไฟไปแล้วรวม <b style="color:var(--good)">฿${fn(totalSaved, 2)}</b></span>${usesRealBill ? ' <span class="stat-chip" style="font-size:0.78rem;color:var(--good)">✅ ใช้บิลจริงจาก MEA/PEA</span>' : ''} ${kStr}`;
+  if (chartLabels[chartLabels.length-1] === '') {
+    chartLabels.pop(); chartValues.pop(); chartColors.pop();
+  }
+  mkChart('histChart','bar',chartLabels,[
+    {label:'ค่าไฟ', data:chartValues, bg:chartColors, bp:0.75, cp:0.9}
+  ], {legend:false});
+  const cal = CYCLE_CALIBRATION.activeK || { kNormal: 1, kOn: 1, kOff: 1 };
+  const kStr = `<span class="stat-chip" style="font-size:0.78rem;color:var(--muted)" title="ตัวคูณพยากรณ์ค่าไฟเดือนปัจจุบัน (จากบิลล่าสุด/ค่าเฉลี่ย 3 เดือนล่าสุด)">🔮 Active K-Factors: On ${cal.kOn.toFixed(3)}, Off ${cal.kOff.toFixed(3)}</span>`;
+  document.getElementById('histSummary').innerHTML = `<span class="stat-chip">เปรียบเทียบ ${lbls.length} เดือนที่ผ่านมา ประหยัดไฟไปแล้วรวม <b style="color:var(--good)">฿${fn(totalSaved, 2)}</b></span><span class="stat-chip"><span class="cdot" style="background:rgba(156,163,175,0.65)"></span>ก่อนติด</span><span class="stat-chip"><span class="cdot" style="background:rgba(56,189,248,0.85)"></span>หลังติด</span>${usesRealBill ? ' <span class="stat-chip" style="font-size:0.78rem;color:var(--good)">✅ ใช้บิลจริงจาก MEA/PEA</span>' : ''} ${kStr}`;
 }
 
 function getDayProblems(s, rows) {
@@ -2633,6 +2774,35 @@ function setChartSummary(id,datasets,unit=''){
     return`<span class="stat-chip">${d.label}: Avg <b>${fn(st.avg,1)}${unit}</b> Max <b>${fn(st.max,1)}${unit}</b></span>`
   }).join('')
 }
+function barValueLabelsPlugin(){
+  return{id:'barValueLabels_'+Math.random().toString(36).slice(2),afterDatasetsDraw(chart){
+    if(chart.config.type!=='bar')return
+    const ca=chart.chartArea;if(!ca)return
+    const ctx=chart.ctx
+    ctx.save()
+    ctx.font='10px JetBrains Mono,monospace'
+    ctx.textAlign='center'
+    ctx.textBaseline='middle'
+    const stacked=!!(chart.options.scales?.x?.stacked||chart.options.scales?.y?.stacked)
+    chart.data.datasets.forEach((ds,di)=>{
+      const meta=chart.getDatasetMeta(di)
+      if(meta.hidden)return
+      meta.data.forEach((bar,i)=>{
+        const v=+ds.data[i]
+        if(!isFinite(v)||Math.abs(v)<0.005)return
+        const props=bar.getProps(['x','y','base'],true)
+        if(props.x<ca.left||props.x>ca.right)return
+        const h=Math.abs(props.base-props.y)
+        const txt=Math.abs(v)>=100?fn(v,0):fn(v,1)
+        const y=stacked&&h>=18?(props.y+props.base)/2:props.y-10
+        if(y<ca.top+7||y>ca.bottom-7)return
+        ctx.fillStyle=stacked&&h>=18?'rgba(248,250,252,.95)':'rgba(226,232,240,.92)'
+        ctx.fillText(txt,props.x,y)
+      })
+    })
+    ctx.restore()
+  }}
+}
 
 function mkChart(id,type,lbl,ds,yOvr={},plugins=[]){
   if(charts[id])charts[id].destroy()
@@ -2640,7 +2810,13 @@ function mkChart(id,type,lbl,ds,yOvr={},plugins=[]){
   if(yOvr.min!=null)opts.scales.y.min=yOvr.min
   if(yOvr.max!=null)opts.scales.y.max=yOvr.max
   if(yOvr.sMax!=null)opts.scales.y.suggestedMax=yOvr.sMax
+  if(type==='bar'){
+    opts.layout=opts.layout||{}
+    opts.layout.padding={...(opts.layout.padding||{}),top:Math.max(opts.layout.padding?.top||0,18)}
+    opts.scales.y.grace=yOvr.stacked?'10%':'18%'
+  }
   if(yOvr.stacked){opts.scales.x.stacked=true;opts.scales.y.stacked=true}
+  if(yOvr.legend===false)opts.plugins.legend.display=false
   if(yOvr.timeY){
     opts.scales.y.ticks.callback = v => {
       let nd=v; if(nd<0) nd+=24;
@@ -2672,8 +2848,10 @@ function mkChart(id,type,lbl,ds,yOvr={},plugins=[]){
     const sum = ds[0]?ds[0].data.reduce((a,b)=>a+(b||0),0):0;
     opts.plugins.title = { display: true, text: `รวม: ${sum.toLocaleString('en-US',{maximumFractionDigits:1})} ${ds[0]?ds[0].label:''}`, font: { size: 14 }, color: '#9ca3af' };
   }
+  const chartPlugins=[...plugins]
+  if(type==='bar'&&!yOvr.timeY)chartPlugins.push(barValueLabelsPlugin())
   charts[id]=new Chart(document.getElementById(id).getContext('2d'),{
-    type,data:{labels:lbl,datasets:ds.map(d=>({label:d.label,data:d.data,borderColor:d.bc||d.bg,backgroundColor:d.bg||'transparent',fill:d.fill||false,borderWidth:d.bw||1.5,pointRadius:d.pr||0,tension:0.3,barPercentage:d.bp,categoryPercentage:d.cp}))},options:opts,plugins
+    type,data:{labels:lbl,datasets:ds.map(d=>({label:d.label,data:d.data,borderColor:d.bc||d.bg,backgroundColor:d.bg||'transparent',fill:d.fill||false,borderWidth:d.bw||1.5,pointRadius:d.pr||0,tension:0.3,barPercentage:d.bp,categoryPercentage:d.cp}))},options:opts,plugins:chartPlugins
   })
 }
 
@@ -2737,7 +2915,7 @@ async function renderWeek(date){
   const prev=all.filter(x=>{const dd=toDate(x.date);return dd>=prevStart&&dd<=prevEnd}).map(x=>{ const s = calcSum(x.rows,x.date)||x.summary; if(s) applyCalibration(s, x.date); return s; })
   const prevCost=prev.reduce((s,x)=>s+(x.costTotal||0),0)
   const wow=prevCost>0?((tCost-prevCost)/prevCost*100):null
-  const hasOv = ss.some(x=>x.isBilledOverride||x.isProjectedOverride)?'<span style="color:#ef4444" title="Calibrated">*</span>':'';
+  const hasOv = ss.some(x=>x.isBilledOverride||x.isProjectedOverride)?'<span style="color:#ef4444" title="ปรับตามบิลจริงหรือประเมินด้วย K-Factor">*</span>':'';
 
   document.getElementById('wCards').innerHTML=`
     <div class="card cs"><div class="card-lbl">☀️ ผลิตทั้งสัปดาห์</div><div><span class="card-val">${fn(tS)}</span><span class="card-unit">kWh</span></div><div class="card-sub">เฉลี่ย ${fn(tS/wk.length,1)} kWh/วัน</div></div>
@@ -2781,7 +2959,6 @@ async function renderWeek(date){
     if (wStringPieLeg) wStringPieLeg.innerHTML=`<span style="color:#fbbf24">■</span> A: ${fn(tPV1,1)} kWh (${rA}%)<br><span style="color:#38bdf8">■</span> B: ${fn(tPV2,1)} kWh (${100-rA}%)<br><br><span style="color:var(--muted)">B ต่างจาก A: <b>${fn(pDiff,1)}%</b></span>`
   }
 
-  const tToDecChart = (t, mSoc) => { if(!t||t==='—'||mSoc>22)return null; const [h,m]=t.split(':').map(Number); let d=h+m/60; if(d>12)d-=24; return d; };
   const wsocPlugin = {
     id: 'wsocTimePlugin',
     afterDatasetsDraw(chart) {
@@ -2792,9 +2969,10 @@ async function renderWeek(date){
       meta.data.forEach((p, i) => {
         const d = ss[i];
         if(!d || CFG.partialDays.includes(wk[i].date)) return;
-        if(d.socMinT && (d.socMin||100) <= 22) {
+        const emptyT = batteryEmptyTime(d);
+        if(emptyT) {
           ctx.fillStyle = 'rgba(192,132,252,1)';
-          ctx.fillText(d.socMinT, p.x, p.y - 10);
+          ctx.fillText(emptyT, p.x, p.y - 10);
         } else {
           ctx.fillStyle = 'rgba(156,163,175,0.7)';
           ctx.fillText('ไม่หมด', p.x, chart.chartArea.bottom - 10);
@@ -2805,7 +2983,7 @@ async function renderWeek(date){
   }
   const socTimesDec = ss.map((s,i) => {
     if(CFG.partialDays.includes(wk[i].date)) return null;
-    return tToDecChart(s.socMinT, s.socMin||100);
+    return batteryEmptyDec(batteryEmptyTime(s));
   });
   const validTimes = socTimesDec.filter(v=>v!=null);
   const minT = validTimes.length ? Math.min(...validTimes) : null;
@@ -2824,8 +3002,6 @@ async function renderWeek(date){
   mkChart('wTemp','line',lbl,wTempDs,{sMax:62}, [threshPlugin([{v:45,color:'#38bdf8',label:'45°C warn',dash:[5,3],w:1.2},{v:60,color:'#f87171',label:'60°C shutdown',dash:[3,2],w:1.5}])])
   setChartSummary('wTempSummary',wTempDs,'°C')
   
-  renderHeatmap('wHeatmap',wk.map((x,i)=>({date:x.date,v:+(ss[i].self||0).toFixed(0),partial:CFG.partialDays.includes(x.date)})),'พึ่งพาตัวเอง')
-  renderCostHeatmap('wCostHeatmap',wk.map((x,i)=>({date:x.date,v:+(ss[i].costTotal||0).toFixed(2),partial:CFG.partialDays.includes(x.date)})))
 }
 
 // ── Render Monthly ────────────────────────────────────────────────────────────
@@ -2898,7 +3074,10 @@ async function renderMonth(){
   const dynSellCost = dynSellKwh * getP().sell;
   const avgSelf=selected.self
     const isOverridden = selectedDays.some(s => s.isBilledOverride || s.isProjectedOverride);
-    const mark = isOverridden ? '<span style="color:#ef4444" title="Calibrated">*</span>' : '';
+    const mark = isOverridden ? '<span style="color:#ef4444" title="ปรับตามบิลจริงหรือประเมินด้วย K-Factor">*</span>' : '';
+    const targetAvg=MONTHLY_BILL_TARGET/30.4;
+    const avgCostDay=tC/selectedDays.length;
+    const targetTxt=avgCostDay<=targetAvg?`ต่ำกว่าเป้า ฿${fn(MONTHLY_BILL_TARGET,0)}/เดือน`:`เกินเป้า ฿${fn(MONTHLY_BILL_TARGET,0)}/เดือน`;
     
     document.getElementById('mCards').innerHTML=`
     <div class="card cs"><div class="card-lbl">☀️ ผลิตทั้งเดือน</div><div><span class="card-val">${fn(tS)}</span><span class="card-unit">kWh</span></div><div class="card-sub">${selected.days} วันในรอบนี้</div></div>
@@ -2908,7 +3087,7 @@ async function renderMonth(){
     <div class="card" style="border-color:#10b981"><div class="card-lbl" style="color:#10b981" title="คิดจากไฟ Export ปกติ + ประเมินไฟ Clipping ที่จะขายได้ (ถ้าปลดกันย้อน)">💡 ขายไฟ(if)</div><div><span class="card-val" style="color:#10b981">${fn(dynSellKwh)}</span><span class="card-unit" style="color:#10b981">kWh</span></div><div class="card-price" style="color:#10b981">฿${fn(dynSellCost,2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน">เฉลี่ย ฿${fn(dynSellCost/selectedDays.length,1)}/วัน</div></div>
     <div class="card cg"><div class="card-lbl">⚡ On-peak ซื้อ</div><div><span class="card-val">${fn(tOnI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tOn,2)}${mark}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน">เฉลี่ย ฿${fn(tOn/selectedDays.length,1)}/วัน</div></div>
     <div class="card co"><div class="card-lbl">🌙 Off-peak ซื้อ</div><div><span class="card-val">${fn(tOffI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tOff,2)}${mark}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน">เฉลี่ย ฿${fn(tOff/selectedDays.length,1)}/วัน</div></div>
-    <div class="card cy"><div class="card-lbl">🛒 รวมซื้อ</div><div><span class="card-val">${fn(tI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tC,2)}${mark}</div><div class="card-sub" title="MoM = Month over Month (เทียบเดือนนี้กับเดือนที่แล้ว)">เฉลี่ย ฿${fn(tC/selectedDays.length,1)}/วัน<br>MoM ${mom==null?'—':(mom>=0?'+':'')+fn(mom,1)+'%'}</div></div>`
+    <div class="card cy"><div class="card-lbl">🛒 รวมซื้อ</div><div><span class="card-val">${fn(tI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tC,2)}${mark}</div><div class="card-sub" title="MoM = Month over Month (เทียบเดือนนี้กับเดือนที่แล้ว)">เฉลี่ย ฿${fn(avgCostDay,1)}/วัน · ${targetTxt}<br>MoM ${mom==null?'—':(mom>=0?'+':'')+fn(mom,1)+'%'}</div></div>`
   const weekDict={};
   selectedDays.forEach(s=>{
     const wk = weekStartKey(s.date);
@@ -2922,11 +3101,11 @@ async function renderMonth(){
         if(typeof k==='function') return arr.reduce((sum, x) => sum + k(x), 0);
         return arr.reduce((sum, x) => sum + (x[k]||0), 0);
     }
-    const validSocDays = arr.filter(x=>x.socMin<=22 && x.socMinT && x.socMinT!=='—' && !CFG.partialDays.includes(x.date));
+    const validSocDays = arr.filter(x=>batteryEmptyTime(x) && !CFG.partialDays.includes(x.date));
     let avgTStr = null;
     if(validSocDays.length > 0) {
       const decs = validSocDays.map(x=>{
-        const [h,m]=x.socMinT.split(':').map(Number);
+        const [h,m]=batteryEmptyTime(x).split(':').map(Number);
         let d=h+m/60; if(d<12)d+=24; 
         return d;
       });
@@ -2943,19 +3122,33 @@ async function renderMonth(){
       costOn: tot('costOn'), costOff: tot('costOff'),
       imp: tot('imp'), exp: tot('exp'),
       pv1: tot('pv1'), pv2: tot('pv2'),
-      socMin: avgTStr ? 21 : 100, socMinT: avgTStr,
+      socMin: avgTStr ? 21 : 100, socMinT: avgTStr, socEmptyT: avgTStr,
       self: arr.reduce((s,x)=>s+(x.self||0),0)/arr.length, sellKwh: tot('sellKwh'), sellCost: tot('sellCost'),
       dcT: { bands: {
         '45–50°C': tot(x => x.dcT&&x.dcT.bands?x.dcT.bands['45–50°C']:0),
         '50–55°C': tot(x => x.dcT&&x.dcT.bands?x.dcT.bands['50–55°C']:0),
         '55–60°C': tot(x => x.dcT&&x.dcT.bands?x.dcT.bands['55–60°C']:0),
         '>60°C': tot(x => x.dcT&&x.dcT.bands?x.dcT.bands['>60°C']:0)
+      }},
+      acT: { bands: {
+        '45–50°C': tot(x => bandVal(x.acT,'45–50°C')),
+        '50–55°C': tot(x => bandVal(x.acT,'50–55°C')),
+        '55–60°C': tot(x => bandVal(x.acT,'55–60°C')),
+        '>60°C': tot(x => bandVal(x.acT,'>60°C'))
+      }},
+      tempT: { bands: {
+        '45–50°C': tot(x => tempBandVal(x,'45–50°C')),
+        '50–55°C': tot(x => tempBandVal(x,'50–55°C')),
+        '55–60°C': tot(x => tempBandVal(x,'55–60°C')),
+        '>60°C': tot(x => tempBandVal(x,'>60°C'))
       }}
     };
   });
   const lbl = weekKeys.map(wk => {
-    const d=toDate(wk); const sun=new Date(d); sun.setDate(d.getDate()+6);
-    return `${d.getDate()} ${TH_M[d.getMonth()]} - ${sun.getDate()} ${TH_M[sun.getMonth()]}`;
+    const arr=weekDict[wk]||[];
+    const start=toDate(arr[0]?.date||wk);
+    const end=toDate(arr[arr.length-1]?.date||wk);
+    return `${start.getDate()} ${TH_M[start.getMonth()]} - ${end.getDate()} ${TH_M[end.getMonth()]}`;
   });
 
   const mEnergyDs=[{label:'Solar',data:mss.map(s=>s.solar),bg:'rgba(74,222,128,.75)',bp:0.6,cp:0.7},{label:'ใช้ไป',data:mss.map(s=>s.load),bg:'rgba(251,146,60,.75)',bp:0.6,cp:0.7},{label:'On-peak ซื้อ',data:mss.map(s=>s.onPeakImp),bg:'rgba(56,189,248,.75)',bp:0.6,cp:0.7},{label:'Off-peak ซื้อ',data:mss.map(s=>s.offPeakImp),bg:'rgba(107,114,128,.6)',bp:0.6,cp:0.7}]
@@ -2992,8 +3185,6 @@ async function renderMonth(){
     document.getElementById('mStringPieLeg').innerHTML=`<span style="color:#fbbf24">■</span> A: ${fn(tpv1,1)} kWh (${rA}%)<br><span style="color:#38bdf8">■</span> B: ${fn(tpv2,1)} kWh (${100-rA}%)<br><br><span style="color:var(--muted)">B น้อยกว่า A: <b>${fn(pDiff,1)}%</b></span>`
   }
 
-  const tToDecChart = (t, mSoc) => { if(!t||t==='—'||mSoc>22)return null; const [h,m]=t.split(':').map(Number); let d=h+m/60; if(d>12)d-=24; return d; };
-  
   const msocPlugin = {
     id: 'socTimePlugin2',
     afterDatasetsDraw(chart) {
@@ -3003,14 +3194,15 @@ async function renderMonth(){
       ctx.font = '11px Outfit'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(192,132,252,1)';
       meta.data.forEach((p, i) => {
         const d = mss[i];
-        if(d && d.socMinT && (d.socMin||100) <= 22) {
-          ctx.fillText(d.socMinT, p.x, p.y - 10);
+        const emptyT = batteryEmptyTime(d);
+        if(d && emptyT) {
+          ctx.fillText(emptyT, p.x, p.y - 10);
         }
       });
       ctx.restore();
     }
   }
-  const socTimesDec = mss.map(s => tToDecChart(s.socMinT, s.socMin||100));
+  const socTimesDec = mss.map(s => batteryEmptyDec(batteryEmptyTime(s)));
   const validTimes = socTimesDec.filter(v=>v!=null);
   const minT = validTimes.length ? Math.min(...validTimes) : null;
   const maxT = validTimes.length ? Math.max(...validTimes) : null;
@@ -3021,7 +3213,7 @@ async function renderMonth(){
   mkChart('mSoc','bar',lbl,mSocDs,{timeY:true},[msocPlugin])
   document.getElementById('mSocSummary').innerHTML=validTimes.length ? `<span class="stat-chip">หมดเร็วสุด <b>${tFromDec(minT)}</b></span><span class="stat-chip">เฉลี่ย <b>${tFromDec(avgT)}</b></span><span class="stat-chip">ช้าสุด <b>${tFromDec(maxT)}</b></span>` : '<span class="stat-chip">แบตเตอรี่ไม่หมด (SOC > 21%)</span>';
 
-  const getBM=(s,k)=>(s.dcT&&s.dcT.bands&&s.dcT.bands[k])?+(s.dcT.bands[k]/60).toFixed(2):0
+  const getBM=(s,k)=>+(bandVal(s&&s.acT,k)/60).toFixed(2)
   const mTempDs=[
     {label:'45–50°C',data:mss.map(s=>getBM(s,'45–50°C')),bg:'rgba(52,211,153,.8)',bp:0.6,cp:0.7},
     {label:'50–55°C',data:mss.map(s=>getBM(s,'50–55°C')),bg:'rgba(251,191,36,.8)',bp:0.6,cp:0.7},
@@ -3038,7 +3230,7 @@ async function renderMonth(){
     const avg=total/selectedDays.length
     return total>0?`<span class="stat-chip"><span class="cdot" style="background:${d.bg}"></span>${d.label}: รวม <b>${fmtM(total*60)}</b> (เฉลี่ย <b>${fmtM(avg*60)}</b>/วัน)</span>`:''
   }).join('')
-  document.getElementById('mTempSummary').innerHTML=tSumHtml||'<span class="stat-chip">แบตเตอรี่อุณหภูมิปกติ (<45°C) ตลอดเดือน</span>'
+  document.getElementById('mTempSummary').innerHTML=tSumHtml||'<span class="stat-chip">อุณหภูมิปกติ (<45°C) ตลอดเดือน</span>'
   const mSelfDs=[{label:'พึ่งพาตัวเอง %',data:mss.map(s=>+(s.self||0).toFixed(1)),bc:'#4ade80',bg:'rgba(74,222,128,.15)',fill:true,pr:3,bw:2}]
   mkChart('mSelf','line',lbl,mSelfDs,{min:0,max:100})
   setChartSummary('mSelfSummary',mSelfDs,'%')
@@ -3047,13 +3239,14 @@ async function renderMonth(){
   selectedDays.forEach(s=>{
     dayMap[s.date]={v:+(s.self||0).toFixed(0),partial:CFG.partialDays.includes(s.date)}
     let socVal = 99;
-    if (s.socMin <= 21 && s.socMinT) {
-       const [h,m]=s.socMinT.split(':').map(Number);
+    const emptyT = batteryEmptyTime(s);
+    if (emptyT) {
+       const [h,m]=emptyT.split(':').map(Number);
        let dec = h + m/60;
        if(dec < 12) dec += 24;
        socVal = dec;
     }
-    socDayMap[s.date]={v:socVal, t:s.socMinT||'—'}
+    socDayMap[s.date]={v:socVal, t:emptyT||'—'}
 
     let probs = s.probs || [];
     if(probs.length > 0) {
@@ -3066,6 +3259,7 @@ async function renderMonth(){
   renderCalendarHeatmap('mHeatmap',dayMap)
   renderCalendarHeatmap('mSocHeatmap',socDayMap,'soc')
   renderCalendarHeatmap('mProbHeatmap',probDayMap,'prob')
+  renderCostHeatmap('mCostHeatmap',selectedDays.map(s=>({date:s.date,v:+(s.costTotal||0).toFixed(2),partial:CFG.partialDays.includes(s.date)})))
 }
 
 // ── Render Yearly ─────────────────────────────────────────────────────────────
@@ -3100,12 +3294,12 @@ async function renderYear(){
       if(typeof k==='function') return ss.reduce((sum, x) => sum + k(x), 0);
       return ss.reduce((s,x)=>s+(x[k]||0),0);
     }
-    const validSocDays = ss.filter(x=>x.socMin<=22 && x.socMinT && x.socMinT!=='-' && !CFG.partialDays.includes(x._date));
+    const validSocDays = ss.filter(x=>batteryEmptyTime(x) && !CFG.partialDays.includes(x._date));
     const emptyDates = validSocDays.map(x=>x._date);
     let avgTStr = null;
     if(validSocDays.length > 0) {
       const decs = validSocDays.map(x=>{
-        const [h,m]=x.socMinT.split(':').map(Number);
+        const [h,m]=batteryEmptyTime(x).split(':').map(Number);
         let d=h+m/60; if(d<12)d+=24; 
         return d;
       });
@@ -3119,12 +3313,24 @@ async function renderYear(){
       solar:tot('solar'),load:tot('load'),costTotal:tot('costTotal'),sellKwh:tot('sellKwh'),sellCost:tot('sellCost'),exp:tot('exp'),
       self:ss.length?ss.reduce((s,x)=>s+x.self,0)/ss.length:0,days:ss.length,
       pv1:tot('pv1'), pv2:tot('pv2'),
-      socMin: avgTStr ? 21 : 100, socMinT: avgTStr, emptyDates,
+      socMin: avgTStr ? 21 : 100, socMinT: avgTStr, socEmptyT: avgTStr, emptyDates,
       dcT: { bands: {
         '45–50°C': tot(x => x.dcT&&x.dcT.bands?x.dcT.bands['45–50°C']||x.dcT.bands['45-50°C']:0),
         '50–55°C': tot(x => x.dcT&&x.dcT.bands?x.dcT.bands['50–55°C']||x.dcT.bands['50-55°C']:0),
         '55–60°C': tot(x => x.dcT&&x.dcT.bands?x.dcT.bands['55–60°C']||x.dcT.bands['55-60°C']:0),
         '>60°C': tot(x => x.dcT&&x.dcT.bands?x.dcT.bands['>60°C']:0)
+      }},
+      acT: { bands: {
+        '45–50°C': tot(x => bandVal(x.acT,'45–50°C')),
+        '50–55°C': tot(x => bandVal(x.acT,'50–55°C')),
+        '55–60°C': tot(x => bandVal(x.acT,'55–60°C')),
+        '>60°C': tot(x => bandVal(x.acT,'>60°C'))
+      }},
+      tempT: { bands: {
+        '45–50°C': tot(x => tempBandVal(x,'45–50°C')),
+        '50–55°C': tot(x => tempBandVal(x,'50–55°C')),
+        '55–60°C': tot(x => tempBandVal(x,'55–60°C')),
+        '>60°C': tot(x => tempBandVal(x,'>60°C'))
       }}
     }
   })
@@ -3149,7 +3355,7 @@ async function renderYear(){
 
   const eqM = days.length > 0 ? (days.length / 30.4) : 1;
 
-  const hasOv = days.some(x=>x.s&&(x.s.isBilledOverride||x.s.isProjectedOverride))?'<span style="color:#ef4444" title="Calibrated">*</span>':'';
+  const hasOv = days.some(x=>x.s&&(x.s.isBilledOverride||x.s.isProjectedOverride))?'<span style="color:#ef4444" title="ปรับตามบิลจริงหรือประเมินด้วย K-Factor">*</span>':'';
   document.getElementById('yCards').innerHTML=`
     <div class="card cs"><div class="card-lbl">☀️ ผลิตทั้งปี</div><div><span class="card-val">${fn(tot('solar'))}</span><span class="card-unit">kWh</span></div><div class="card-sub">${days.length} วัน</div></div>
     <div class="card cl"><div class="card-lbl">🏠 ใช้ทั้งปี</div><div><span class="card-val">${fn(tot('load'))}</span><span class="card-unit">kWh</span></div><div class="card-sub" title="เฉลี่ยการใช้ไฟต่อเดือน">เฉลี่ย ${fn(tot('load')/eqM,1)} kWh/เดือน</div></div>
@@ -3173,13 +3379,14 @@ async function renderYear(){
     const s = d.s;
     dayMap[s.date]={v:+(s.self||0).toFixed(0),partial:CFG.partialDays.includes(s.date)}
     let socVal = 99;
-    if (s.socMin <= 21 && s.socMinT) {
-       const [h,m]=s.socMinT.split(':').map(Number);
+    const emptyT = batteryEmptyTime(s);
+    if (emptyT) {
+       const [h,m]=emptyT.split(':').map(Number);
        let dec = h + m/60;
        if(dec < 12) dec += 24;
        socVal = dec;
     }
-    socDayMap[s.date]={v:socVal, t:s.socMinT||'—'}
+    socDayMap[s.date]={v:socVal, t:emptyT||'—'}
     let probs = s.probs || [];
     if(probs.length > 0) probDayMap[s.date] = {v: 1, p: probs, partial: CFG.partialDays.includes(s.date)};
     else probDayMap[s.date] = {v: 0, partial: CFG.partialDays.includes(s.date)};
@@ -3225,7 +3432,6 @@ async function renderYear(){
     if(legEl) legEl.innerHTML=`<span style="color:#fbbf24">■</span> A: ${fn(tpv1,1)} kWh (${rA}%)<br><span style="color:#38bdf8">■</span> B: ${fn(tpv2,1)} kWh (${100-rA}%)<br><br><span style="color:var(--muted)">B น้อยกว่า A: <b>${fn(pDiff,1)}%</b></span>`
   }
 
-  const tToDecChart = (t, mSoc) => { if(!t||t==='—'||t==='-'||mSoc>22)return null; const [h,m]=t.split(':').map(Number); let d=h+m/60; if(d>12)d-=24; return d; };
   const ysocPlugin = {
     id: 'socTimePluginY',
     afterDatasetsDraw(chart) {
@@ -3235,14 +3441,15 @@ async function renderYear(){
       ctx.font = '11px Outfit'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(192,132,252,1)';
       meta.data.forEach((p, i) => {
         const d = agg[i];
-        if(d && d.socMinT && (d.socMin||100) <= 22) {
-          ctx.fillText(d.socMinT, p.x, p.y - 10);
+        const emptyT = batteryEmptyTime(d);
+        if(d && emptyT) {
+          ctx.fillText(emptyT, p.x, p.y - 10);
         }
       });
       ctx.restore();
     }
   }
-  const socTimesDecY = agg.map(s => tToDecChart(s.socMinT, s.socMin||100));
+  const socTimesDecY = agg.map(s => batteryEmptyDec(batteryEmptyTime(s)));
   const validTimesY = socTimesDecY.filter(v=>v!=null);
   const minTY = validTimesY.length ? Math.min(...validTimesY) : null;
   const maxTY = validTimesY.length ? Math.max(...validTimesY) : null;
@@ -3265,7 +3472,7 @@ async function renderYear(){
   const ySocSum = document.getElementById('ySocSummary');
   if(ySocSum) ySocSum.innerHTML=validTimesY.length ? `<span class="stat-chip">หมดเร็วสุด <b>${tFromDecY(minTY)}</b></span><span class="stat-chip">เฉลี่ย <b>${tFromDecY(avgTY)}</b></span><span class="stat-chip">ช้าสุด <b>${tFromDecY(maxTY)}</b></span>` : '<span class="stat-chip">แบตไม่หมดในรอบบิล (SOC > 21%)</span>';
 
-  const getBMY=(s,k)=>(s.dcT&&s.dcT.bands&&s.dcT.bands[k])?+(s.dcT.bands[k]/60).toFixed(2):0
+  const getBMY=(s,k)=>+(bandVal(s&&s.acT,k)/60).toFixed(2)
   const yTempDs=[
     {label:'45–50°C',data:agg.map(s=>getBMY(s,'45–50°C')||getBMY(s,'45-50°C')),bg:'rgba(52,211,153,.8)',bp:0.6,cp:0.7},
     {label:'50–55°C',data:agg.map(s=>getBMY(s,'50–55°C')||getBMY(s,'50-55°C')),bg:'rgba(251,191,36,.8)',bp:0.6,cp:0.7},
@@ -3283,7 +3490,7 @@ async function renderYear(){
     return total>0?`<span class="stat-chip"><span class="cdot" style="background:${d.bg}"></span>${d.label}: รวม <b>${fmtMY(total*60)}</b> (เฉลี่ย <b>${fmtMY(avg*60)}</b>/วัน)</span>`:''
   }).join('')
   const yTempSum = document.getElementById('yTempSummary');
-  if(yTempSum) yTempSum.innerHTML=tSumHtmlY||'<span class="stat-chip">แบตเตอรี่อยู่ในอุณหภูมิปกติ (<45°C) ตลอดปี</span>'
+  if(yTempSum) yTempSum.innerHTML=tSumHtmlY||'<span class="stat-chip">อุณหภูมิปกติ (<45°C) ตลอดปี</span>'
 }
 
 // ── Heatmap Renderers ─────────────────────────────────────────────────────────
@@ -3319,12 +3526,12 @@ async function renderAllTime(){
       if(typeof k==='function') return ss.reduce((sum, x) => sum + k(x.s), 0);
       return ss.reduce((s,x)=>s+(x.s[k]||0),0);
     }
-    const validSocDays = ss.filter(x=>x.s.socMin<=22 && x.s.socMinT && x.s.socMinT!=='-');
+    const validSocDays = ss.filter(x=>batteryEmptyTime(x.s));
     const emptyDates = validSocDays.map(x=>x.date);
     let avgTStr = null;
     if(validSocDays.length > 0) {
       const decs = validSocDays.map(x=>{
-        const [h,m]=x.s.socMinT.split(':').map(Number);
+        const [h,m]=batteryEmptyTime(x.s).split(':').map(Number);
         let d=h+m/60; if(d<12)d+=24; 
         return d;
       });
@@ -3341,12 +3548,24 @@ async function renderAllTime(){
       onPeakImp:tot('onPeakImp'),offPeakImp:tot('offPeakImp'),
       costOn:tot('costOn'),costOff:tot('costOff'),
       self:ss.length?ss.reduce((s,x)=>s+x.s.self,0)/ss.length:0,days:ss.length,
-      socMin: avgTStr ? 21 : 100, socMinT: avgTStr, emptyDates,
+      socMin: avgTStr ? 21 : 100, socMinT: avgTStr, socEmptyT: avgTStr, emptyDates,
       dcT: { bands: {
-        '45–50°C': tot(x => x.s.dcT&&x.s.dcT.bands?x.s.dcT.bands['45–50°C']||x.s.dcT.bands['45-50°C']:0),
-        '50–55°C': tot(x => x.s.dcT&&x.s.dcT.bands?x.s.dcT.bands['50–55°C']||x.s.dcT.bands['50-55°C']:0),
-        '55–60°C': tot(x => x.s.dcT&&x.s.dcT.bands?x.s.dcT.bands['55–60°C']||x.s.dcT.bands['55-60°C']:0),
-        '>60°C': tot(x => x.s.dcT&&x.s.dcT.bands?x.s.dcT.bands['>60°C']:0)
+        '45–50°C': tot(x => x.dcT&&x.dcT.bands?x.dcT.bands['45–50°C']||x.dcT.bands['45-50°C']:0),
+        '50–55°C': tot(x => x.dcT&&x.dcT.bands?x.dcT.bands['50–55°C']||x.dcT.bands['50-55°C']:0),
+        '55–60°C': tot(x => x.dcT&&x.dcT.bands?x.dcT.bands['55–60°C']||x.dcT.bands['55-60°C']:0),
+        '>60°C': tot(x => x.dcT&&x.dcT.bands?x.dcT.bands['>60°C']:0)
+      }},
+      acT: { bands: {
+        '45–50°C': tot(x => bandVal(x.acT,'45–50°C')),
+        '50–55°C': tot(x => bandVal(x.acT,'50–55°C')),
+        '55–60°C': tot(x => bandVal(x.acT,'55–60°C')),
+        '>60°C': tot(x => bandVal(x.acT,'>60°C'))
+      }},
+      tempT: { bands: {
+        '45–50°C': tot(x => tempBandVal(x,'45–50°C')),
+        '50–55°C': tot(x => tempBandVal(x,'50–55°C')),
+        '55–60°C': tot(x => tempBandVal(x,'55–60°C')),
+        '>60°C': tot(x => tempBandVal(x,'>60°C'))
       }}
     }
   })
@@ -3399,15 +3618,7 @@ async function renderAllTime(){
       ctx.restore();
     }
   }
-  const tToDecChart = (t, socMin) => {
-    if(!t||t==='-') return null;
-    if(socMin > 21) return null; // ไม่ถือว่าแบตหมด
-    const [h,m]=t.split(':').map(Number);
-    let d = h+m/60;
-    if(d<12) d+=24; // shift 00:00-11:59 to next day
-    return d;
-  }
-  const socTimesDecY = agg.map(s => tToDecChart(s.socMinT, s.socMin||100));
+  const socTimesDecY = agg.map(s => batteryEmptyDec(batteryEmptyTime(s)));
   const validTimesY = socTimesDecY.filter(v=>v!=null);
   const minTY = validTimesY.length ? Math.min(...validTimesY) : null;
   const maxTY = validTimesY.length ? Math.max(...validTimesY) : null;
@@ -3433,7 +3644,7 @@ async function renderAllTime(){
   if(tSocSum) tSocSum.innerHTML=validTimesY.length ? `<span class="stat-chip">หมดเร็วสุด <b>${tFromDecY(minTY)}</b></span><span class="stat-chip">เฉลี่ย <b>${tFromDecY(avgTY)}</b></span><span class="stat-chip">ช้าสุด <b>${tFromDecY(maxTY)}</b></span>` : '<span class="stat-chip">แบตไม่หมด (SOC > 21%) ตลอดช่วง</span>';
 
   // Temp
-  const getBMY=(s,k)=>(s.dcT&&s.dcT.bands&&s.dcT.bands[k])?+(s.dcT.bands[k]/60).toFixed(2):0
+  const getBMY=(s,k)=>+(bandVal(s&&s.acT,k)/60).toFixed(2)
   const yTempDs=[
     {label:'45–50°C',data:agg.map(s=>getBMY(s,'45–50°C')||getBMY(s,'45-50°C')),bg:'rgba(52,211,153,.8)',bp:0.6,cp:0.7},
     {label:'50–55°C',data:agg.map(s=>getBMY(s,'50–55°C')||getBMY(s,'50-55°C')),bg:'rgba(251,191,36,.8)',bp:0.6,cp:0.7},
@@ -3451,27 +3662,30 @@ async function renderAllTime(){
     return total>0?`<span class="stat-chip"><span class="cdot" style="background:${d.bg}"></span>${d.label}: รวม <b>${fmtMY(total*60)}</b> (เฉลี่ย <b>${fmtMY(avg*60)}</b>/วัน)</span>`:``
   }).join('')
   const tTempSum = document.getElementById('tTempSummary');
-  if(tTempSum) tTempSum.innerHTML=tSumHtmlY||'<span class="stat-chip">แบตเตอรี่อยู่ในอุณหภูมิปกติ (<45°C) ตลอดช่วง</span>'
+  if(tTempSum) tTempSum.innerHTML=tSumHtmlY||'<span class="stat-chip">อุณหภูมิปกติ (<45°C) ตลอดช่วง</span>'
 }
 
 // ── Heatmap Renderers ─────────────────────────────────────────────────────────
 function selfColor(v, partial=false){
   if(v===null||v===undefined) return'rgba(255,255,255,.06)'
   if(partial) return '#ec4899' // pink
-  if(v>95) return '#15803d' // dark green
-  if(v>90) return '#4ade80' // light green
-  if(v>85) return '#facc15' // yellow
-  if(v>80) return '#f97316' // orange
-  if(v>75) return '#ef4444' // red
-  if(v>70) return '#a855f7' // purple
-  return 'rgba(255,255,255,.1)'
+  if(v>=95) return '#166534'
+  if(v>=90) return '#22c55e'
+  if(v>=85) return '#a3e635'
+  if(v>=80) return '#facc15'
+  if(v>=70) return '#fb923c'
+  if(v>=60) return '#ef4444'
+  return '#7f1d1d'
 }
 function costColor(v){
   if(v===null||v===undefined) return'rgba(255,255,255,.06)'
-  if(v<=20) return`rgba(134,239,172,.35)`
-  if(v<=60) return`rgba(251,191,36,.45)`
-  if(v<=120) return`rgba(251,146,60,.55)`
-  return`rgba(248,113,113,.65)`
+  const r=v/DAILY_BILL_TARGET
+  if(r<=0.75) return '#166534'
+  if(r<=1.00) return '#22c55e'
+  if(r<=1.25) return '#a3e635'
+  if(r<=1.50) return '#facc15'
+  if(r<=2.00) return '#fb923c'
+  return '#ef4444'
 }
 
 function renderHeatmap(containerId,data,label){
@@ -3491,13 +3705,13 @@ function renderHeatmap(containerId,data,label){
   el.innerHTML=`<div style="display:flex;gap:6px;flex-wrap:wrap">${cells}</div>
     <div class="hmap-legend"><div class="hmap-legend-cells">
       <div class="hmap-legend-cell" style="background:#ec4899" title="Partial"></div>
-      <div class="hmap-legend-cell" style="background:rgba(255,255,255,.1)" title="< 70%"></div>
-      <div class="hmap-legend-cell" style="background:#a855f7" title="> 70%"></div>
-      <div class="hmap-legend-cell" style="background:#ef4444" title="> 75%"></div>
-      <div class="hmap-legend-cell" style="background:#f97316" title="> 80%"></div>
-      <div class="hmap-legend-cell" style="background:#facc15" title="> 85%"></div>
-      <div class="hmap-legend-cell" style="background:#4ade80" title="> 90%"></div>
-      <div class="hmap-legend-cell" style="background:#15803d" title="> 95%"></div>
+      <div class="hmap-legend-cell" style="background:#7f1d1d" title="< 60%"></div>
+      <div class="hmap-legend-cell" style="background:#ef4444" title="60–69%"></div>
+      <div class="hmap-legend-cell" style="background:#fb923c" title="70–79%"></div>
+      <div class="hmap-legend-cell" style="background:#facc15" title="80–84%"></div>
+      <div class="hmap-legend-cell" style="background:#a3e635" title="85–89%"></div>
+      <div class="hmap-legend-cell" style="background:#22c55e" title="90–94%"></div>
+      <div class="hmap-legend-cell" style="background:#166534" title="≥95%"></div>
     </div></div>`
 }
 function renderCostHeatmap(containerId,data){
@@ -3513,7 +3727,7 @@ function renderCostHeatmap(containerId,data){
     </div>`
   }).join('')
   el.innerHTML=`<div style="display:flex;gap:6px;flex-wrap:wrap">${cells}</div>
-    <div class="hmap-legend"><span>ต่ำ</span><div class="hmap-legend-cells">${[0,20,60,120,180].map(v=>`<div class="hmap-legend-cell" style="background:${costColor(v)}"></div>`).join('')}</div><span>สูง</span></div>`
+    <div class="hmap-legend"><span>ต่ำกว่าเป้า</span><div class="hmap-legend-cells">${[0.7,1,1.25,1.5,2.1].map(r=>`<div class="hmap-legend-cell" style="background:${costColor(DAILY_BILL_TARGET*r)}" title="~฿${fn(DAILY_BILL_TARGET*r,0)}/วัน"></div>`).join('')}</div><span>เกินเป้า</span><span style="margin-left:6px;color:var(--muted)">เป้า ฿${fn(DAILY_BILL_TARGET,0)}/วัน</span></div>`
 }
 
 function renderCalendarHeatmap(containerId,dayMap,mode='self'){
@@ -3528,13 +3742,13 @@ function renderCalendarHeatmap(containerId,dayMap,mode='self'){
     }
   } else if (mode==='self') {
     const legHTML = `
-      <div class="hmap-leg-c" style="background:rgba(255,255,255,.1)" title="< 70%"></div>
-      <div class="hmap-leg-c" style="background:#a855f7" title="> 70%"></div>
-      <div class="hmap-leg-c" style="background:#ef4444" title="> 75%"></div>
-      <div class="hmap-leg-c" style="background:#f97316" title="> 80%"></div>
-      <div class="hmap-leg-c" style="background:#facc15" title="> 85%"></div>
-      <div class="hmap-leg-c" style="background:#4ade80" title="> 90%"></div>
-      <div class="hmap-leg-c" style="background:#15803d" title="> 95%"></div>
+      <div class="hmap-leg-c" style="background:#7f1d1d" title="< 60%"></div>
+      <div class="hmap-leg-c" style="background:#ef4444" title="60–69%"></div>
+      <div class="hmap-leg-c" style="background:#fb923c" title="70–79%"></div>
+      <div class="hmap-leg-c" style="background:#facc15" title="80–84%"></div>
+      <div class="hmap-leg-c" style="background:#a3e635" title="85–89%"></div>
+      <div class="hmap-leg-c" style="background:#22c55e" title="90–94%"></div>
+      <div class="hmap-leg-c" style="background:#166534" title="≥95%"></div>
       <div class="hmap-leg-c" style="background:#ec4899" title="Partial"></div>
     `;
     const legM=document.getElementById('hmapLegend'); if(legM) legM.innerHTML=legHTML;
@@ -3707,7 +3921,8 @@ async function renderAnalysis(){
       const isPk=tStr>='09:00'&&tStr<'22:00';
       if(isPk) gPeakWh+=grid*(dt/60); else gOffWh+=grid*(dt/60);
     }
-    let s2p=Math.min(extraSWh, gPeakWh), s2o=Math.min(extraSWh-s2p, gOffWh);
+    const recoveredSWh = extraSWh * 0.5; // optimizer estimate: recover 50% of imbalance clipping
+    let s2p=Math.min(recoveredSWh, gPeakWh), s2o=Math.min(recoveredSWh-s2p, gOffWh);
     s2Save += (s2p/1000)*pPeak + (s2o/1000)*pOff;
 
     let excessKwh = (d.s.exp||0) + 2; // rough clipping allowance
@@ -3739,6 +3954,7 @@ async function renderAnalysis(){
   renderBattHealth(days)
   renderHourlyAnalysis(calcDays)  // hourly analysis ใช้ full days เท่านั้น
   renderBattCycles(days)
+  renderSelfTrend(days)
   renderMonthAnalysis(days)
   renderYearAnalysis(days)
   renderHistROI(days)
@@ -3843,7 +4059,13 @@ function calcROI(){
   },0)/allDaysSummary.length
   const saving=Math.max(0,avgFullCost-avgCostPerDay)
   document.getElementById('roiPerDay').textContent=saving>0?'฿'+fn(saving,2):'—'
-  document.getElementById('roiPerMonth').textContent=saving>0?'฿'+fn(saving*30,0):'—'
+  const baseDayEl=document.getElementById('roiBaseDay')
+  const actualDayEl=document.getElementById('roiActualDay')
+  const formulaDayEl=document.getElementById('roiFormulaDay')
+  if(baseDayEl)baseDayEl.textContent='฿'+fn(avgFullCost,2)
+  if(actualDayEl)actualDayEl.textContent='฿'+fn(avgCostPerDay,2)
+  if(formulaDayEl)formulaDayEl.textContent=saving>0?'฿'+fn(avgFullCost,2)+' - ฿'+fn(avgCostPerDay,2)+' = ฿'+fn(saving,2):'—'
+  document.getElementById('roiPerMonth').textContent=saving>0?'฿'+fn(saving*30.4,0):'—'
   document.getElementById('roiPerYear').textContent=saving>0?'฿'+fn(saving*365,0):'—'
   if(cv>0&&saving>0){
     document.getElementById('roiYears').innerHTML=fn(cv/(saving*365),1)+'<span style="font-size:1rem;font-family:var(--font-ui)"> ปี</span>'
@@ -3899,9 +4121,10 @@ function renderBattCycles(days){
   const subEl=document.getElementById('battCycleSub')
   const rowsEl=document.getElementById('battCycleRows')
   if(!el)return
-  // วิธีคำนวณ: แต่ละวัน cycle = chgKwh / battKwh (usable ~90%)
-  const validDays=days.filter(d=>!CFG.partialDays.includes(d.date)&&d.s.chg>0)
-  const totalCycles=validDays.reduce((s,d)=>s+(d.s.chg||0)/(CFG.sys.battKwh*0.9),0)
+  // Equivalent Full Cycle: average charge/discharge throughput over usable capacity.
+  const usableKwh=CFG.sys.battKwh*0.9
+  const validDays=days.filter(d=>!CFG.partialDays.includes(d.date)&&((d.s.chg||0)>0||(d.s.dis||0)>0))
+  const totalCycles=validDays.reduce((s,d)=>s+((d.s.chg||0)+(d.s.dis||0))/(2*usableKwh),0)
   const design=CFG.sys.battCycles||6000
   const remaining=Math.max(0,design-totalCycles)
   const pct=(totalCycles/design*100).toFixed(1)
@@ -3912,6 +4135,7 @@ function renderBattCycles(days){
   if(subEl)subEl.textContent=`ใช้ไป ${pct}% ของ ${design.toLocaleString()} cycles`
   if(rowsEl) rowsEl.innerHTML=[
     ['เฉลี่ย/วัน',fn(avgCyclePerDay,3)+' cycles'],
+    ['วิธีคิด','EFC = (Charge + Discharge) ÷ (2 × '+fn(usableKwh,2)+' kWh)'],
     ['คงเหลือ',fn(remaining,0)+' cycles ('+pct+'% ใช้ไป)'],
     ['ประมาณการเหลือ',yearsLeft?yearsLeft+' ปี ('+daysLeft.toLocaleString()+' วัน)':'—'],
     ['ข้อมูลจาก',validDays.length+' วัน (ตัด partial days)'],
