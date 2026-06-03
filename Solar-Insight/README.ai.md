@@ -1,405 +1,495 @@
-# README.ai.md — AI Technical Reference for SolarInsight Dashboard
+# README.ai.md — SolarInsight Technical Reference
 
-> **วัตถุประสงค์**: เอกสารนี้สำหรับ AI Assistant หรือ Developer ที่ต้องการเข้าใจโปรเจกต์อย่างลึกซึ้ง  
-> เพื่อช่วย debug, เพิ่มฟีเจอร์, หรือ refactor โดยไม่ทำลาย logic เดิม
+เอกสารนี้มีไว้ให้ AI assistant หรือ developer เข้าใจ `app.html` โดยไม่ต้อง reverse engineer ใหม่ทุกครั้ง
 
----
-
-## 1. Project Identity
-
-| ข้อมูล | รายละเอียด |
-|-------|-----------|
-| **ชื่อโปรเจกต์** | SolarInsight Dashboard |
-| **ไฟล์หลัก** | `app.html` (เดียว, ~225KB, ~3,700+ บรรทัด) |
-| **ภาษา** | Thai (ภาษาไทย) — UI ทั้งหมดเป็นภาษาไทย |
-| **Target Hardware** | DEYE SUN-5K-SG04LP1-EU-SM2 Hybrid Inverter + PYLON LiFePO4 10.24kWh |
-| **Target Meter** | MEA TOU (Time-of-Use) meter — On-peak 09:00–22:00 |
-| **Owner System** | 10 × LONGi 645W panels (5.25kWp), String A: 5 West, String B: 3S+2W |
+> สถานะเอกสาร: อัปเดตให้ตรงกับ `app.html` หลังงาน bill calibration, ROI, simulation, heatmap, battery empty time และ Glossary ล่าสุด
 
 ---
 
-## 2. Architecture Overview
+## 1. Project Snapshot
 
-```
-Single HTML File Architecture
-──────────────────────────────────────────────
-[app.html]
+| รายการ | ค่า |
+|---|---|
+| Project | SolarInsight Dashboard |
+| Main file | `app.html` ไฟล์เดียว |
+| App type | Offline-first browser dashboard |
+| Stack | HTML / CSS / Vanilla JavaScript / Chart.js / SheetJS / IndexedDB |
+| UI language | ไทย |
+| Primary data | XLSX export จาก hybrid inverter |
+| Storage | Browser IndexedDB ชื่อ `SolarInsight` |
+| Main hardware profile | DEYE hybrid inverter, 10 × 645 W panels, PYLON LiFePO4 10.24 kWh |
+
+หมายเหตุ: ตัวเลขขนาดไฟล์และจำนวนบรรทัดไม่ควรถูก hardcode ในเอกสาร เพราะ `app.html` เปลี่ยนบ่อย
+
+---
+
+## 2. Current Architecture
+
+```text
+app.html
 ├── <head>
-│   ├── CSS (inline ~500 lines) — Dark theme, CSS variables
-│   ├── Chart.js 4.4 (CDN)
-│   └── SheetJS XLSX (CDN)
-│
-├── <body> — Tab-based navigation
-│   ├── Tab D: Daily
-│   ├── Tab W: Weekly
-│   ├── Tab M: Monthly (Bill Cycle)
-│   ├── Tab Y: Yearly
-│   ├── Tab T: All Time
-│   └── Tab A: Analysis (with sub-tabs: Overview/Day/Week/Month/Year)
-│
-└── <script> (inline ~2,700 lines)
-    ├── Constants & Config (CFG, CLR, THR, THAI_HOLIDAYS)
-    ├── Utility functions (fn, fmtD, tMin, weekStartKey, billPeriodKey)
-    ├── Column Detection (detectC)
-    ├── IndexedDB Layer (initDB, dbPut, dbGet, dbAll, dbDel, dbClear)
-    ├── Settings Layer (settingsGet, settingsPut)
-    ├── XLSX Parser (parseXLSX)
-    ├── Core Calculator (calcSum)
-    ├── App State Management
-    ├── System Info Management (CFG modal)
-    ├── Bill Management (histBills, actualBills)
-    ├── Calibration System (updateCalibrationFactor)
-    ├── Render Functions (renderDay, renderWeek, renderMonth, renderYear, renderAllTime, renderAnalysis)
-    ├── Chart Builders (buildPowerChart, buildTempChart, mkChart, mkPie)
-    ├── Chart Plugins (touPlugin, threshPlugin, syncCrosshairPlugin)
-    ├── Heatmap Renderers (renderHeatmap, renderCostHeatmap, renderCalendarHeatmap)
-    ├── Analysis Functions (renderHistROI, renderBattHealth, renderBattCycles, renderHourlyAnalysis, renderStringComparison, calcROI)
-    └── Boot (bootApp)
+│   ├── CSS variables + layout styles
+│   ├── SheetJS XLSX CDN
+│   └── Chart.js CDN
+├── <body>
+│   ├── Daily tab
+│   ├── Weekly tab
+│   ├── Monthly billing-cycle tab
+│   ├── Yearly tab
+│   ├── All-time tab
+│   ├── Analysis tab
+│   ├── System modal
+│   ├── File manager modal
+│   └── Bill history modal
+└── <script>
+    ├── Config/constants
+    ├── IndexedDB + settings helpers
+    ├── XLSX parsing
+    ├── Daily summary calculation
+    ├── Bill-cycle calibration
+    ├── Render functions
+    ├── Chart builders/plugins
+    ├── Heatmap renderers
+    └── Analysis/ROI/simulation functions
 ```
+
+Important design constraint: the project intentionally stays as a single-file dashboard. Do not split into modules unless the user explicitly asks.
 
 ---
 
 ## 3. Data Flow
 
-```
-[XLSX File Import]
-      │
-      ▼
+```text
+User imports XLSX
+  ↓
 parseXLSX(buf)
-  → detectC(rows[0])        ← Auto-detect column names
-  → group rows by date
-      │
-      ▼
+  ↓
+detectC(firstRow)
+  ↓
+group rows by YYYY-MM-DD
+  ↓
 calcSum(rows, date)
-  → Compute: solar, load, imp, exp, onPeakImp, offPeakImp
-  → Compute: costOn, costOff, costTotal (with VAT 7%)
-  → Compute: sellKwh (exp + clipping allowance, Capped at 5kWh/day)
-  → Compute: socMin, temps, voltages, pv1, pv2
-  → Returns: summary object
-      │
-      ▼
-dbPut({date, rows, summary, cols})
-  → memoryDays.set(date, data)
-  → IndexedDB.put(data)        ← Persists across sessions
-      │
-      ▼
+  ↓
+dbPut({ date, rows, summary, cols })
+  ↓
 refresh()
-  → dbAll()
-      → updateCalibrationFactor(all)    ← Adjusts kwhFactor, costFactor
-      → Apply calibration to each summary
-  → renderDay() / renderWeek() / renderMonth() / renderYear() / renderAnalysis()
-      │
-      ▼
-[Chart.js Charts + HTML Cards + Heatmaps]
+  ↓
+dbAll()
+  ↓
+computeCycleCalibrations(validBills, getP())
+  ↓
+applyCalibration(summary, date)
+  ↓
+renderDay / renderWeek / renderMonth / renderYear / renderAllTime / renderAnalysis
 ```
+
+`dbAll()` is important because it recomputes calibration every time. IndexedDB should keep raw daily summaries; calibrated values are applied in memory.
 
 ---
 
-## 4. Key Constants & Configuration
+## 4. Core Config
 
-### `CFG` Object (Global Config)
+### `CFG`
+
 ```javascript
-CFG = {
-  startDate: '2026-04-10',     // วันที่ติด Solar — CRITICAL สำหรับแยก Pre/Post Solar
-  touStart:  '2026-05-05',     // วันที่เปลี่ยนมิเตอร์ TOU
-  billDay:   15,                // วันตัดรอบบิล (1-28)
-  systemCost: 152350,           // ต้นทุนสุทธิหลังลดหย่อนภาษี (บาท)
-  sys: { panels:10, wp:645, peakSunH:4.5, battKwh:10.24, invKw:5 },
-  pvSpec: { voc:54.12, vmp:44.77, isc:15.06, imp:14.41 },
-  strings: { aSpec:'5 West', bSpec:'3 South + 2 West', aLabel:'String A', bLabel:'String B' },
-  costNote: { solar:209000, tou:3350, taxDeduction:60000 },
-  partialDays: ['2026-05-16','2026-05-17'],  // วันที่ข้อมูลไม่สมบูรณ์
+const CFG = {
+  sys: {
+    panels: 10,
+    wp: 645,
+    peakSunH: 4.5,
+    battKwh: 10.24,
+    battAmp: 48,
+    invKw: 5,
+    battCycles: 6000,
+    pvModel: 'LONGi LR7-72HYD-645M',
+    pvEff: 23.9,
+  },
+  startDate: '2026-04-10',
+  touStart: '2026-05-05',
+  billDay: 15,
+  systemCost: 152350,
+  costNote: { solar: 209000, tou: 3350, taxDeduction: 60000 },
+  pvSpec: { pmax: 645, voc: 54.12, isc: 15.06, vmp: 44.77, imp: 14.41 },
+  strings: { aLabel: 'String A', aSpec: '5 West', bLabel: 'String B', bSpec: '3 South + 2 West' },
+  partialDays: ['2026-04-10', '2026-05-16', '2026-05-17'],
 }
 ```
 
-### Electricity Rate `P` Object (จาก `getP()`)
+### `getP()`
+
 ```javascript
-P = {
-  on:   4.1682,   // On-peak rate (บาท/kWh, ก่อน FT+VAT)
-  off:  2.6369,   // Off-peak rate
-  flat: 3.2484,   // Flat rate (ก่อนมี TOU)
-  ft:   0.0093,   // Ft adjustment
-  srv:  38.22,    // ค่าบริการรายเดือน (บาท)
-  sell: 2.20,     // ราคาขายไฟ Feed-in Tariff (บาท/kWh)
+{
+  on:   5.7982,
+  off:  2.6369,
+  flat: 4.4217,
+  ft:   0.0972,
+  srv:  24.62,
+  sell: 2.20,
 }
 ```
 
-### Color Constants (`CLR`)
+ค่าเหล่านี้มาจาก input ใน UI ถ้ามี ถ้าไม่มีจะใช้ default ข้างบน
+
+### Thresholds
+
 ```javascript
-CLR = {
-  solar:'#4ade80', load:'#fb923c', batt:'#818cf8',
-  grid:'#38bdf8',  soc:'#c084fc',
-  battT:'#34d399', dc:'#38bdf8', ac:'#f87171',
-}
+SOC_EMPTY_THRESHOLD = 21
+SOC_RECHARGED_THRESHOLD = 25
+MONTHLY_BILL_TARGET = 600
+DAILY_BILL_TARGET = 600 / 30.4
 ```
 
 ---
 
-## 5. Storage Architecture
+## 5. Storage
 
-### IndexedDB: `SolarInsight`
-| Store | Key | Value | หมายเหตุ |
-|-------|-----|-------|---------|
-| `days` | `date` (YYYY-MM-DD) | `{date, rows, summary, cols}` | ข้อมูล XLSX แยกตามวัน |
-| `settings` | `key` (string) | `value` (any) | ตั้งค่าทุกอย่าง |
+### IndexedDB
 
-### Settings Keys
-| Key | Value Type | Content |
-|-----|-----------|---------|
-| `systemInfo` | Object | CFG ทั้งหมด (panels, dates, costs, etc.) |
-| `histBills` | Array | `[{y,m,kwh,cost}]` — บิลก่อนติด Solar (12 เดือน baseline) |
-| `actualBills` | Array | `[{y,m,kwh,cost}]` — บิลจริงจาก MEA ทุกเดือน |
+| Store | Key | Value |
+|---|---|---|
+| `days` | `date` | `{ date, rows, summary, cols }` |
+| `settings` | `key` | `{ key, value }` |
 
-### Memory Cache: `memoryDays` (Map)
-- เป็น in-memory cache ของ IndexedDB
-- `dbGet()` เช็ค cache ก่อนเสมอ
-- `dbAll()` อ่าน IndexedDB ทั้งหมดแล้ว overwrite cache
+### Settings keys
+
+| Key | Shape |
+|---|---|
+| `systemInfo` | system config saved from system modal |
+| `histBills` | pre-solar baseline: `[{ m, kwh, cost }]` |
+| `actualBills` | real bills: `[{ y, m, cost, normalKwh, onPeakKwh, offPeakKwh, ft }]` |
+
+Legacy note: older docs mention `actualBills.kwh`. Current save path deletes legacy `kwh` and `serviceFee`, then stores separated kWh fields.
 
 ---
 
-## 6. Core Functions Reference
+## 6. `calcSum(rows, date)`
 
-### `calcSum(rows, date)` → summary object
-**หัวใจของระบบ** คำนวณสรุปรายวันจาก raw rows
+Daily summary calculator. This is the highest-impact function in the app.
 
-Critical logic:
-- ใช้ค่า meter ณ เวลา 09:00 และ 22:00 เพื่อแยก On/Off-peak
-- `touActive(date)` เช็คว่าวันนั้นใช้ TOU แล้วหรือยัง (เปรียบเทียบกับ `CFG.touStart`)
-- `THAI_HOLIDAYS.includes(date)` เช็ควันหยุด → ถ้าใช่ ให้ใช้ Off-peak rate ทั้งวัน
-- **Clipping Detection:** นับจำนวนช่วง 5 นาทีที่ `SOC >= 95% AND batt > -100W AND solar > 200W` แล้วแปลงเป็น kWh (ให้สูงสุด 1.5kW rate, Capped ที่ 5kWh/day)
-- ค่า Clipping นี้จะถูกบวกเข้าไปใน `sellKwh` ทันที เพื่อใช้จำลองการขายไฟ (ถ้าปลดกันย้อน)
-- VAT 7% คูณกับทุก cost item
+Main outputs:
 
-### `updateCalibrationFactor(all)` → sets `kwhFactor`, `costFactor`
-- หา post-solar actual bill ล่าสุดจาก `actualBills`
-- หา inverter-estimated kWh ในช่วงเดียวกัน
-- `kwhFactor = MEA_kwh / inverter_kwh`
-- `costFactor = MEA_cost / inverter_cost`
-- Factor ถูก Apply ใน `dbAll()` ทุกครั้งที่เรียก
+- `solar`, `load`, `imp`, `exp`
+- `onPeakImp`, `offPeakImp`
+- `costOn`, `costOff`, `costTotal`
+- `sellKwh`, `sellCost`
+- `socMin`, `socMinT`, `socEmptyT`
+- `chg`, `dis`
+- PV string totals: `pv1`, `pv2`
+- temperature stats and bands: `bmsT`, `batT`, `dcT`, `acT`, `tempT`
+- voltage/current stats
+- override flags: `isBilledOverride`, `isProjectedOverride`
 
-⚠️ **Important**: `_orig` (ค่าดั้งเดิมก่อน calibrate) ถูก save ใน memory เท่านั้น ไม่ได้ save ลง IndexedDB ดังนั้น IndexedDB เก็บค่า RAW เสมอ → Calibration Apply ใหม่ทุกครั้งที่ `dbAll()` ถูกเรียก
+Important logic:
 
-### `renderHistROI(days)`
-กราฟ **"เปรียบเทียบค่าไฟก่อน/หลังติด Solar"**
+- TOU active when `date >= CFG.touStart`
+- Weekends and `THAI_HOLIDAYS` are off-peak
+- Service fee is prorated daily as `P.srv / 30.4` in raw daily calculation
+- VAT is `1.07`
+- Clipping estimate:
+  - count samples where solar is active and battery is full/charge-limited
+  - convert sample count into kWh using interval minutes
+  - cap at `1.5 kW` and `5 kWh/day`
+- `sellKwh = exp + clipKwh` is a daily summary fallback. Visible sell-if cards and sell simulation should use dynamic P90 clipping via `estimateSellProjection()` / `renderHourlyAnalysis()` when row data exists.
 
-Priority logic สำหรับแท่งสีฟ้า (หลังติด):
-1. ดู `actualBills` ที่เป็น Post-Solar ก่อน (บิลจริงจาก MEA)
-2. ถ้าไม่มี ใช้ inverter estimate จาก `mCostInv`
-3. แสดง badge `✅ ใช้บิลจริงจาก MEA/PEA` เมื่อมีข้อมูลจริง
+P90 reference note:
 
-Priority logic สำหรับแท่งสีเทา (ก่อนติด):
-1. ดู `actualBills` ที่เป็น Pre-Solar ก่อน
-2. ถ้าไม่มี ใช้ `histBills` (12-month baseline)
+- Full-export trial days are useful P90 reference days because production is less battery-limited
+- In this project, Apr 16-19 were used as full-production trial context
+- Early in the dataset, a few very clear full-export days can make P90 slightly optimistic
+- The app only counts P90 gap as clipping when battery is full or charge-limited, so cloudy days are less likely to be falsely counted
 
-### `renderHourlyAnalysis(days)`
-วิเคราะห์รายชั่วโมงเพื่อหา **Potential P90** (ศักยภาพสูงสุดของระบบ)
-- นำข้อมูลทุกวันมากองรวมกันแยกตามชั่วโมง (เช่น 13:00 น. ของทุกวัน)
-- หาค่า **Percentile 90 (P90)** ของการผลิต (ตัด 10% ยอดแหลมที่อาจเป็น Noise ทิ้ง)
-- ใช้เส้น P90 นี้เป็น Baseline เทียบกับการผลิตจริง (Actual) เพื่อวาดกราฟหาช่วงที่เกิด Clipping
+Battery empty time:
 
-### `billPeriodKey(date)` → `"YYYY-MM"` string
-แปลวันที่เป็น billing period key ตาม `CFG.billDay`
-- ถ้าวันที่ >= billDay → period = เดือนถัดไป
-- ถ้าวันที่ < billDay → period = เดือนปัจจุบัน
+- The app does not simply use minimum SOC time
+- It waits until battery has meaningfully recharged first (`>= 25%`)
+- Then records first SOC `<= 21%`
+- This avoids false empty time near midnight or after stale data
 
-### `touActive(date)` → boolean
-ตรวจว่าวันนั้นใช้ TOU แล้วหรือยัง  
-```javascript
-const touActive = (date) => CFG.touStart && date >= CFG.touStart
+---
+
+## 7. Bill Calibration
+
+Current calibration system is **not** `updateCalibrationFactor()`, `kwhFactor`, or `costFactor`.
+
+Current functions:
+
+- `computeCycleCalibrations(validBills, P)`
+- `applyCalibration(summary, dateStr)`
+- global `CYCLE_CALIBRATION`
+
+### Cycle key
+
+`getCycleKeyForDate(date, billDay)` maps a day into a bill cycle ending month.
+
+Example with bill day 15:
+
+```text
+2026-05-14 → 2026-05 cycle
+2026-05-15 → 2026-06 cycle
+```
+
+### Real bill override
+
+For a bill cycle with a real cost:
+
+```text
+EstimatedBill = Σ RawCost(day, billFt)
+BillRatio = ActualBill / EstimatedBill
+CalibratedCost(day) = RawCost(day, billFt) × BillRatio
+```
+
+The daily rows get:
+
+- `isBilledOverride = true`
+- `isProjectedOverride = false`
+- `costTotal`, `costOn`, `costOff` adjusted
+
+### K-Factor projection
+
+For cycles where the real cost is not available yet:
+
+```text
+K_normal = BillNormal_kWh / InverterNormal_kWh
+K_on     = BillOnPeak_kWh / InverterOnPeak_kWh
+K_off    = BillOffPeak_kWh / InverterOffPeak_kWh
+```
+
+`activeK` uses the latest stable K-Factor set, or average of the latest 3 when values do not swing too much.
+
+Projected daily costs get:
+
+- `isBilledOverride = false`
+- `isProjectedOverride = true`
+
+Important: kWh display remains raw inverter kWh. Only currency values are adjusted. The UI marks adjusted currency with `*`.
+
+---
+
+## 8. `renderHistROI(days)`
+
+This renders the before-vs-after electricity bill comparison chart in Analysis Overview.
+
+Current behavior:
+
+- The chart only uses post-solar real bills as the main month keys
+- For each post-solar bill month:
+  - After bar = actual post-solar bill from `actualBills`
+  - Before bar = same-month pre-solar actual bill if available
+  - Otherwise before bar = `histBills` baseline for that month
+- It does not fall back to inverter-estimated monthly cost for the after bar
+- Bars are rendered as separated labels:
+  - `ก่อน / พ.ค. 68`
+  - `หลัง / พ.ค. 69`
+  - then the next month pair
+
+This means the chart grows month by month as real post-solar bills are added. With 12 real post-solar bills, it becomes a full 12-month before/after comparison.
+
+---
+
+## 9. ROI And Simulation
+
+### `calcROI()`
+
+ROI uses actual load to create a no-solar baseline.
+
+```text
+NoSolarCostPerDay = (Load_kWh × (P.flat + P.ft) + P.srv / 30.4) × 1.07
+ActualSolarCostPerDay = average(summary.costTotal)
+SavingPerDay = max(0, NoSolarCostPerDay - ActualSolarCostPerDay)
+MonthlySaving = SavingPerDay × 30.4
+YearlySaving = SavingPerDay × 365
+PaybackYears = Investment / YearlySaving
+```
+
+The ROI card also displays the daily formula:
+
+```text
+Before Solar avg/day - After Solar avg/day = Saving/day
+```
+
+### Sell-to-MEA payback
+
+The sell simulation in `simSellRoi` is a new payback period, not a monthly saving number.
+
+```text
+P90Clipping = renderHourlyAnalysis(rowDays, null, null, allRowsForP90).totalClipped
+SellValuePerYear = avg((Export_kWh + P90Clipping_kWh) × SellRate) × 365
+PaybackWithSell = Investment / (YearlySaving + SellValuePerYear)
+```
+
+If row data is not available, the app falls back to `summary.sellCost`.
+
+### Optimizer simulation
+
+The optimizer simulation estimates recoverable imbalance energy:
+
+```text
+RecoverableWh = max(0, min(max(PV1, PV2) × 2, inverterW) - SolarW) × Δt
+OptimizerWh = RecoverableWh × 50%
+Saving = min(OptimizerWh, GridImportWh) × rate
+```
+
+The `50%` factor is intentional and matches the UI tooltip.
+
+### Battery 10 → 16 kWh simulation
+
+This is a rough directional estimate:
+
+```text
+ExtraUsableBatt = 6 × (1 - 0.21)
+Storeable = min(export + 2 kWh rough clipping allowance, ExtraUsableBatt)
+BatterySaving = min(Storeable, nightImport) × offPeakRateWithVAT
+```
+
+It is not a full hourly SOC simulation.
+
+---
+
+## 10. Battery Cycle
+
+Function: `renderBattCycles(days)`
+
+Current method is Equivalent Full Cycle (EFC):
+
+```text
+usableKwh = CFG.sys.battKwh × 0.9
+EFC/day = (Charge_kWh + Discharge_kWh) / (2 × usableKwh)
+```
+
+Partial days are excluded.
+
+This replaced the older charge-only method because charge-only overstates cycle count when charge and discharge are imbalanced.
+
+---
+
+## 11. Temperature Charts
+
+Monthly, yearly, and all-time temperature stack charts use AC temperature bands:
+
+```text
+45–50°C
+50–55°C
+55–60°C
+>60°C
+```
+
+Weekly temperature chart still compares multiple temperature sources. That is why weekly title is `อุณหภูมิ`, while monthly/year/all-time use `อุณหภูมิ (AC)`.
+
+---
+
+## 12. Heatmaps
+
+Current heatmap placement:
+
+- Weekly tab: no heatmap
+- Monthly tab:
+  - self-sufficiency heatmap
+  - daily cost heatmap
+  - problem heatmap
+- Analysis/month and year panes use calendar heatmaps where applicable
+
+Color logic:
+
+- `selfColor()` maps self-sufficiency from red → yellow → green
+- `costColor()` maps daily bill against `DAILY_BILL_TARGET`
+- Current default monthly target is `฿600/month`, so daily target is about `฿19.74/day`
+- `socTimeColor()` treats battery empty before 22:00 as warning because it is still TOU on-peak
+- Battery empty at 22:00 or later is OK from a bill-cost perspective because TOU off-peak has started
+
+---
+
+## 13. Important Render Flow
+
+`refresh()` calls render functions and catches render errors per section.
+
+Key functions:
+
+- `renderDay(date)`
+- `renderWeek(startDate)`
+- `renderMonth()`
+- `renderYear()`
+- `renderAllTime()`
+- `renderAnalysis()`
+
+`switchTab(t)` calls `renderVisibleTab(t)` to avoid blank Chart.js rendering after hidden canvas tabs become visible.
+
+---
+
+## 14. Chart Helpers
+
+### `mkChart(id, type, labels, datasets, yOverride, plugins)`
+
+Handles normal bar/line/pie chart creation.
+
+Important behavior:
+
+- Destroys existing chart before creating a new one
+- Adds bar value labels automatically for non-timeY bar charts
+- Supports:
+  - `stacked`
+  - `timeY`
+  - `tooltipExtra`
+  - `legend: false`
+
+### `barValueLabelsPlugin()`
+
+- Non-stacked bars: label is outside the bar
+- Stacked bars: label is inside segment when enough height exists
+- Adds top padding/grace to avoid overlap
+
+---
+
+## 15. Known Risks / Technical Debt
+
+| Risk | Notes |
+|---|---|
+| Single large HTML file | Easy to run, harder to maintain |
+| Multiple render functions call `dbAll()` | Works, but can be optimized later |
+| Holiday list is hardcoded | Must be updated for future years |
+| Some simulation constants are rough | Especially `+2 kWh` clipping allowance for bigger battery simulation |
+| Browser storage is local | Clearing browser data deletes saved dashboard data |
+| CDN dependency | Needs internet the first time Chart.js/SheetJS are loaded |
+
+---
+
+## 16. Safe Editing Rules
+
+1. Do not change IndexedDB schema unless migration is handled.
+2. Do not alter `calcSum()` without tracing downstream cards/charts.
+3. Do not change calibration without checking both real bill override and K-Factor projection.
+4. Do not change kWh display semantics: raw inverter kWh must remain raw.
+5. Keep adjusted currency values marked with `*`.
+6. Keep `app.html` single-file unless the user explicitly asks for a multi-file app.
+7. Before claiming a fix is complete, run inline script syntax check:
+
+```powershell
+node -e "const fs=require('fs'),vm=require('vm');const code=fs.readFileSync('app.html','utf8');const scripts=[...code.matchAll(/<script(?!(?:[^>]*src=))[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]);for(const [i,s] of scripts.entries()){new vm.Script(s,{filename:'inline-script-'+(i+1)+'.js'});}console.log('SCRIPT_OK scripts='+scripts.length+' lines='+code.split(/\r?\n/).length);"
 ```
 
 ---
 
-## 7. Column Auto-Detection (`detectC`)
+## 17. Diagnostic Checklist
 
-ระบบ Auto-detect ชื่อคอลัมน์จาก XLSX:
-```javascript
-C = {
-  time:     // คอลัมน์เวลา
-  solar:    // Total DC Input Power (W)
-  solarK:   // Daily Production (kWh)
-  grid:     // Total Grid Power (W)
-  feedIn:   // Daily Grid Feed-in (kWh)
-  purchase: // Daily Energy Purchased (kWh) ← KEY for on/off peak calc
-  load:     // Total Consumption Power (W)
-  loadK:    // Daily Consumption (kWh)
-  soc:      // BMS SOC (%)
-  batt:     // Battery Power (W)
-  pv1:      // DC Power PV1 (W)
-  pv2:      // DC Power PV2 (W)
-  // + voltage/current columns
-}
+When a user reports wrong numbers:
+
+```text
+[ ] Is CFG.startDate correct?
+[ ] Is CFG.touStart correct?
+[ ] Is CFG.billDay correct?
+[ ] Is the day marked partial?
+[ ] Does actualBills have real cost for the bill cycle?
+[ ] Does actualBills include normal/on/off kWh if K-Factor is expected?
+[ ] Is the value raw kWh or adjusted currency?
+[ ] Is the date in a weekend/holiday off-peak period?
+[ ] Is the browser opened from the same file path/origin as before?
 ```
 
-Column matching ใช้ case-insensitive substring search:  
-`f('total dc input power')` จะหา key ที่มีทุก word นี้ใน column name
+When a chart looks blank or incomplete:
 
----
-
-## 8. Known Issues & Technical Debt
-
-### แก้ไขแล้ว ✅
-| Bug / Feature | การแก้ไข |
-|-----|---------|
-| `renderHistROI` ใช้ inverter estimate แทน MEA bill จริง | เพิ่ม `postSolarActualCost` lookup จาก `actualBills` |
-| `mkPie` ไม่ถูกนิยาม → Tab "ทั้งหมด" crash | เพิ่ม `function mkPie(id,labels,data,colors)` |
-| `HOLIDAYS` hardcoded ปี 2026 เท่านั้น | ย้ายเป็น `const THAI_HOLIDAYS` ครอบคลุมถึงปี 2027 |
-| May 16-17 patch รัน global (ไม่ระบุปี) | เปลี่ยนเป็น `=== '2026-05-16'` exact match |
-| Modal บิลไม่แสดง Pre/Post Solar status | เพิ่ม `getStatusBadge()` + badge UI |
-| ชื่อ Heatmap ไม่สื่อความหมาย | สลับ Title เป็น "พึ่งตัวเอง %" และ Subtitle เป็น "Calendar Heatmap" |
-| ผู้ใช้ไม่ทราบว่าฟิลด์ไหนสำคัญ | เพิ่ม Asterisk สีแดง (`*`) ที่ฟิลด์ config ที่ระบบนำไปคำนวณจริง |
-| Tooltip & Glossary อธิบายขายไฟไม่ชัดเจน | อัปเดตข้อความให้ระบุชัดเจนว่ารวม Clipping (สมมติปลดกันย้อน) แล้ว |
-
-### ยังมีอยู่ ⚠️
-| ปัญหา | ตำแหน่ง | Priority |
-|------|---------|---------|
-| `dbAll()` ถูกเรียก 6 ครั้งต่อ `refresh()` | ทุก render function | Medium |
-| Code ซ้ำใน `renderCalendarHeatmap` (first week + remaining weeks) | line 3193+ | Low |
-| วันหยุดราชการต้อง update manual ทุกปี | `THAI_HOLIDAYS` | Low |
-| `alert()` แทน Toast — block UI | หลายที่ | Low |
-| ไม่มี Loading state ระหว่าง import | line ~1548 | Low |
-| Magic numbers ในการคำนวณ simulation | line ~3371 | Low |
-
----
-
-## 9. UI Component Map
-
-### Modals
-| ID | เปิดด้วย | เนื้อหา |
-|----|---------|--------|
-| `sysModal` | `openSystemInfo()` | ตั้งค่า System (inverter, panel, battery, dates, costs) |
-| `billModal` | `openBillModal()` | ประวัติบิลค่าไฟ (histBills + actualBills) |
-| `fmModal` | `openFileManager()` | จัดการข้อมูล XLSX ที่นำเข้าแล้ว |
-
-### Tab System
-```javascript
-switchTab('D'|'W'|'M'|'Y'|'T'|'A')   // เปลี่ยน Tab หลัก
-switchAnalysis('overview'|'day'|'week'|'month'|'year')  // เปลี่ยน Sub-tab ใน Analysis
+```text
+[ ] Was the chart rendered while hidden?
+[ ] Did switchTab call renderVisibleTab?
+[ ] Is the canvas id unique?
+[ ] Did mkChart destroy an existing chart with the same id?
+[ ] Are labels and dataset lengths equal?
 ```
-
----
-
-## 10. Future Improvement Suggestions
-
-### Phase 2 — Quick Wins (ไม่กระทบ Architecture)
-1. **Toast Notification** แทน `alert()` — สร้าง function `showToast(msg, type)` ใน CSS+JS
-2. **Loading Progress Bar** ระหว่าง Import — เพิ่ม progress element และ update ใน file loop
-3. **วันหยุดราชการ configurable** — เพิ่ม textarea ใน sysModal สำหรับกรอก HOLIDAYS เพิ่ม
-4. **Export to PDF** — ใช้ `window.print()` + print CSS
-5. **Export to CSV** — Aggregate `allDaysSummary` แล้ว download
-
-### Phase 3 — Architecture Improvements
-6. **Refactor `refresh()`** — Pass `all` data ลงทุก render function แทนให้แต่ละตัว call `dbAll()`
-   ```javascript
-   // ปัจจุบัน: แต่ละ function เรียก dbAll() เอง (6 ครั้ง/refresh)
-   // เป้าหมาย:
-   async function refresh() {
-     const all = await dbAll()  // เรียกครั้งเดียว
-     await renderDay(cur, all)
-     await renderWeek(cur, all)
-     // ...
-   }
-   ```
-7. **Split into modules** — แยก JS เป็น modules เมื่อไฟล์ใหญ่ขึ้น
-8. **Web Worker** สำหรับ `calcSum` เพื่อไม่ block UI ระหว่าง import หลายไฟล์
-
-### Phase 4 — Feature Expansion
-9. **Multi-system support** — เพิ่ม system selector, แยก IndexedDB per system
-10. **Inverter compatibility** — เพิ่ม column mapping profiles สำหรับ Growatt, Solis, Huawei
-11. **PWA** — เพิ่ม Service Worker, manifest.json สำหรับ install บน Mobile
-12. **Real-time mode** — WebSocket / API polling สำหรับ Inverter ที่มี local API
-
----
-
-## 11. Code Conventions & Patterns
-
-### Naming
-- `render*()` — functions ที่ update DOM/Charts
-- `calc*()` — functions ที่คำนวณและ return ค่า
-- `load*()` — functions ที่โหลดจาก storage
-- `save*()` — functions ที่ save ลง storage
-- `open*()` / `close*()` — functions เปิด/ปิด Modal
-
-### DOM Pattern
-```javascript
-const set = (id, v) => { const el = document.getElementById(id); if(el) el.innerHTML = v }
-// ใช้ if(el) guard เสมอเพื่อป้องกัน null reference
-```
-
-### Chart Pattern
-```javascript
-// ทุก chart ต้อง destroy ก่อน recreate
-if(charts[id]) charts[id].destroy()
-charts[id] = new Chart(...)
-
-// ใช้ mkChart() สำหรับ bar/line/pie ทั่วไป
-mkChart(id, type, labels, datasets, yOverride, plugins)
-
-// ใช้ mkPie() สำหรับ Pie chart สั้นๆ
-mkPie(id, labels, dataArray, colorsArray)
-```
-
-### Bill Period Key Pattern
-```javascript
-// billPeriodKey('2026-05-20') with billDay=15 → '2026-06'  (หลัง 15 → รอบถัดไป)
-// billPeriodKey('2026-05-10') with billDay=15 → '2026-05'  (ก่อน 15 → รอบนี้)
-```
-
----
-
-## 12. Critical Date/Period Logic
-
-```
-CFG.startDate = '2026-04-10'   ← วันที่ติด Solar (CRUCIAL)
-CFG.touStart  = '2026-05-05'   ← วันที่เปลี่ยนมิเตอร์เป็น TOU
-CFG.billDay   = 15             ← ตัดรอบบิลวันที่ 15
-
-Timeline:
-  Before startDate   → Pre-Solar bill (ใช้ flat rate calculation)
-  startDate to touStart → Post-Solar, flat rate
-  After touStart     → Post-Solar, TOU rate (On/Off peak)
-
-actualBills classification:
-  endStr = `${y}-${m}-${billDay-1}`
-  isPostSolar = endStr >= CFG.startDate
-```
-
----
-
-## 13. File Modification Safety Guidelines
-
-### 🛑 Code Safety Guidelines (กฎสำคัญสำหรับ AI)
-
-1. **ห้ามเปลี่ยนโครงสร้างข้อมูล IndexedDB:** (ถ้าไม่จำเป็นจริงๆ) เพราะผู้ใช้อาจมีข้อมูลเก่าอยู่แล้ว
-2. **ห้ามย้าย logic ออกจากไฟล์ `app.html`:** จุดประสงค์คือ Single-File Dashboard
-3. **ฟังก์ชันที่ห้ามแก้ถ้าไม่เข้าใจ 100%:** `calcSum()`, `processFile()`, `renderYear()`
-4. **Git Push:** **⚠️ ต้องถามผู้ใช้ (Ask for permission) ก่อนทำการ `git push` ทุกครั้ง ห้าม push อัตโนมัติเด็ดขาด**
-
-เมื่อแก้ไข `app.html` ให้ระวัง:
-
-1. **อย่าแก้ `calcSum()`** โดยไม่เข้าใจ meter logic ก่อน — ผลกระทบต่อตัวเลขทุกตัวในระบบ
-2. **อย่าเปลี่ยน IndexedDB schema** โดยไม่ increment version และ handle `onupgradeneeded`
-3. **`CFG.startDate` สำคัญที่สุด** — ถ้าผิดจะทำให้การแยก Pre/Post Solar ผิดทั้งหมด
-4. **`kwhFactor` และ `costFactor`** ถูก apply ทุกครั้งที่ `dbAll()` ถูกเรียก ไม่ต้อง apply เอง
-5. **Chart IDs** ต้อง unique ทั่วทั้งไฟล์ — ถ้าซ้ำจะ destroy chart อื่นโดยไม่ตั้งใจ
-6. **`THAI_HOLIDAYS`** ต้อง update ทุกปี (ก่อนสิ้นปี) เพื่อให้ On-peak calculation ถูกต้อง
-
----
-
-## 14. Quick Diagnostic Checklist
-
-เมื่อ User รายงานปัญหา ถามสิ่งเหล่านี้:
-
-```
-[ ] CFG.startDate ตั้งถูกต้องหรือไม่?
-[ ] CFG.touStart ตั้งถูกต้องหรือไม่?
-[ ] CFG.billDay ตรงกับรอบบิลจริงหรือไม่?
-[ ] actualBills มีข้อมูลหรือไม่? (เปิด Modal > ดู "บิลจริง")
-[ ] ข้อมูล XLSX มีคอลัมน์ครบหรือไม่? (diagnoseDB() แจ้งจำนวน rows)
-[ ] Browser เปิดจาก path/URL เดิมหรือไม่? (IndexedDB แยกตาม Origin)
-[ ] partialDays มีวันที่ผิดปกติที่ควรตัดออกหรือไม่?
-```
-
----
-
-*อัปเดตล่าสุด: พฤษภาคม 2569 (2026) — หลังแก้ไข 8 bugs รอบแรก*

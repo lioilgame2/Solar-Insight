@@ -888,7 +888,8 @@ body{
               ClippingWh = min(max(0, P90 - ActualSolar), 1.5 kW) × Δt และจำกัดทั้งวันไม่เกิน 5 kWh<br>
               <b>ตัวอย่าง:</b> P90 4.8 kW, ผลิตจริง 3.6 kW นาน 30 นาที<br>
               Clipping = min(1.2, 1.5) × 0.5 = 0.6 kWh<br>
-              เงื่อนไขจะนับเมื่อแบตเต็ม หรือแบตชาร์จชนลิมิต เพื่อกันการนับวันเมฆมากผิดเป็น clipping
+              เงื่อนไขจะนับเมื่อแบตเต็ม หรือแบตชาร์จชนลิมิต เพื่อกันการนับวันเมฆมากผิดเป็น clipping<br>
+              <i>วันที่ทดลองปล่อยไฟออกเต็มระบบ เช่น 16–19 เม.ย. ช่วยเป็น baseline ให้ P90 ได้ดี เพราะไม่ถูกแบตจำกัด แต่ถ้ามีข้อมูลน้อยวันมาก P90 อาจสูงเกินจริงเล็กน้อยจนกว่าจะมีข้อมูลสะสมเพิ่ม</i>
             </div>
             <div>
               <b style="color:var(--text)">Battery Cycle (EFC):</b><br>
@@ -3687,6 +3688,13 @@ function costColor(v){
   if(r<=2.00) return '#fb923c'
   return '#ef4444'
 }
+function socTimeColor(v){
+  if(v===99) return '#166534'
+  if(v<21) return '#ef4444'
+  if(v<22) return '#f97316'
+  if(v<24) return '#22c55e'
+  return '#166534'
+}
 
 function renderHeatmap(containerId,data,label){
   const el=document.getElementById(containerId);if(!el)return
@@ -3735,10 +3743,10 @@ function renderCalendarHeatmap(containerId,dayMap,mode='self'){
   
   if(mode==='soc'){
     const leg=document.getElementById('socLegend');if(leg){
-      leg.innerHTML=`<div class="hmap-leg-c" style="background:#ef4444" title="< 21:00"></div><div class="hmap-leg-c" style="background:#f97316" title="< 22:00"></div><div class="hmap-leg-c" style="background:#eab308" title="< 23:00"></div><div class="hmap-leg-c" style="background:#86efac" title="< 24:00"></div><div class="hmap-leg-c" style="background:#166534" title="> 00:00"></div>`
+      leg.innerHTML=`<div class="hmap-leg-c" style="background:#ef4444" title="ก่อน 21:00"></div><div class="hmap-leg-c" style="background:#f97316" title="21:00–21:59 ยัง On-peak"></div><div class="hmap-leg-c" style="background:#22c55e" title="22:00–23:59 Off-peak เริ่มแล้ว"></div><div class="hmap-leg-c" style="background:#166534" title="หลังเที่ยงคืน หรือแบตไม่หมด"></div><span style="margin-left:6px;color:var(--muted)">22:00+ = OK ด้านค่าไฟ</span>`
     }
     const legY=document.getElementById('socLegendY');if(legY){
-      legY.innerHTML=`<div class="hmap-leg-c" style="background:#ef4444" title="< 21:00"></div><div class="hmap-leg-c" style="background:#f97316" title="< 22:00"></div><div class="hmap-leg-c" style="background:#eab308" title="< 23:00"></div><div class="hmap-leg-c" style="background:#86efac" title="< 24:00"></div><div class="hmap-leg-c" style="background:#166534" title="> 00:00"></div>`
+      legY.innerHTML=`<div class="hmap-leg-c" style="background:#ef4444" title="ก่อน 21:00"></div><div class="hmap-leg-c" style="background:#f97316" title="21:00–21:59 ยัง On-peak"></div><div class="hmap-leg-c" style="background:#22c55e" title="22:00–23:59 Off-peak เริ่มแล้ว"></div><div class="hmap-leg-c" style="background:#166534" title="หลังเที่ยงคืน หรือแบตไม่หมด"></div><span style="margin-left:6px;color:var(--muted)">22:00+ = OK ด้านค่าไฟ</span>`
     }
   } else if (mode==='self') {
     const legHTML = `
@@ -3783,12 +3791,7 @@ function renderCalendarHeatmap(containerId,dayMap,mode='self'){
       if(info&&info.v!=null){
         if(mode==='cost') { bg=costColor(info.v); text=fn(info.v,0) }
         else if(mode==='soc') {
-          if(info.v===99) { bg='#166534'; text='—' }
-          else if(info.v<21) { bg='#ef4444'; text=info.t }
-          else if(info.v<22) { bg='#f97316'; text=info.t }
-          else if(info.v<23) { bg='#eab308'; text=info.t }
-          else if(info.v<24) { bg='#86efac'; text=info.t }
-          else { bg='#166534'; text=info.t }
+          bg=socTimeColor(info.v); text=info.v===99?'—':info.t
         }
         else if(mode==='prob') {
           if(info.v===1) { bg='#ef4444'; text='⚠️' }
@@ -3820,12 +3823,7 @@ function renderCalendarHeatmap(containerId,dayMap,mode='self'){
         if(info&&info.v!=null){
           if(mode==='cost') { bg=costColor(info.v); text=fn(info.v,0) }
           else if(mode==='soc') {
-            if(info.v===99) { bg='#166534'; text='—' }
-            else if(info.v<21) { bg='#ef4444'; text=info.t }
-            else if(info.v<22) { bg='#f97316'; text=info.t }
-            else if(info.v<23) { bg='#eab308'; text=info.t }
-            else if(info.v<24) { bg='#86efac'; text=info.t }
-            else { bg='#166534'; text=info.t }
+            bg=socTimeColor(info.v); text=info.v===99?'—':info.t
           }
           else if(mode==='prob') {
             if(info.v===1) { bg='#ef4444'; text='⚠️' }
@@ -4047,6 +4045,23 @@ function renderYearAnalysis(days){
   ].map(([l,v])=>`<div class="an-row"><span>${l}</span><b>${v}</b></div>`).join('')
 }
 
+function estimateSellProjection(days, allDaysForP90=null){
+  const usable=(days||[]).filter(d=>d&&d.s)
+  if(!usable.length)return{sellPerYear:0,sellKwh:0,sellCost:0,days:0,method:'none'}
+  const rowDays=usable.filter(d=>d.rows&&d.rows.length&&!CFG.partialDays.includes(d.date))
+  if(rowDays.length){
+    const p=getP()
+    const p90Src=(allDaysForP90&&allDaysForP90.length?allDaysForP90:usable).filter(d=>d&&d.rows&&d.rows.length)
+    const dynClip=renderHourlyAnalysis(rowDays,null,null,p90Src).totalClipped*rowDays.length
+    const sellKwh=rowDays.reduce((s,d)=>s+(d.s.exp||0),0)+dynClip
+    const sellCost=sellKwh*p.sell
+    return{sellPerYear:(sellCost/rowDays.length)*365,sellKwh,sellCost,days:rowDays.length,method:'p90'}
+  }
+  const sellCost=usable.reduce((s,d)=>s+(d.s.sellCost||0),0)
+  const sellKwh=usable.reduce((s,d)=>s+(d.s.sellKwh||0),0)
+  return{sellPerYear:(sellCost/usable.length)*365,sellKwh,sellCost,days:usable.length,method:'summary'}
+}
+
 function calcROI(){
   const cv=parseFloat(document.getElementById('roiCost').value)||0
   if(!allDaysSummary.length)return
@@ -4075,8 +4090,8 @@ function calcROI(){
     document.getElementById('roiSub').textContent=cv>0?'ข้อมูลไม่พอคำนวณ':'กรอกต้นทุนเพื่อคำนวณ'
   }
   const sellRate = getP().sell || 2.20;
-  const tSellCost = allDaysSummary.reduce((s,x)=>s+(x.s.sellCost||0),0);
-  const sellPerYear = allDaysSummary.length ? (tSellCost / allDaysSummary.length) * 365 : 0;
+  const sellProjection = estimateSellProjection(allDaysSummary, allDaysSummary);
+  const sellPerYear = sellProjection.sellPerYear || 0;
   const roiPerYear = saving * 365;
   const simSellEl = document.getElementById('simSellRoi');
   if (simSellEl) {
