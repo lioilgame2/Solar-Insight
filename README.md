@@ -279,7 +279,7 @@ Important: browser data is local to the browser and file origin. If you clear br
 ## Project Structure
 
 ```text
-Solar-Insight/
+.
 ├── app.html      # Main application
 ├── README.md     # Public project overview
 └── README.ai.md  # Developer and AI handoff notes
