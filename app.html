@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JPT Solar</title>
+<title>Deye Solar Insight</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -294,7 +294,7 @@ body{
 <div class="sticky-header">
 <div class="nav">
   <div>
-    <div class="nav-logo" id="navLogo">☀ JPT Solar</div>
+    <div class="nav-logo" id="navLogo">☀ Deye Solar Insight</div>
     <div class="nav-spec">
       <b>Inverter:</b> DEYE SUN-5K-SG04LP3-EU · 5kW Hybrid · <b>TOU:</b> On-peak 09:00–22:00<br>
       <b>PV:</b> 6.45kWp (10×645Wp) · String A: 5 West · String B: 3S+2W · <b>Battery:</b> PYLON LiFePO4 10.24kWh
@@ -1056,7 +1056,7 @@ body{
           <div class="an-ttl">Spec / Date</div>
           <div class="roi-input" style="grid-column: 1 / -1;">
             <label>ชื่อระบบ / ชื่อหน้า <span class="field-mark display" title="ใช้แสดงผล"></span></label>
-            <input id="sysAppName" type="text" style="width:100%" value="JPT Solar">
+            <input id="sysAppName" type="text" style="width:100%" value="Deye Solar Insight">
           </div>
           <div class="roi-input" style="grid-column: 1 / -1;">
             <label>Inverter <span class="field-mark display" title="ใช้แสดงผล"></span></label>
@@ -1867,7 +1867,7 @@ let dates=[],cur=null,charts={},curWeekStart=null,curMonthKey=null,curYear=null
 let systemInfo={note:''}
 
 function updateBranding(appName){
-  const safeName=(appName||'JPT Solar').trim()||'JPT Solar'
+  const safeName=(appName||'Deye Solar Insight').trim()||'Deye Solar Insight'
   const navLogo=document.getElementById('navLogo')
   if(navLogo)navLogo.textContent=`☀ ${safeName}`
   document.title=safeName
@@ -1880,7 +1880,7 @@ function updateSimulationVisibility(showSimulation){
 
 function currentSystemInfo(){
   return{
-    appName:systemInfo.appName||'JPT Solar',
+    appName:systemInfo.appName||'Deye Solar Insight',
     invModel:systemInfo.invModel||'DEYE SUN-5K-SG04LP1-EU-SM2',
     invKw:CFG.sys.invKw||5,
     panels:CFG.sys.panels,wp:CFG.sys.wp,peakSunH:CFG.sys.peakSunH,battKwh:CFG.sys.battKwh,battAmp:CFG.sys.battAmp,battModel:CFG.sys.battModel||'PYLON LiFePO4',
@@ -1997,7 +1997,7 @@ function fillSystemInfoForm(){
   const info=currentSystemInfo()
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v}
   const setCheck=(id,v)=>{const el=document.getElementById(id);if(el)el.checked=!!v}
-  set('sysAppName',info.appName||'JPT Solar')
+  set('sysAppName',info.appName||'Deye Solar Insight')
   set('sysInvModel',info.invModel||'DEYE SUN-5K-SG04LP1-EU-SM2');set('sysInvKw',info.invKw||5);set('sysPanels',info.panels);set('sysWp',info.wp);set('sysPvModel',info.pvModel||'');set('sysPeakSun',info.peakSunH);set('sysBattKwh',info.battKwh);set('sysBattAmp',info.battAmp||48);set('sysBattModel',info.battModel||'PYLON LiFePO4');set('sysStringA',info.stringA||'5 West');set('sysStringB',info.stringB||'3 South + 2 West')
   set('sysStartDate',info.startDate);set('sysTouStart',info.touStart);set('sysBillDay',info.billDay)
   set('sysSolarCost',info.solarCost);set('sysTouCost',info.touCost);set('sysTaxDeduct',info.taxDeduction);
@@ -2005,7 +2005,7 @@ function fillSystemInfoForm(){
   set('sysPartialDays',info.partialDays.join(','));set('sysNote',info.note||'')
   const view=document.getElementById('sysView')
   if(view)view.innerHTML=[
-    ['Name',info.appName||'JPT Solar'],
+    ['Name',info.appName||'Deye Solar Insight'],
     ['String A',info.stringA||'5 West'],
     ['String B',info.stringB||'3 South + 2 West'],
     ['Battery',`${info.battModel||'PYLON LiFePO4'} ${info.battKwh||CFG.sys.battKwh}kWh`],
@@ -2025,7 +2025,7 @@ async function saveSystemInfo(){
   const get=id=>document.getElementById(id).value
   const getCheck=id=>document.getElementById(id).checked
   const info={
-    appName:(get('sysAppName')||'').trim()||'JPT Solar',
+    appName:(get('sysAppName')||'').trim()||'Deye Solar Insight',
     invModel:(get('sysInvModel')||'').trim(),invKw:+get('sysInvKw'),panels:+get('sysPanels'),wp:+get('sysWp'),pvModel:get('sysPvModel').trim(),peakSunH:+get('sysPeakSun'),battKwh:+get('sysBattKwh'),battAmp:+get('sysBattAmp'),
     battModel:(get('sysBattModel')||'').trim()||'PYLON LiFePO4',
     startDate:get('sysStartDate'),touStart:get('sysTouStart'),billDay:+get('sysBillDay'),
@@ -2044,7 +2044,7 @@ async function saveSystemInfo(){
 }
 async function clearSystemInfo(){
   if(!confirm('ล้างข้อมูลระบบที่บันทึกไว้สำหรับการแชร์/ส่งต่อ? ข้อมูล XLSX จะไม่ถูกลบ'))return
-  applySystemInfo({appName:'JPT Solar',invModel:'DEYE SUN-5K-SG04LP1-EU-SM2',invKw:5,pvModel:'Deye SUN-5K-SG04LP1-EU-SM2',pvEff:97.6,pvVoc:500,pvVmp:425,pvIsc:36,pvImp:18,stringA:'5 West',stringB:'3 South + 2 West',battModel:'PYLON LiFePO4',inflationRate:2.89,showSimulation:false,partialDays:[],note:'',panels:10,wp:645,peakSunH:4.5,battKwh:10.24,battAmp:48,startDate:'2026-04-10',touStart:'2026-05-05',billDay:15,solarCost:209000,touCost:3350,taxDeduction:60000})
+  applySystemInfo({appName:'Deye Solar Insight',invModel:'DEYE SUN-5K-SG04LP1-EU-SM2',invKw:5,pvModel:'Deye SUN-5K-SG04LP1-EU-SM2',pvEff:97.6,pvVoc:500,pvVmp:425,pvIsc:36,pvImp:18,stringA:'5 West',stringB:'3 South + 2 West',battModel:'PYLON LiFePO4',inflationRate:2.89,showSimulation:false,partialDays:[],note:'',panels:10,wp:645,peakSunH:4.5,battKwh:10.24,battAmp:48,startDate:'2026-04-10',touStart:'2026-05-05',billDay:15,solarCost:209000,touCost:3350,taxDeduction:60000})
   await settingsPut('systemInfo',currentSystemInfo())
   fillSystemInfoForm()
   await rerenderAll()

@@ -1,8 +1,8 @@
-## คู่มือใช้งาน SolarInsight
+## คู่มือใช้งาน Deye Solar Insight (Public Beta)
 
 เอกสารนี้เปิดด้วยภาษาไทย ส่วนภาษาอังกฤษจะอยู่ด้านล่าง
 
-SolarInsight เป็น dashboard แบบเปิดจากไฟล์ `app.html` ได้เลย ไม่ต้องติดตั้ง server เพิ่ม
+Deye Solar Insight เป็น dashboard แบบเปิดจากไฟล์ `app.html` ได้เลย และสามารถนำไปเปิดผ่าน GitHub Pages ได้โดยไม่ต้องมี server ของตัวเอง
 
 สิ่งที่ควรรู้ก่อนเริ่ม:
 
@@ -69,7 +69,7 @@ SolarInsight เป็น dashboard แบบเปิดจากไฟล์ `
 
 ---
 
-# SolarInsight Dashboard
+# Deye Solar Insight (Public Beta)
 
 > Offline-first solar analytics for home hybrid inverter owners.
 > One HTML file. No server. No login. Your inverter data stays in your browser.
@@ -80,7 +80,7 @@ SolarInsight เป็น dashboard แบบเปิดจากไฟล์ `
 
 ## What It Is
 
-SolarInsight is a browser-based dashboard for people who want to understand their solar system beyond the default inverter app.
+Deye Solar Insight is a browser-based dashboard for people who want to understand their solar system beyond the default inverter app.
 
 It turns exported inverter XLSX files and real electricity bills into practical answers:
 
@@ -91,13 +91,13 @@ It turns exported inverter XLSX files and real electricity bills into practical 
 - How much should my monthly bill be after calibration with real MEA/PEA bills?
 - What is the payback period if my current usage pattern continues?
 
-The app is built for a real home solar setup, but the structure is generic enough for other hybrid inverter exports with similar columns.
+The app is built and tested primarily around Deye hybrid inverter XLSX exports. Other inverter brands may work if their exported columns are similar, but compatibility is not guaranteed.
 
 ## Why This Exists
 
 Most inverter apps are good at showing live data, but weak at long-term ownership questions.
 
-| Problem | SolarInsight Approach |
+| Problem | Deye Solar Insight Approach |
 |---|---|
 | Cloud dashboards focus on real-time views | Local daily, weekly, monthly, yearly, and all-time analysis |
 | Electricity bills rarely match inverter estimates | Real bill calibration and K-Factor adjustment |
@@ -270,7 +270,7 @@ The simulation cards are directional estimates, not promises.
 
 ## Privacy
 
-SolarInsight is offline-first:
+Deye Solar Insight is offline-first:
 
 - No backend
 - No account
@@ -291,13 +291,35 @@ Additional practical notes:
 ```text
 .
 ├── app.html      # Main application
+├── index.html    # GitHub Pages entry point
 ├── README.md     # Public project overview
 └── README.ai.md  # Developer and AI handoff notes
 ```
 
+## GitHub Pages
+
+This project can be served directly with GitHub Pages because it is a static HTML/JS app.
+
+To enable GitHub Pages from the repository:
+
+1. Go to `Settings` in the GitHub repository.
+2. Open `Pages`.
+3. Under `Build and deployment`, choose `Deploy from a branch`.
+4. Select branch `master`.
+5. Select folder `/(root)`.
+6. Save and wait for GitHub to publish the site.
+
+The entry page should be `index.html`, which forwards to `app.html`.
+
+Notes:
+
+- According to GitHub Docs, Pages is available on public repositories with GitHub Free, and on public or private repositories with GitHub Pro/Team/Enterprise.
+- For easiest sharing with friends, using a public repository is the simplest path.
+- This Pages site is still local-data only: imported inverter files and saved settings stay in the visitor's browser.
+
 ## Best Fit
 
-SolarInsight is useful for:
+Deye Solar Insight is useful for:
 
 - Home solar owners with battery storage
 - Hybrid inverter users who can export XLSX data

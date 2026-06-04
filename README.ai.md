@@ -1,4 +1,4 @@
-# README.ai.md — SolarInsight Technical Reference
+# README.ai.md — Deye Solar Insight Technical Reference
 
 เอกสารนี้มีไว้ให้ AI assistant หรือ developer เข้าใจ `app.html` โดยไม่ต้อง reverse engineer ใหม่ทุกครั้ง
 
@@ -10,7 +10,7 @@
 
 | รายการ | ค่า |
 |---|---|
-| Project | SolarInsight Dashboard |
+| Project | Deye Solar Insight |
 | Main file | `app.html` ไฟล์เดียว |
 | App type | Offline-first browser dashboard |
 | Stack | HTML / CSS / Vanilla JavaScript / Chart.js / SheetJS / IndexedDB |
@@ -120,7 +120,7 @@ System modal metadata also includes:
 
 ```javascript
 {
-  appName: 'JPT Solar',
+  appName: 'Deye Solar Insight',
   inflationRate: 2.89,
   showSimulation: false,
   stringA: '5 West',
