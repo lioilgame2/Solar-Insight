@@ -1,71 +1,71 @@
-## คู่มือใช้งาน Deye Solar Insight (Public Beta)
+﻿## à¸„à¸¹à¹ˆà¸¡à¸·à¸­à¹ƒà¸Šà¹‰à¸‡à¸²à¸™ Deye Solar Insight (Public Beta)
 
-เอกสารนี้เปิดด้วยภาษาไทย ส่วนภาษาอังกฤษจะอยู่ด้านล่าง
+à¹€à¸­à¸à¸ªà¸²à¸£à¸™à¸µà¹‰à¹€à¸›à¸´à¸”à¸”à¹‰à¸§à¸¢à¸ à¸²à¸©à¸²à¹„à¸—à¸¢ à¸ªà¹ˆà¸§à¸™à¸ à¸²à¸©à¸²à¸­à¸±à¸‡à¸à¸¤à¸©à¸ˆà¸°à¸­à¸¢à¸¹à¹ˆà¸”à¹‰à¸²à¸™à¸¥à¹ˆà¸²à¸‡
 
-Deye Solar Insight เป็น dashboard แบบเปิดจากไฟล์ `app.html` ได้เลย และสามารถนำไปเปิดผ่าน GitHub Pages ได้โดยไม่ต้องมี server ของตัวเอง
+Deye Solar Insight à¹€à¸›à¹‡à¸™ dashboard à¹à¸šà¸šà¹€à¸›à¸´à¸”à¸ˆà¸²à¸à¹„à¸Ÿà¸¥à¹Œ `app.html` à¹„à¸”à¹‰à¹€à¸¥à¸¢ à¹à¸¥à¸°à¸ªà¸²à¸¡à¸²à¸£à¸–à¸™à¸³à¹„à¸›à¹€à¸›à¸´à¸”à¸œà¹ˆà¸²à¸™ GitHub Pages à¹„à¸”à¹‰à¹‚à¸”à¸¢à¹„à¸¡à¹ˆà¸•à¹‰à¸­à¸‡à¸¡à¸µ server à¸‚à¸­à¸‡à¸•à¸±à¸§à¹€à¸­à¸‡
 
-สิ่งที่ควรรู้ก่อนเริ่ม:
+à¸ªà¸´à¹ˆà¸‡à¸—à¸µà¹ˆà¸„à¸§à¸£à¸£à¸¹à¹‰à¸à¹ˆà¸­à¸™à¹€à¸£à¸´à¹ˆà¸¡:
 
-- ต้อง `import` ไฟล์จาก inverter เข้ามาในระบบก่อนถึงจะเห็นกราฟและการวิเคราะห์
-- โปรเจกต์นี้ทดสอบกับไฟล์ XLSX จาก `Deye` เป็นหลัก
-- ยี่ห้ออื่นอาจใช้ได้ถ้าโครงสร้างคอลัมน์ใกล้เคียง แต่ยังไม่การันตีว่าจะไม่มีปัญหา
-- ปุ่ม `ระบบ` ใช้ตั้งค่าชื่อระบบ, ค่าไฟ, เงินเฟ้อ, แบตเตอรี่, และตัวเลือก Simulation
-- จุดสีแดง = ใช้คำนวณ
-- จุดสีฟ้า = ใช้แสดงผล
+- à¸•à¹‰à¸­à¸‡ `import` à¹„à¸Ÿà¸¥à¹Œà¸ˆà¸²à¸ inverter à¹€à¸‚à¹‰à¸²à¸¡à¸²à¹ƒà¸™à¸£à¸°à¸šà¸šà¸à¹ˆà¸­à¸™à¸–à¸¶à¸‡à¸ˆà¸°à¹€à¸«à¹‡à¸™à¸à¸£à¸²à¸Ÿà¹à¸¥à¸°à¸à¸²à¸£à¸§à¸´à¹€à¸„à¸£à¸²à¸°à¸«à¹Œ
+- à¹‚à¸›à¸£à¹€à¸ˆà¸à¸•à¹Œà¸™à¸µà¹‰à¸—à¸”à¸ªà¸­à¸šà¸à¸±à¸šà¹„à¸Ÿà¸¥à¹Œ XLSX à¸ˆà¸²à¸ `Deye` à¹€à¸›à¹‡à¸™à¸«à¸¥à¸±à¸
+- à¸¢à¸µà¹ˆà¸«à¹‰à¸­à¸­à¸·à¹ˆà¸™à¸­à¸²à¸ˆà¹ƒà¸Šà¹‰à¹„à¸”à¹‰à¸–à¹‰à¸²à¹‚à¸„à¸£à¸‡à¸ªà¸£à¹‰à¸²à¸‡à¸„à¸­à¸¥à¸±à¸¡à¸™à¹Œà¹ƒà¸à¸¥à¹‰à¹€à¸„à¸µà¸¢à¸‡ à¹à¸•à¹ˆà¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¸à¸²à¸£à¸±à¸™à¸•à¸µà¸§à¹ˆà¸²à¸ˆà¸°à¹„à¸¡à¹ˆà¸¡à¸µà¸›à¸±à¸à¸«à¸²
+- à¸›à¸¸à¹ˆà¸¡ `à¸£à¸°à¸šà¸š` à¹ƒà¸Šà¹‰à¸•à¸±à¹‰à¸‡à¸„à¹ˆà¸²à¸Šà¸·à¹ˆà¸­à¸£à¸°à¸šà¸š, à¸„à¹ˆà¸²à¹„à¸Ÿ, à¹€à¸‡à¸´à¸™à¹€à¸Ÿà¹‰à¸­, à¹à¸šà¸•à¹€à¸•à¸­à¸£à¸µà¹ˆ, à¹à¸¥à¸°à¸•à¸±à¸§à¹€à¸¥à¸·à¸­à¸ Simulation
+- à¸ˆà¸¸à¸”à¸ªà¸µà¹à¸”à¸‡ = à¹ƒà¸Šà¹‰à¸„à¸³à¸™à¸§à¸“
+- à¸ˆà¸¸à¸”à¸ªà¸µà¸Ÿà¹‰à¸² = à¹ƒà¸Šà¹‰à¹à¸ªà¸”à¸‡à¸œà¸¥
 
-### เริ่มใช้งานแบบสั้นที่สุด
+### à¹€à¸£à¸´à¹ˆà¸¡à¹ƒà¸Šà¹‰à¸‡à¸²à¸™à¹à¸šà¸šà¸ªà¸±à¹‰à¸™à¸—à¸µà¹ˆà¸ªà¸¸à¸”
 
-1. เปิด `app.html` ด้วย Chrome หรือ Edge
-2. กดปุ่ม `ระบบ`
-3. กรอกข้อมูลหลักของระบบ เช่น วันเริ่มใช้ Solar, วันเริ่ม TOU, ขนาดระบบ, แบตเตอรี่, ค่าไฟ, และต้นทุน
-4. กดปุ่ม `inverter data` แล้วเลือกไฟล์ XLSX ที่ export มาจาก inverter
-5. ถ้ามีบิลจริง ให้ไปที่ `ประวัติบิล` แล้วกรอกบิลก่อนติดตั้งและหลังติดตั้ง
-6. ดูผลที่ tab `รายวัน`, `รายเดือน`, และ `วิเคราะห์`
+1. à¹€à¸›à¸´à¸” `app.html` à¸”à¹‰à¸§à¸¢ Chrome à¸«à¸£à¸·à¸­ Edge
+2. à¸à¸”à¸›à¸¸à¹ˆà¸¡ `à¸£à¸°à¸šà¸š`
+3. à¸à¸£à¸­à¸à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸«à¸¥à¸±à¸à¸‚à¸­à¸‡à¸£à¸°à¸šà¸š à¹€à¸Šà¹ˆà¸™ à¸§à¸±à¸™à¹€à¸£à¸´à¹ˆà¸¡à¹ƒà¸Šà¹‰ Solar, à¸§à¸±à¸™à¹€à¸£à¸´à¹ˆà¸¡ TOU, à¸‚à¸™à¸²à¸”à¸£à¸°à¸šà¸š, à¹à¸šà¸•à¹€à¸•à¸­à¸£à¸µà¹ˆ, à¸„à¹ˆà¸²à¹„à¸Ÿ, à¹à¸¥à¸°à¸•à¹‰à¸™à¸—à¸¸à¸™
+4. à¸à¸”à¸›à¸¸à¹ˆà¸¡ `inverter data` à¹à¸¥à¹‰à¸§à¹€à¸¥à¸·à¸­à¸à¹„à¸Ÿà¸¥à¹Œ XLSX à¸—à¸µà¹ˆ export à¸¡à¸²à¸ˆà¸²à¸ inverter
+5. à¸–à¹‰à¸²à¸¡à¸µà¸šà¸´à¸¥à¸ˆà¸£à¸´à¸‡ à¹ƒà¸«à¹‰à¹„à¸›à¸—à¸µà¹ˆ `à¸›à¸£à¸°à¸§à¸±à¸•à¸´à¸šà¸´à¸¥` à¹à¸¥à¹‰à¸§à¸à¸£à¸­à¸à¸šà¸´à¸¥à¸à¹ˆà¸­à¸™à¸•à¸´à¸”à¸•à¸±à¹‰à¸‡à¹à¸¥à¸°à¸«à¸¥à¸±à¸‡à¸•à¸´à¸”à¸•à¸±à¹‰à¸‡
+6. à¸”à¸¹à¸œà¸¥à¸—à¸µà¹ˆ tab `à¸£à¸²à¸¢à¸§à¸±à¸™`, `à¸£à¸²à¸¢à¹€à¸”à¸·à¸­à¸™`, à¹à¸¥à¸° `à¸§à¸´à¹€à¸„à¸£à¸²à¸°à¸«à¹Œ`
 
-### ต้องเตรียมอะไรบ้าง
+### à¸•à¹‰à¸­à¸‡à¹€à¸•à¸£à¸µà¸¢à¸¡à¸­à¸°à¹„à¸£à¸šà¹‰à¸²à¸‡
 
-- ไฟล์ XLSX จาก inverter
-- วันที่เริ่มใช้งาน Solar
-- วันที่เริ่มใช้มิเตอร์ TOU
-- ค่าไฟ On-peak / Off-peak / Flat / Ft / ค่าบริการ
-- ข้อมูลแบตเตอรี่ที่ใช้งานจริง
-- ถ้ามี: บิลค่าไฟจริงจาก MEA/PEA
+- à¹„à¸Ÿà¸¥à¹Œ XLSX à¸ˆà¸²à¸ inverter
+- à¸§à¸±à¸™à¸—à¸µà¹ˆà¹€à¸£à¸´à¹ˆà¸¡à¹ƒà¸Šà¹‰à¸‡à¸²à¸™ Solar
+- à¸§à¸±à¸™à¸—à¸µà¹ˆà¹€à¸£à¸´à¹ˆà¸¡à¹ƒà¸Šà¹‰à¸¡à¸´à¹€à¸•à¸­à¸£à¹Œ TOU
+- à¸„à¹ˆà¸²à¹„à¸Ÿ On-peak / Off-peak / Flat / Ft / à¸„à¹ˆà¸²à¸šà¸£à¸´à¸à¸²à¸£
+- à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¹à¸šà¸•à¹€à¸•à¸­à¸£à¸µà¹ˆà¸—à¸µà¹ˆà¹ƒà¸Šà¹‰à¸‡à¸²à¸™à¸ˆà¸£à¸´à¸‡
+- à¸–à¹‰à¸²à¸¡à¸µ: à¸šà¸´à¸¥à¸„à¹ˆà¸²à¹„à¸Ÿà¸ˆà¸£à¸´à¸‡à¸ˆà¸²à¸ MEA/PEA
 
-### เรื่องไฟล์จาก inverter
+### à¹€à¸£à¸·à¹ˆà¸­à¸‡à¹„à¸Ÿà¸¥à¹Œà¸ˆà¸²à¸ inverter
 
-- เวอร์ชันปัจจุบันพัฒนาจากไฟล์ export ของ `Deye`
-- ถ้าใช้ `Deye` โอกาสใช้งานได้ตรงที่สุด
-- ถ้าเป็น inverter ยี่ห้ออื่น ระบบอาจยัง import ได้ แต่มีความเสี่ยงเรื่อง:
-  - ชื่อคอลัมน์ไม่ตรง
-  - หน่วยข้อมูลไม่เหมือนกัน
-  - ไม่มีบาง field ที่ระบบใช้คำนวณ เช่น PV string, SOC, temperature, grid purchase/export
-- ถ้า import แล้วกราฟหรือค่าคำนวณดูผิด ควรเริ่มจากเช็คว่าโครงสร้างไฟล์ตรงกับ Deye หรือไม่
+- à¹€à¸§à¸­à¸£à¹Œà¸Šà¸±à¸™à¸›à¸±à¸ˆà¸ˆà¸¸à¸šà¸±à¸™à¸žà¸±à¸’à¸™à¸²à¸ˆà¸²à¸à¹„à¸Ÿà¸¥à¹Œ export à¸‚à¸­à¸‡ `Deye`
+- à¸–à¹‰à¸²à¹ƒà¸Šà¹‰ `Deye` à¹‚à¸­à¸à¸²à¸ªà¹ƒà¸Šà¹‰à¸‡à¸²à¸™à¹„à¸”à¹‰à¸•à¸£à¸‡à¸—à¸µà¹ˆà¸ªà¸¸à¸”
+- à¸–à¹‰à¸²à¹€à¸›à¹‡à¸™ inverter à¸¢à¸µà¹ˆà¸«à¹‰à¸­à¸­à¸·à¹ˆà¸™ à¸£à¸°à¸šà¸šà¸­à¸²à¸ˆà¸¢à¸±à¸‡ import à¹„à¸”à¹‰ à¹à¸•à¹ˆà¸¡à¸µà¸„à¸§à¸²à¸¡à¹€à¸ªà¸µà¹ˆà¸¢à¸‡à¹€à¸£à¸·à¹ˆà¸­à¸‡:
+  - à¸Šà¸·à¹ˆà¸­à¸„à¸­à¸¥à¸±à¸¡à¸™à¹Œà¹„à¸¡à¹ˆà¸•à¸£à¸‡
+  - à¸«à¸™à¹ˆà¸§à¸¢à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¹„à¸¡à¹ˆà¹€à¸«à¸¡à¸·à¸­à¸™à¸à¸±à¸™
+  - à¹„à¸¡à¹ˆà¸¡à¸µà¸šà¸²à¸‡ field à¸—à¸µà¹ˆà¸£à¸°à¸šà¸šà¹ƒà¸Šà¹‰à¸„à¸³à¸™à¸§à¸“ à¹€à¸Šà¹ˆà¸™ PV string, SOC, temperature, grid purchase/export
+- à¸–à¹‰à¸² import à¹à¸¥à¹‰à¸§à¸à¸£à¸²à¸Ÿà¸«à¸£à¸·à¸­à¸„à¹ˆà¸²à¸„à¸³à¸™à¸§à¸“à¸”à¸¹à¸œà¸´à¸” à¸„à¸§à¸£à¹€à¸£à¸´à¹ˆà¸¡à¸ˆà¸²à¸à¹€à¸Šà¹‡à¸„à¸§à¹ˆà¸²à¹‚à¸„à¸£à¸‡à¸ªà¸£à¹‰à¸²à¸‡à¹„à¸Ÿà¸¥à¹Œà¸•à¸£à¸‡à¸à¸±à¸š Deye à¸«à¸£à¸·à¸­à¹„à¸¡à¹ˆ
 
-### ปุ่ม `ระบบ` ใช้ตั้งค่าอะไร
+### à¸›à¸¸à¹ˆà¸¡ `à¸£à¸°à¸šà¸š` à¹ƒà¸Šà¹‰à¸•à¸±à¹‰à¸‡à¸„à¹ˆà¸²à¸­à¸°à¹„à¸£
 
-- จุดสีแดง: ค่าเหล่านี้ถูกใช้คำนวณจริง เช่น ค่าไฟ, battery kWh, batt charge, inflation
-- จุดสีฟ้า: ค่าเหล่านี้ใช้แสดงผลหรือช่วยอธิบายระบบ เช่น ชื่อระบบ, string spec, battery model
-- `เงินเฟ้อไทย (%/ปี)` ใช้กับ ROI แบบหักเงินเฟ้อ
-- `Simulation` เป็นตัวเลือกเปิด/ปิดกล่องจำลองใน tab `วิเคราะห์`
-- ค่า `Simulation` default เป็น `ปิด` เพื่อไม่ให้แสดงค่าจำลองกับระบบที่ยังไม่ได้ตั้งใจใช้สมมติฐานชุดนี้
+- à¸ˆà¸¸à¸”à¸ªà¸µà¹à¸”à¸‡: à¸„à¹ˆà¸²à¹€à¸«à¸¥à¹ˆà¸²à¸™à¸µà¹‰à¸–à¸¹à¸à¹ƒà¸Šà¹‰à¸„à¸³à¸™à¸§à¸“à¸ˆà¸£à¸´à¸‡ à¹€à¸Šà¹ˆà¸™ à¸„à¹ˆà¸²à¹„à¸Ÿ, battery kWh, batt charge, inflation
+- à¸ˆà¸¸à¸”à¸ªà¸µà¸Ÿà¹‰à¸²: à¸„à¹ˆà¸²à¹€à¸«à¸¥à¹ˆà¸²à¸™à¸µà¹‰à¹ƒà¸Šà¹‰à¹à¸ªà¸”à¸‡à¸œà¸¥à¸«à¸£à¸·à¸­à¸Šà¹ˆà¸§à¸¢à¸­à¸˜à¸´à¸šà¸²à¸¢à¸£à¸°à¸šà¸š à¹€à¸Šà¹ˆà¸™ à¸Šà¸·à¹ˆà¸­à¸£à¸°à¸šà¸š, string spec, battery model
+- `à¹€à¸‡à¸´à¸™à¹€à¸Ÿà¹‰à¸­à¹„à¸—à¸¢ (%/à¸›à¸µ)` à¹ƒà¸Šà¹‰à¸à¸±à¸š ROI à¹à¸šà¸šà¸«à¸±à¸à¹€à¸‡à¸´à¸™à¹€à¸Ÿà¹‰à¸­
+- `Simulation` à¹€à¸›à¹‡à¸™à¸•à¸±à¸§à¹€à¸¥à¸·à¸­à¸à¹€à¸›à¸´à¸”/à¸›à¸´à¸”à¸à¸¥à¹ˆà¸­à¸‡à¸ˆà¸³à¸¥à¸­à¸‡à¹ƒà¸™ tab `à¸§à¸´à¹€à¸„à¸£à¸²à¸°à¸«à¹Œ`
+- à¸„à¹ˆà¸² `Simulation` default à¹€à¸›à¹‡à¸™ `à¸›à¸´à¸”` à¹€à¸žà¸·à¹ˆà¸­à¹„à¸¡à¹ˆà¹ƒà¸«à¹‰à¹à¸ªà¸”à¸‡à¸„à¹ˆà¸²à¸ˆà¸³à¸¥à¸­à¸‡à¸à¸±à¸šà¸£à¸°à¸šà¸šà¸—à¸µà¹ˆà¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¹„à¸”à¹‰à¸•à¸±à¹‰à¸‡à¹ƒà¸ˆà¹ƒà¸Šà¹‰à¸ªà¸¡à¸¡à¸•à¸´à¸à¸²à¸™à¸Šà¸¸à¸”à¸™à¸µà¹‰
 
-### คำแนะนำการใช้งาน
+### à¸„à¸³à¹à¸™à¸°à¸™à¸³à¸à¸²à¸£à¹ƒà¸Šà¹‰à¸‡à¸²à¸™
 
-- ถ้าพึ่งเริ่ม ให้ดู `รายวัน` ก่อน เพื่อเช็คว่า import เข้ามาครบและเวลาถูกต้อง
-- ถ้าต้องการดูตามรอบบิล ให้ดู `รายเดือน`
-- ถ้าต้องการดู ROI, battery cycle, simulation, และ before/after bill ให้ดู `วิเคราะห์`
-- ถ้าค่าไฟในระบบยังไม่ตรงบิลจริง อย่าดู ROI ทันที ควรกรอก `ประวัติบิล` ก่อน
+- à¸–à¹‰à¸²à¸žà¸¶à¹ˆà¸‡à¹€à¸£à¸´à¹ˆà¸¡ à¹ƒà¸«à¹‰à¸”à¸¹ `à¸£à¸²à¸¢à¸§à¸±à¸™` à¸à¹ˆà¸­à¸™ à¹€à¸žà¸·à¹ˆà¸­à¹€à¸Šà¹‡à¸„à¸§à¹ˆà¸² import à¹€à¸‚à¹‰à¸²à¸¡à¸²à¸„à¸£à¸šà¹à¸¥à¸°à¹€à¸§à¸¥à¸²à¸–à¸¹à¸à¸•à¹‰à¸­à¸‡
+- à¸–à¹‰à¸²à¸•à¹‰à¸­à¸‡à¸à¸²à¸£à¸”à¸¹à¸•à¸²à¸¡à¸£à¸­à¸šà¸šà¸´à¸¥ à¹ƒà¸«à¹‰à¸”à¸¹ `à¸£à¸²à¸¢à¹€à¸”à¸·à¸­à¸™`
+- à¸–à¹‰à¸²à¸•à¹‰à¸­à¸‡à¸à¸²à¸£à¸”à¸¹ ROI, battery cycle, simulation, à¹à¸¥à¸° before/after bill à¹ƒà¸«à¹‰à¸”à¸¹ `à¸§à¸´à¹€à¸„à¸£à¸²à¸°à¸«à¹Œ`
+- à¸–à¹‰à¸²à¸„à¹ˆà¸²à¹„à¸Ÿà¹ƒà¸™à¸£à¸°à¸šà¸šà¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¸•à¸£à¸‡à¸šà¸´à¸¥à¸ˆà¸£à¸´à¸‡ à¸­à¸¢à¹ˆà¸²à¸”à¸¹ ROI à¸—à¸±à¸™à¸—à¸µ à¸„à¸§à¸£à¸à¸£à¸­à¸ `à¸›à¸£à¸°à¸§à¸±à¸•à¸´à¸šà¸´à¸¥` à¸à¹ˆà¸­à¸™
 
-### ข้อจำกัดที่ควรรู้
+### à¸‚à¹‰à¸­à¸ˆà¸³à¸à¸±à¸”à¸—à¸µà¹ˆà¸„à¸§à¸£à¸£à¸¹à¹‰
 
-- ข้อมูลทั้งหมดเก็บใน browser ของเครื่องที่เปิดใช้งาน ไม่ได้ถูกส่งไปเก็บบน server ของโปรเจกต์
-- ถ้าเปิดด้วย browser คนละตัว หรือคนละเครื่อง ข้อมูลเดิมจะไม่ตามไป
-- ถ้าล้าง browser storage ข้อมูลที่ import อาจหายได้
-- ไม่ควรใช้บนเครื่องคนอื่นหรือเครื่องสาธารณะ ถ้าจำเป็นต้องใช้ ควรล้างข้อมูล browser หลังใช้งาน
-- เวอร์ชันปัจจุบันออกแบบให้ใช้งานบน desktop/laptop เป็นหลัก ไม่ใช่ mobile-first
-- ถ้าเปิดบนมือถือหรือจอเล็ก อาจดูกราฟและตารางได้ไม่สะดวก
-- Simulation บางส่วนยังเป็นการประมาณเชิงทิศทาง ไม่ใช่ผลการันตีจริง
-- ยี่ห้อ inverter อื่นนอกจาก Deye อาจต้องปรับ parsing เพิ่ม
+- à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸—à¸±à¹‰à¸‡à¸«à¸¡à¸”à¹€à¸à¹‡à¸šà¹ƒà¸™ browser à¸‚à¸­à¸‡à¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡à¸—à¸µà¹ˆà¹€à¸›à¸´à¸”à¹ƒà¸Šà¹‰à¸‡à¸²à¸™ à¹„à¸¡à¹ˆà¹„à¸”à¹‰à¸–à¸¹à¸à¸ªà¹ˆà¸‡à¹„à¸›à¹€à¸à¹‡à¸šà¸šà¸™ server à¸‚à¸­à¸‡à¹‚à¸›à¸£à¹€à¸ˆà¸à¸•à¹Œ
+- à¸–à¹‰à¸²à¹€à¸›à¸´à¸”à¸”à¹‰à¸§à¸¢ browser à¸„à¸™à¸¥à¸°à¸•à¸±à¸§ à¸«à¸£à¸·à¸­à¸„à¸™à¸¥à¸°à¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡ à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¹€à¸”à¸´à¸¡à¸ˆà¸°à¹„à¸¡à¹ˆà¸•à¸²à¸¡à¹„à¸›
+- à¸–à¹‰à¸²à¸¥à¹‰à¸²à¸‡ browser storage à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸—à¸µà¹ˆ import à¸­à¸²à¸ˆà¸«à¸²à¸¢à¹„à¸”à¹‰
+- à¹„à¸¡à¹ˆà¸„à¸§à¸£à¹ƒà¸Šà¹‰à¸šà¸™à¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡à¸„à¸™à¸­à¸·à¹ˆà¸™à¸«à¸£à¸·à¸­à¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡à¸ªà¸²à¸˜à¸²à¸£à¸“à¸° à¸–à¹‰à¸²à¸ˆà¸³à¹€à¸›à¹‡à¸™à¸•à¹‰à¸­à¸‡à¹ƒà¸Šà¹‰ à¸„à¸§à¸£à¸¥à¹‰à¸²à¸‡à¸‚à¹‰à¸­à¸¡à¸¹à¸¥ browser à¸«à¸¥à¸±à¸‡à¹ƒà¸Šà¹‰à¸‡à¸²à¸™
+- à¹€à¸§à¸­à¸£à¹Œà¸Šà¸±à¸™à¸›à¸±à¸ˆà¸ˆà¸¸à¸šà¸±à¸™à¸­à¸­à¸à¹à¸šà¸šà¹ƒà¸«à¹‰à¹ƒà¸Šà¹‰à¸‡à¸²à¸™à¸šà¸™ desktop/laptop à¹€à¸›à¹‡à¸™à¸«à¸¥à¸±à¸ à¹„à¸¡à¹ˆà¹ƒà¸Šà¹ˆ mobile-first
+- à¸–à¹‰à¸²à¹€à¸›à¸´à¸”à¸šà¸™à¸¡à¸·à¸­à¸–à¸·à¸­à¸«à¸£à¸·à¸­à¸ˆà¸­à¹€à¸¥à¹‡à¸ à¸­à¸²à¸ˆà¸”à¸¹à¸à¸£à¸²à¸Ÿà¹à¸¥à¸°à¸•à¸²à¸£à¸²à¸‡à¹„à¸”à¹‰à¹„à¸¡à¹ˆà¸ªà¸°à¸”à¸§à¸
+- Simulation à¸šà¸²à¸‡à¸ªà¹ˆà¸§à¸™à¸¢à¸±à¸‡à¹€à¸›à¹‡à¸™à¸à¸²à¸£à¸›à¸£à¸°à¸¡à¸²à¸“à¹€à¸Šà¸´à¸‡à¸—à¸´à¸¨à¸—à¸²à¸‡ à¹„à¸¡à¹ˆà¹ƒà¸Šà¹ˆà¸œà¸¥à¸à¸²à¸£à¸±à¸™à¸•à¸µà¸ˆà¸£à¸´à¸‡
+- à¸¢à¸µà¹ˆà¸«à¹‰à¸­ inverter à¸­à¸·à¹ˆà¸™à¸™à¸­à¸à¸ˆà¸²à¸ Deye à¸­à¸²à¸ˆà¸•à¹‰à¸­à¸‡à¸›à¸£à¸±à¸š parsing à¹€à¸žà¸´à¹ˆà¸¡
 
 ---
 
@@ -127,7 +127,7 @@ Most inverter apps are good at showing live data, but weak at long-term ownershi
 - K-Factor calibration from real bill kWh vs inverter kWh
 - Marked calibrated values using `*`
 - ROI payback using actual imported data
-- Monthly bill target heatmap, currently oriented around a ฿600/month goal
+- Monthly bill target heatmap, currently oriented around a à¸¿600/month goal
 
 ### Technical Diagnostics
 
@@ -143,7 +143,7 @@ Most inverter apps are good at showing live data, but weak at long-term ownershi
 
 1. Download or clone this repository.
 2. Open `app.html` in Chrome or Edge.
-3. Click **ระบบ** and set your system information:
+3. Click **à¸£à¸°à¸šà¸š** and set your system information:
    - Solar start date
    - TOU meter start date
    - Inverter size
@@ -152,13 +152,15 @@ Most inverter apps are good at showing live data, but weak at long-term ownershi
    - Investment cost for ROI
 4. Export an XLSX report from your inverter platform.
 5. Click **inverter data** and import the file.
-6. Open **ประวัติบิล** and add real electricity bills when available.
+6. Open **à¸›à¸£à¸°à¸§à¸±à¸•à¸´à¸šà¸´à¸¥** and add real electricity bills when available.
+
+7. In the live GitHub Pages app, a first-run welcome dialog and in-app **Guide** tab help new users start without opening the repo README first.
 
 No build step is required.
 
 ## System Settings
 
-Click **ระบบ** to adjust the system profile used by the dashboard.
+Click **à¸£à¸°à¸šà¸š** to adjust the system profile used by the dashboard.
 
 The form uses two colored dots:
 
@@ -176,8 +178,8 @@ Important settings:
 | Batt Charge (A) | Battery charge-limit and clipping checks |
 | Electricity rates | TOU, flat-rate, Ft, service fee, and sell-back calculations |
 | Solar cost / TOU cost / Tax deduction | ROI investment basis |
-| เงินเฟ้อไทย (%/ปี) | ROI countdown with inflation discounting |
-| แสดง Simulation | Shows or hides the Analysis simulation card |
+| à¹€à¸‡à¸´à¸™à¹€à¸Ÿà¹‰à¸­à¹„à¸—à¸¢ (%/à¸›à¸µ) | ROI countdown with inflation discounting |
+| à¹à¸ªà¸”à¸‡ Simulation | Shows or hides the Analysis simulation card |
 
 Simulation is optional because it uses directional assumptions such as optimizer recovery, sell-back value, and bigger-battery behavior. For a generic or shared system profile, keeping it off by default is safer. Turn it on only when those assumptions are useful for the system being reviewed.
 
@@ -200,15 +202,15 @@ If your inverter export has time, solar, grid purchase, grid export, load, batte
 TOU cost is calculated from imported grid energy:
 
 ```text
-OnCost  = OnPeak_kWh  × (OnRate  + Ft) × 1.07
-OffCost = (OffPeak_kWh × (OffRate + Ft) + ServiceFee / 30.4) × 1.07
+OnCost  = OnPeak_kWh  Ã— (OnRate  + Ft) Ã— 1.07
+OffCost = (OffPeak_kWh Ã— (OffRate + Ft) + ServiceFee / 30.4) Ã— 1.07
 ```
 
 If a real bill exists, the app calibrates the displayed cost:
 
 ```text
 BillRatio = ActualBill / EstimatedBill
-CalibratedDailyCost = RawDailyCost × BillRatio
+CalibratedDailyCost = RawDailyCost Ã— BillRatio
 ```
 
 If no bill exists yet, the app can apply K-Factor:
@@ -225,16 +227,16 @@ The kWh values remain raw inverter data. The `*` marker means the currency value
 ROI uses a no-solar baseline based on the same actual load:
 
 ```text
-NoSolarCostPerDay = (Load_kWh × (FlatRate + Ft) + ServiceFee / 30.4) × 1.07
+NoSolarCostPerDay = (Load_kWh Ã— (FlatRate + Ft) + ServiceFee / 30.4) Ã— 1.07
 SavingPerDay = max(0, NoSolarCostPerDay - ActualSolarCostPerDay)
-PaybackYears = Investment / (SavingPerDay × 365)
+PaybackYears = Investment / (SavingPerDay Ã— 365)
 DiscountedPayback = cumulative monthly saving discounted by Thai inflation
 ```
 
 The Analysis tab also shows the day-level formula directly, for example:
 
 ```text
-฿142/day before solar - ฿55/day after solar = ฿87/day saved
+à¸¿142/day before solar - à¸¿55/day after solar = à¸¿87/day saved
 ```
 
 ### Before vs After Bill Comparison
@@ -253,7 +255,7 @@ As more real post-solar bills are added, the chart grows month by month until it
 Battery usage is estimated with Equivalent Full Cycle (EFC):
 
 ```text
-EFC = (Charge_kWh + Discharge_kWh) / (2 × Battery_kWh × 0.9)
+EFC = (Charge_kWh + Discharge_kWh) / (2 Ã— Battery_kWh Ã— 0.9)
 ```
 
 This is better than using charge-only energy because it reflects total battery throughput.
@@ -290,10 +292,10 @@ Additional practical notes:
 
 ```text
 .
-├── app.html      # Main application
-├── index.html    # GitHub Pages entry point
-├── README.md     # Public project overview
-└── README.ai.md  # Developer and AI handoff notes
+â”œâ”€â”€ app.html      # Main application
+â”œâ”€â”€ index.html    # GitHub Pages entry point
+â”œâ”€â”€ README.md     # Public project overview
+â””â”€â”€ README.ai.md  # Developer and AI handoff notes
 ```
 
 ## GitHub Pages

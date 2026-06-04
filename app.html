@@ -246,6 +246,29 @@ body{
 .file-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:7px;font-size:.84rem;border-bottom:1px solid var(--border)}
 .file-row:hover{background:var(--s2)}
 .file-row:last-child{border-bottom:none}
+.welcome-modal{width:min(720px,92vw)}
+.welcome-lead{font-size:.92rem;color:var(--text);line-height:1.7}
+.welcome-list{padding-left:18px;display:grid;gap:8px;color:var(--muted);font-size:.88rem;line-height:1.6}
+.welcome-note{font-size:.82rem;color:var(--muted);line-height:1.6;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.welcome-actions{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.welcome-actions .btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.toggle-line{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--muted)}
+.toggle-line input{accent-color:var(--solar)}
+
+.guide-page{display:grid;gap:14px}
+.guide-hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;display:grid;gap:14px}
+.guide-kicker{font-size:.74rem;color:var(--solar);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.guide-hero h1{font-size:1.55rem;line-height:1.15}
+.guide-hero p{font-size:.92rem;color:var(--muted);line-height:1.7;max-width:900px}
+.guide-cta-row{display:flex;gap:8px;flex-wrap:wrap}
+.guide-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.guide-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.guide-card h3{font-size:1rem;margin-bottom:8px}
+.guide-card p{font-size:.85rem;color:var(--muted);line-height:1.6}
+.guide-card ul{padding-left:18px;display:grid;gap:7px;color:var(--muted);font-size:.86rem;line-height:1.6}
+.guide-gloss{display:grid;gap:10px}
+.guide-gloss div{padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid var(--border);font-size:.84rem;color:var(--muted);line-height:1.6}
+.guide-gloss b{color:var(--text)}
 
 /* HEATMAP */
 .hmap-wrap{padding:6px 0 10px}
@@ -320,6 +343,7 @@ body{
   <div class="tab" id="tbY" onclick="switchTab('Y')">📅 รายปี</div>
   <div class="tab" id="tbT" onclick="switchTab('T')">📊 ทั้งหมด</div>
   <div class="tab" id="tbA" onclick="switchTab('A')">🔍 วิเคราะห์</div>
+  <div class="tab" id="tbR" onclick="switchTab('R')">📘 คู่มือ</div>
   <div class="tab-tools">
     <div class="cfg-bar" style="justify-content:flex-end;gap:12px;">
       <span style="font-size:.75rem;color:var(--muted)" id="cfgTouDate"></span>
@@ -357,6 +381,66 @@ body{
 </div><!-- /sticky-header -->
 
 <div class="content">
+
+<!-- GUIDE -->
+<div id="paneR" style="display:none">
+  <div class="guide-page">
+    <section class="guide-hero">
+      <div class="guide-kicker">Deye Solar Insight (Public Beta)</div>
+      <div>
+        <h1>เริ่มใช้งานให้ถูกตั้งแต่ครั้งแรก</h1>
+        <p>ตัวนี้ออกแบบมาสำหรับไฟล์ export จาก Deye เป็นหลัก ข้อมูลทั้งหมดเก็บใน browser ของเครื่องที่ใช้ และประสบการณ์ใช้งานที่ดีที่สุดจะอยู่บน desktop/laptop</p>
+      </div>
+      <div class="guide-cta-row">
+        <button class="btn btn-primary" onclick="openSystemInfo()">⚙️ เปิดระบบ</button>
+        <button class="btn btn-sec" onclick="triggerImportPicker()">📂 เลือกไฟล์ inverter data</button>
+        <button class="btn btn-sec" onclick="openHistModal()">🧾 เปิดประวัติบิล</button>
+      </div>
+    </section>
+    <div class="guide-grid">
+      <article class="guide-card">
+        <h3>เริ่มใช้งาน</h3>
+        <ul>
+          <li>กด <b>ระบบ</b> เพื่อตรวจวันเริ่ม Solar, วันเริ่ม TOU, ค่าไฟ และข้อมูลแบตเตอรี่</li>
+          <li>กด <b>inverter data</b> เพื่อนำเข้าไฟล์ XLSX จาก Deye</li>
+          <li>ถ้ามีบิลจริงแล้ว ค่อยกรอกเพิ่มที่ <b>ประวัติบิล</b> เพื่อให้ค่าเงินแม่นขึ้น</li>
+        </ul>
+      </article>
+      <article class="guide-card">
+        <h3>รองรับไฟล์แบบไหน</h3>
+        <ul>
+          <li>ทดสอบกับไฟล์ export จาก <b>Deye</b> เป็นหลัก</li>
+          <li>ยี่ห้ออื่นอาจใช้ได้ ถ้าชื่อคอลัมน์และหน่วยใกล้เคียงกัน</li>
+          <li>ถ้า import แล้วกราฟแปลก ให้เช็กก่อนว่าไฟล์มี solar, load, grid, SOC, temperature และ PV string ครบหรือไม่</li>
+        </ul>
+      </article>
+      <article class="guide-card">
+        <h3>ข้อมูลเก็บที่ไหน</h3>
+        <ul>
+          <li>ข้อมูลถูกเก็บใน browser ของเครื่องนี้เท่านั้น</li>
+          <li>เปลี่ยนเครื่องหรือเปลี่ยน browser แล้วข้อมูลจะไม่ตามไปเอง</li>
+          <li>ถ้าล้าง browser storage ข้อมูลที่ import ไว้อาจหาย</li>
+        </ul>
+      </article>
+      <article class="guide-card">
+        <h3>ข้อจำกัดสำคัญ</h3>
+        <ul>
+          <li>เวอร์ชันนี้เหมาะกับ <b>desktop/laptop</b> มากกว่ามือถือ</li>
+          <li>บางส่วนของ Simulation เป็นการประมาณเชิงทิศทาง ไม่ใช่ผลการันตี</li>
+          <li>ถ้าใช้เครื่องคนอื่นหรือเครื่องสาธารณะ ควรล้างข้อมูลหลังใช้งาน</li>
+        </ul>
+      </article>
+    </div>
+    <section class="guide-card">
+      <h3>คำศัพท์สั้น ๆ</h3>
+      <div class="guide-gloss">
+        <div><b>TOU</b> คือ Time of Use หรือการคิดค่าไฟแยกตามช่วงเวลา เช่น on-peak และ off-peak</div>
+        <div><b>K-Factor</b> คืออัตราปรับค่าบาทจากข้อมูล inverter ให้ใกล้บิลจริงมากขึ้น โดยไม่เปลี่ยนค่า kWh ดิบ</div>
+        <div><b>Simulation</b> คือการจำลองผลลัพธ์เพิ่มเติม เช่น optimizer, ขายไฟ, หรือเพิ่มแบต เพื่อดูทิศทางความคุ้มค่า</div>
+      </div>
+    </section>
+  </div>
+</div>
 
 <!-- DAILY -->
 <div id="paneD">
@@ -1191,6 +1275,30 @@ body{
   </div>
 </div>
 
+<div id="welcomeOverlay" class="modal-overlay" style="display:none">
+  <div class="modal welcome-modal">
+    <div class="modal-ttl">👋 ยินดีต้อนรับสู่ Deye Solar Insight</div>
+    <div class="modal-body">
+      <p class="welcome-lead">แอปนี้ใช้กับไฟล์ export จาก Deye เป็นหลัก ช่วยดูกราฟ พฤติกรรมแบตเตอรี่ ค่าไฟ และการวิเคราะห์รอบบิลได้จาก browser โดยไม่ต้องมี server ของตัวเอง</p>
+      <ul class="welcome-list">
+        <li>กด <b>ระบบ</b> เพื่อตั้งค่าวันเริ่ม Solar, วันเริ่ม TOU และค่าไฟ</li>
+        <li>กด <b>inverter data</b> เพื่อนำเข้าไฟล์ XLSX</li>
+        <li>ถ้ามีบิลจริงแล้ว ค่อยกรอกเพิ่มที่ <b>ประวัติบิล</b></li>
+      </ul>
+      <div class="welcome-note">
+        ข้อมูลจะถูกเก็บใน browser ของเครื่องนี้เท่านั้น ถ้าล้าง browser storage ข้อมูลที่บันทึกไว้จะหาย และเวอร์ชันปัจจุบันเหมาะกับ desktop/laptop มากกว่ามือถือ
+      </div>
+    </div>
+    <div class="welcome-actions">
+      <label class="toggle-line"><input type="checkbox" id="welcomeHideToggle"> ไม่ต้องแสดงอีกบนเครื่องนี้</label>
+      <div class="btn-row">
+        <button class="btn btn-sec" onclick="openGuideFromWelcome()">อ่านคู่มือ</button>
+        <button class="btn btn-primary" onclick="dismissWelcome()">เริ่มใช้งาน</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 
 // ── Sensor colors (hex — CSS vars don't work in Canvas) ──────────────────────
@@ -1894,6 +2002,38 @@ function currentSystemInfo(){
     partialDays:[...CFG.partialDays],note:systemInfo.note||''
   }
 }
+async function getUiPref(key,fallback=null){
+  const v=await settingsGet('ui:'+key).catch(()=>fallback)
+  return v==null?fallback:v
+}
+async function setUiPref(key,value){
+  return settingsPut('ui:'+key,value).catch(()=>{})
+}
+function triggerImportPicker(){
+  const input=document.getElementById('file-input')
+  if(input) input.click()
+}
+function openWelcome(){
+  const el=document.getElementById('welcomeOverlay')
+  if(el) el.style.display='flex'
+}
+function closeWelcome(){
+  const el=document.getElementById('welcomeOverlay')
+  if(el) el.style.display='none'
+}
+async function dismissWelcome(){
+  const hide=document.getElementById('welcomeHideToggle')?.checked
+  await setUiPref('welcomeDismissed',true)
+  if(hide) await setUiPref('welcomeHide',true)
+  closeWelcome()
+}
+async function openGuideFromWelcome(){
+  const hide=document.getElementById('welcomeHideToggle')?.checked
+  await setUiPref('welcomeDismissed',true)
+  if(hide) await setUiPref('welcomeHide',true)
+  closeWelcome()
+  switchTab('R')
+}
 function applySystemInfo(info={}){
   systemInfo={...currentSystemInfo(),...info}
   CFG.sys.invKw=+systemInfo.invKw||CFG.sys.invKw
@@ -2128,8 +2268,10 @@ function resetEmptyState(){
   const battCycleSub=document.getElementById('battCycleSub');if(battCycleSub)battCycleSub.textContent='จากข้อมูลที่มี'
   const yoySub=document.getElementById('yoySub');if(yoySub)yoySub.textContent='เทียบเดือนล่าสุดกับเดือนเดียวกันในปีก่อนหน้า YoY'
   document.getElementById('paneA').style.display='none'
+  document.getElementById('paneR').style.display='none'
   
   document.getElementById('tbA').classList.remove('active')
+  document.getElementById('tbR').classList.remove('active')
   document.getElementById('paneD').style.display=''
   document.getElementById('tbD').classList.add('active')
   document.getElementById('dDispT').textContent='-'
@@ -2181,7 +2323,7 @@ async function navPeriod(kind,step){
 }
 
 function switchTab(t){
-  ;['D','W','M','Y','T','A'].forEach(x=>{
+  ;['D','W','M','Y','T','A','R'].forEach(x=>{
     document.getElementById('tb'+x).classList.toggle('active',t===x)
     document.getElementById('pane'+x).style.display=t===x?'':'none'
   })
@@ -2207,6 +2349,7 @@ async function renderVisibleTab(t){
   if(t==='Y')return renderYear()
   if(t==='T')return renderAllTime()
   if(t==='A')return renderAnalysis()
+  if(t==='R')return
 }
 let analysisPeriod='overview'
 function switchAnalysis(p){
@@ -4756,7 +4899,13 @@ async function bootApp(){
     if(el)el.textContent='พร้อมinverter data'
   })
 }
-bootApp()
+async function maybeShowWelcome(){
+  const hide=await getUiPref('welcomeHide',false)
+  const dismissed=await getUiPref('welcomeDismissed',false)
+  const hasData=Array.isArray(allDaysSummary)&&allDaysSummary.length>0
+  if(!hide&&!dismissed&&!hasData) openWelcome()
+}
+bootApp().then(maybeShowWelcome)
 
 </script>
 </body>
