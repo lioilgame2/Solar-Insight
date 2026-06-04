@@ -58,8 +58,12 @@ SolarInsight เป็น dashboard แบบเปิดจากไฟล์ `
 
 ### ข้อจำกัดที่ควรรู้
 
-- ข้อมูลทั้งหมดเก็บใน browser ของเครื่องที่เปิดใช้งาน
+- ข้อมูลทั้งหมดเก็บใน browser ของเครื่องที่เปิดใช้งาน ไม่ได้ถูกส่งไปเก็บบน server ของโปรเจกต์
+- ถ้าเปิดด้วย browser คนละตัว หรือคนละเครื่อง ข้อมูลเดิมจะไม่ตามไป
 - ถ้าล้าง browser storage ข้อมูลที่ import อาจหายได้
+- ไม่ควรใช้บนเครื่องคนอื่นหรือเครื่องสาธารณะ ถ้าจำเป็นต้องใช้ ควรล้างข้อมูล browser หลังใช้งาน
+- เวอร์ชันปัจจุบันออกแบบให้ใช้งานบน desktop/laptop เป็นหลัก ไม่ใช่ mobile-first
+- ถ้าเปิดบนมือถือหรือจอเล็ก อาจดูกราฟและตารางได้ไม่สะดวก
 - Simulation บางส่วนยังเป็นการประมาณเชิงทิศทาง ไม่ใช่ผลการันตีจริง
 - ยี่ห้อ inverter อื่นนอกจาก Deye อาจต้องปรับ parsing เพิ่ม
 
@@ -275,6 +279,12 @@ SolarInsight is offline-first:
 - Data is stored in your browser using IndexedDB
 
 Important: browser data is local to the browser and file origin. If you clear browser storage, the saved dashboard data can be removed.
+
+Additional practical notes:
+
+- Data stays in the current browser on the current device. It does not automatically follow you to another browser or another machine.
+- Avoid using a shared or public computer. If you must, clear the browser storage after use.
+- The current version is designed primarily for desktop/laptop use. It is not mobile-first, and small screens may make charts and tables harder to use.
 
 ## Project Structure
 
