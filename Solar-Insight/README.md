@@ -85,6 +85,31 @@ Most inverter apps are good at showing live data, but weak at long-term ownershi
 
 No build step is required.
 
+## System Settings
+
+Click **ระบบ** to adjust the system profile used by the dashboard.
+
+The form uses two colored dots:
+
+| Marker | Meaning |
+|---|---|
+| Red dot | Used in calculations |
+| Blue dot | Used for display/context |
+
+Important settings:
+
+| Setting | Used For |
+|---|---|
+| Peak sun h | Theoretical daily production and solar efficiency benchmark |
+| Battery kWh | Battery cycle estimation |
+| Batt Charge (A) | Battery charge-limit and clipping checks |
+| Electricity rates | TOU, flat-rate, Ft, service fee, and sell-back calculations |
+| Solar cost / TOU cost / Tax deduction | ROI investment basis |
+| เงินเฟ้อไทย (%/ปี) | ROI countdown with inflation discounting |
+| แสดง Simulation | Shows or hides the Analysis simulation card |
+
+Simulation is optional because it uses directional assumptions such as optimizer recovery, sell-back value, and bigger-battery behavior. For a generic or shared system profile, keeping it off by default is safer. Turn it on only when those assumptions are useful for the system being reviewed.
+
 ## Supported Data
 
 The app was developed around a DEYE hybrid inverter export from Deye Cloud.
@@ -132,6 +157,7 @@ ROI uses a no-solar baseline based on the same actual load:
 NoSolarCostPerDay = (Load_kWh × (FlatRate + Ft) + ServiceFee / 30.4) × 1.07
 SavingPerDay = max(0, NoSolarCostPerDay - ActualSolarCostPerDay)
 PaybackYears = Investment / (SavingPerDay × 365)
+DiscountedPayback = cumulative monthly saving discounted by Thai inflation
 ```
 
 The Analysis tab also shows the day-level formula directly, for example:

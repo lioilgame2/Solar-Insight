@@ -99,6 +99,7 @@ const CFG = {
     peakSunH: 4.5,
     battKwh: 10.24,
     battAmp: 48,
+    battModel: 'PYLON LiFePO4',
     invKw: 5,
     battCycles: 6000,
     pvModel: 'LONGi LR7-72HYD-645M',
@@ -114,6 +115,20 @@ const CFG = {
   partialDays: ['2026-04-10', '2026-05-16', '2026-05-17'],
 }
 ```
+
+System modal metadata also includes:
+
+```javascript
+{
+  appName: 'JPT Solar',
+  inflationRate: 2.89,
+  showSimulation: false,
+  stringA: '5 West',
+  stringB: '3 South + 2 West',
+}
+```
+
+`showSimulation` defaults to `false` for new/cleared system profiles because the simulation card is directional and system-specific. Saved user settings should be respected.
 
 ### `getP()`
 
@@ -299,6 +314,8 @@ SavingPerDay = max(0, NoSolarCostPerDay - ActualSolarCostPerDay)
 MonthlySaving = SavingPerDay × 30.4
 YearlySaving = SavingPerDay × 365
 PaybackYears = Investment / YearlySaving
+NominalPaybackMonths = Investment / MonthlySaving
+DiscountedPaybackMonths = month where sum(MonthlySaving / (1 + monthlyInflation)^month) >= Investment
 ```
 
 The ROI card also displays the daily formula:
