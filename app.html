@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -2298,17 +2298,27 @@ async function renderDay(date){
   const dynSellCost = dynSellKwh * getP().sell;
   set('cSellKwh',fn(dynSellKwh));set('cSellCost',fn(dynSellCost,2));set('cSellAvg', '')
   const ovStr = s.isBilledOverride ? '<span style="color:#ef4444" title="ปรับตามบิลจริง">*</span>' : (s.isProjectedOverride ? '<span style="color:#ef4444" title="ประเมินด้วย K-Factor">*</span>' : '');
+  const touDay=touActive(day.date)
   const setHtml=(id,v)=>{const el=document.getElementById(id);if(el)el.innerHTML=v}
-  setHtml('cLblOn', '⚡ On-peak ซื้อ');
-  setHtml('cLblOff', '🌙 Off-peak ซื้อ');
+  if(touDay){
+    setHtml('cLblOn', '⚡ On-peak ซื้อ');
+    setHtml('cLblOff', '🌙 Off-peak ซื้อ');
+    set('cOnImp',fn(s.onPeakImp));set('cOnCost',fn(s.costOn,2)+ovStr);set('cOnAvg', '')
+    set('cOffImp',fn(s.offPeakImp));set('cOffCost',fn(s.costOff,2)+ovStr);set('cOffAvg', '')
+    set('cSelfP',fn(s.selfP,0))
+  }else{
+    setHtml('cLblOn', '🧾 Flat ซื้อ');
+    setHtml('cLblOff', '⏳ TOU status');
+    set('cOnImp',fn(s.imp));set('cOnCost',fn(s.costTotal,2)+ovStr);set('cOnAvg', 'ใช้ Flat ทั้งวัน')
+    set('cOffImp','—');set('cOffCost','—');set('cOffAvg', 'ยังไม่เริ่ม TOU')
+    set('cSelfP','—')
+  }
   setHtml('cLblTotal', '🛒 รวมซื้อไฟ');
 
-  set('cOnImp',fn(s.onPeakImp));set('cOnCost',fn(s.costOn,2)+ovStr);set('cOnAvg', '')
-  set('cOffImp',fn(s.offPeakImp));set('cOffCost',fn(s.costOff,2)+ovStr);set('cOffAvg', '')
   set('cTotalImp',fn(s.imp));set('cTotalCost',fn(s.costTotal,2)+ovStr);set('cTotalAvg', '')
   set('cSocMin',fn(s.socMin,0));set('cSocMinT',batteryEmptyTime(s)||'—')
   set('cChg',fn(s.chg));set('cDis',fn(s.dis))
-  set('cSelf',fn(s.self,0));set('cSelfP',fn(s.selfP,0))
+  set('cSelf',fn(s.self,0));
 
   setTC('tBat','tBatMin','tBatAvg','tBatMax','bBat','dBat',s.batT,THR.battTemp)
   setTC('tDc', 'tDcMin', 'tDcAvg', 'tDcMax', 'bDc', 'dDc', s.dcT, THR.dcTemp)
@@ -4141,17 +4151,29 @@ function timeAfterMidnightDec(t){
   return d
 }
 
-function batteryEmptyStatus(s){
+function batteryEmptyStatus(s,dateStr=''){
   const time=batteryEmptyTime(s)
-  if(!time)return{time:'—',isOkAfterTou:true,label:'แบตไม่หมด',severity:'ok',sort:null}
+  const touDay=touActive(dateStr)
+  if(!time)return{time:'—',isOkAfterTou:true,label:touDay?'แบตไม่หมด':'Flat billing (ยังไม่เริ่ม TOU)',severity:'ok',sort:null,touDay}
   const sort=timeAfterMidnightDec(time)
   const isOkAfterTou=sort!=null && sort>=22
+  if(!touDay){
+    return{
+      time,
+      isOkAfterTou:true,
+      label:'Flat billing (ยังไม่เริ่ม TOU)',
+      severity:'ok',
+      sort,
+      touDay
+    }
+  }
   return{
     time,
     isOkAfterTou,
     label:isOkAfterTou?'22:00+ OK ด้านค่าไฟ':'แบตหมดก่อน 22:00',
     severity:isOkAfterTou?'ok':'warn',
-    sort
+    sort,
+    touDay
   }
 }
 
@@ -4189,7 +4211,7 @@ function summarizePeriod(days, allDaysForP90=allDaysSummary){
   const sum=k=>src.reduce((s,d)=>s+(d.s[k]||0),0)
   const avg=(arr,k)=>arr.length?arr.reduce((s,d)=>s+(d.s[k]||0),0)/arr.length:0
   const clipKwh=periodClipKwh(calc, allDaysForP90)
-  const batteryStatuses=src.map(d=>({d,st:batteryEmptyStatus(d.s)})).filter(x=>x.st.sort!=null)
+  const batteryStatuses=src.map(d=>({d,st:batteryEmptyStatus(d.s,d.date)})).filter(x=>x.st.sort!=null && x.st.touDay)
   const batteryBefore22=batteryStatuses.filter(x=>!x.st.isOkAfterTou)
   return{
     days:src.length,
@@ -4490,7 +4512,8 @@ function renderPeakShaving(day){
   const el=document.getElementById('peakRows')
   if(!day||!day.s){if(el)el.textContent='ไม่มีข้อมูล';return}
   const s=day.s
-  const st=batteryEmptyStatus(s)
+  const touDay=touActive(day.date)
+  const st=batteryEmptyStatus(s,day.date)
   const isPartial=CFG.partialDays.includes(day.date)
   const clipKwh=(!isPartial&&day.rows&&day.rows.length)?renderHourlyAnalysis([day],null,null,allDaysSummary).totalClipped:null
   const temps=[
@@ -4501,7 +4524,7 @@ function renderPeakShaving(day){
   const hot=temps.reduce((b,x)=>!b||x.v>b.v?x:b,null)
   const tempText=hot?`${hot.name} ${fn(hot.v,1)}°C`:'—'
   const tempSub=hot&&hot.v>=hot.thr?'ตรวจ airflow/fan':'ปกติ'
-  el.innerHTML=anRows([
+  const rows=touDay?[
     ['วันที่',fmtD(day.date)],
     ['On-peak ซื้อ',fn(s.onPeakImp,1)+' kWh','฿'+fn(s.costOn,2),s.onPeakImp>0?'var(--warn)':'var(--good)'],
     ['Off-peak ซื้อ',fn(s.offPeakImp,1)+' kWh','฿'+fn(s.costOff,2)],
@@ -4509,7 +4532,16 @@ function renderPeakShaving(day){
     ['แบตหมด',st.time,st.label,st.severity==='warn'?'var(--warn)':'var(--good)'],
     ['Clipping est.',clipKwh==null?'—':fn(clipKwh,2)+' kWh',isPartial?'partial day':'P90'],
     ['Temp warning',tempText,tempSub,hot&&hot.v>=hot.thr?'var(--warn)':'var(--good)'],
-  ])
+  ]:[
+    ['วันที่',fmtD(day.date)],
+    ['Flat ซื้อ',fn(s.imp,1)+' kWh','฿'+fn(s.costTotal,2),s.imp>0?'var(--warn)':'var(--good)'],
+    ['TOU status','—','ยังไม่เริ่ม TOU'],
+    ['Self-Sufficiency',fn(s.self,0)+'%','พึ่งตัวเองทั้งวัน'],
+    ['แบตหมด',st.time,st.label,'var(--good)'],
+    ['Clipping est.',clipKwh==null?'—':fn(clipKwh,2)+' kWh',isPartial?'partial day':'P90'],
+    ['Temp warning',tempText,tempSub,hot&&hot.v>=hot.thr?'var(--warn)':'var(--good)'],
+  ]
+  el.innerHTML=anRows(rows)
 }
 
 function renderBattHealth(days){
