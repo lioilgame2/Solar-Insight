@@ -2862,7 +2862,9 @@ function getDayProblems(s, rows) {
     const good=rows.filter(r=>{const t=(r[C.time]||'').substring(11,16);return t>='09:00'&&t<='15:00'&&nv(r,C.solar)>1000});
     if(good.length>30){
       const fs=nv(good[0],C.soc),ls=nv(good[good.length-1],C.soc);
-      if(ls<fs-5&&ls<80) probs.push("แบตไม่ชาร์จช่วง Solar");
+      const maxSoc=good.reduce((m,r)=>Math.max(m,nv(r,C.soc)),fs);
+      const didCharge=maxSoc>=fs+8||maxSoc>=90;
+      if(!didCharge&&ls<fs-5&&ls<80) probs.push("แบตไม่ชาร์จช่วง Solar");
     }
     const n2=rows.filter(r=>{const t=(r[C.time]||'').substring(11,16);return t>='22:00'||t<'06:00'});
     if(n2.length>20){const ns=nv(n2[0],C.soc),ne=nv(n2[n2.length-1],C.soc);if(ns>0&&ne>0&&ns-ne>35) probs.push("ใช้แบตกลางคืนสูง");}
