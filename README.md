@@ -8,6 +8,9 @@ Deye Solar Insight à¹€à¸›à¹‡à¸™ dashboard à¹à¸šà¸šà¹
 
 - à¸•à¹‰à¸­à¸‡ `import` à¹„à¸Ÿà¸¥à¹Œà¸ˆà¸²à¸ inverter à¹€à¸‚à¹‰à¸²à¸¡à¸²à¹ƒà¸™à¸£à¸°à¸šà¸šà¸à¹ˆà¸­à¸™à¸–à¸¶à¸‡à¸ˆà¸°à¹€à¸«à¹‡à¸™à¸à¸£à¸²à¸Ÿà¹à¸¥à¸°à¸à¸²à¸£à¸§à¸´à¹€à¸„à¸£à¸²à¸°à¸«à¹Œ
 - à¹‚à¸›à¸£à¹€à¸ˆà¸à¸•à¹Œà¸™à¸µà¹‰à¸—à¸”à¸ªà¸­à¸šà¸à¸±à¸šà¹„à¸Ÿà¸¥à¹Œ XLSX à¸ˆà¸²à¸ `Deye` à¹€à¸›à¹‡à¸™à¸«à¸¥à¸±à¸
+- ช่วงก่อนติดมิเตอร์ TOU ใช้งานได้ โดยระบบจะคิดค่าไฟแบบ `Flat rate` ทั้งวันจนกว่าจะถึง `TOU start date`
+- ค่า Battery empty %, Battery recharge %, และ Battery design cycles ให้ตรงกับสเปกแบตจริง
+- กราฟเปรียบเทียบ PV string เวอร์ชันปัจจุบันรองรับสูงสุด `2 strings`
 - à¸¢à¸µà¹ˆà¸«à¹‰à¸­à¸­à¸·à¹ˆà¸™à¸­à¸²à¸ˆà¹ƒà¸Šà¹‰à¹„à¸”à¹‰à¸–à¹‰à¸²à¹‚à¸„à¸£à¸‡à¸ªà¸£à¹‰à¸²à¸‡à¸„à¸­à¸¥à¸±à¸¡à¸™à¹Œà¹ƒà¸à¸¥à¹‰à¹€à¸„à¸µà¸¢à¸‡ à¹à¸•à¹ˆà¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¸à¸²à¸£à¸±à¸™à¸•à¸µà¸§à¹ˆà¸²à¸ˆà¸°à¹„à¸¡à¹ˆà¸¡à¸µà¸›à¸±à¸à¸«à¸²
 - à¸›à¸¸à¹ˆà¸¡ `à¸£à¸°à¸šà¸š` à¹ƒà¸Šà¹‰à¸•à¸±à¹‰à¸‡à¸„à¹ˆà¸²à¸Šà¸·à¹ˆà¸­à¸£à¸°à¸šà¸š, à¸„à¹ˆà¸²à¹„à¸Ÿ, à¹€à¸‡à¸´à¸™à¹€à¸Ÿà¹‰à¸­, à¹à¸šà¸•à¹€à¸•à¸­à¸£à¸µà¹ˆ, à¹à¸¥à¸°à¸•à¸±à¸§à¹€à¸¥à¸·à¸­à¸ Simulation
 - à¸ˆà¸¸à¸”à¸ªà¸µà¹à¸”à¸‡ = à¹ƒà¸Šà¹‰à¸„à¸³à¸™à¸§à¸“
@@ -54,6 +57,7 @@ Deye Solar Insight à¹€à¸›à¹‡à¸™ dashboard à¹à¸šà¸šà¹
 - à¸–à¹‰à¸²à¸žà¸¶à¹ˆà¸‡à¹€à¸£à¸´à¹ˆà¸¡ à¹ƒà¸«à¹‰à¸”à¸¹ `à¸£à¸²à¸¢à¸§à¸±à¸™` à¸à¹ˆà¸­à¸™ à¹€à¸žà¸·à¹ˆà¸­à¹€à¸Šà¹‡à¸„à¸§à¹ˆà¸² import à¹€à¸‚à¹‰à¸²à¸¡à¸²à¸„à¸£à¸šà¹à¸¥à¸°à¹€à¸§à¸¥à¸²à¸–à¸¹à¸à¸•à¹‰à¸­à¸‡
 - à¸–à¹‰à¸²à¸•à¹‰à¸­à¸‡à¸à¸²à¸£à¸”à¸¹à¸•à¸²à¸¡à¸£à¸­à¸šà¸šà¸´à¸¥ à¹ƒà¸«à¹‰à¸”à¸¹ `à¸£à¸²à¸¢à¹€à¸”à¸·à¸­à¸™`
 - à¸–à¹‰à¸²à¸•à¹‰à¸­à¸‡à¸à¸²à¸£à¸”à¸¹ ROI, battery cycle, simulation, à¹à¸¥à¸° before/after bill à¹ƒà¸«à¹‰à¸”à¸¹ `à¸§à¸´à¹€à¸„à¸£à¸²à¸°à¸«à¹Œ`
+- ถ้าวันใดยังอยู่ก่อน `TOU start date` ค่าไฟของวันนั้นจะถูกคิดแบบ Flat ทั้งวัน และ insight ที่อิง 22:00 จะเริ่มมีความหมายเต็มหลังจากเริ่ม TOU แล้ว
 - à¸–à¹‰à¸²à¸„à¹ˆà¸²à¹„à¸Ÿà¹ƒà¸™à¸£à¸°à¸šà¸šà¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¸•à¸£à¸‡à¸šà¸´à¸¥à¸ˆà¸£à¸´à¸‡ à¸­à¸¢à¹ˆà¸²à¸”à¸¹ ROI à¸—à¸±à¸™à¸—à¸µ à¸„à¸§à¸£à¸à¸£à¸­à¸ `à¸›à¸£à¸°à¸§à¸±à¸•à¸´à¸šà¸´à¸¥` à¸à¹ˆà¸­à¸™
 
 ### à¸‚à¹‰à¸­à¸ˆà¸³à¸à¸±à¸”à¸—à¸µà¹ˆà¸„à¸§à¸£à¸£à¸¹à¹‰
@@ -92,6 +96,8 @@ It turns exported inverter XLSX files and real electricity bills into practical 
 - What is the payback period if my current usage pattern continues?
 
 The app is built and tested primarily around Deye hybrid inverter XLSX exports. Other inverter brands may work if their exported columns are similar, but compatibility is not guaranteed.
+
+Pre-TOU periods are supported: before the configured `TOU start date`, the app calculates electricity cost using a whole-day flat rate. After that date, it switches to TOU logic automatically. The current PV string comparison UI supports up to `2 strings`.
 
 ## Why This Exists
 
@@ -176,6 +182,7 @@ Important settings:
 | Peak sun h | Theoretical daily production and solar efficiency benchmark |
 | Battery kWh | Battery cycle estimation |
 | Batt Charge (A) | Battery charge-limit and clipping checks |
+| Battery empty / recharge / design cycles | Battery-empty timing and cycle-life interpretation |
 | Electricity rates | TOU, flat-rate, Ft, service fee, and sell-back calculations |
 | Solar cost / TOU cost / Tax deduction | ROI investment basis |
 | à¹€à¸‡à¸´à¸™à¹€à¸Ÿà¹‰à¸­à¹„à¸—à¸¢ (%/à¸›à¸µ) | ROI countdown with inflation discounting |
@@ -199,7 +206,7 @@ If your inverter export has time, solar, grid purchase, grid export, load, batte
 
 ### Electricity Cost
 
-TOU cost is calculated from imported grid energy:
+TOU cost is calculated from imported grid energy. Before `TOU start date`, the same imported energy is calculated with the flat-rate path for the whole day.
 
 ```text
 OnCost  = OnPeak_kWh  Ã— (OnRate  + Ft) Ã— 1.07

@@ -403,6 +403,7 @@ body{
         <ul>
           <li>กด <b>ระบบ</b> เพื่อตรวจวันเริ่ม Solar, วันเริ่ม TOU, ค่าไฟ และข้อมูลแบตเตอรี่</li>
           <li>กด <b>inverter data</b> เพื่อนำเข้าไฟล์ XLSX จาก Deye</li>
+          <li>ก่อนถึงวันเริ่ม TOU ระบบจะคิดค่าไฟแบบ Flat ทั้งวัน แล้วจะสลับเป็น TOU หลังจากวันนั้นอัตโนมัติ</li>
           <li>ถ้ามีบิลจริงแล้ว ค่อยกรอกเพิ่มที่ <b>ประวัติบิล</b> เพื่อให้ค่าเงินแม่นขึ้น</li>
         </ul>
       </article>
@@ -412,6 +413,7 @@ body{
           <li>ทดสอบกับไฟล์ export จาก <b>Deye</b> เป็นหลัก</li>
           <li>ยี่ห้ออื่นอาจใช้ได้ ถ้าชื่อคอลัมน์และหน่วยใกล้เคียงกัน</li>
           <li>ถ้า import แล้วกราฟแปลก ให้เช็กก่อนว่าไฟล์มี solar, load, grid, SOC, temperature และ PV string ครบหรือไม่</li>
+          <li>กราฟเปรียบเทียบ String เวอร์ชันนี้รองรับสูงสุด 2 String</li>
         </ul>
       </article>
       <article class="guide-card">
@@ -427,6 +429,7 @@ body{
         <ul>
           <li>เวอร์ชันนี้เหมาะกับ <b>desktop/laptop</b> มากกว่ามือถือ</li>
           <li>บางส่วนของ Simulation เป็นการประมาณเชิงทิศทาง ไม่ใช่ผลการันตี</li>
+          <li>ค่า Battery empty %, recharge %, และ design cycles ควรตั้งให้ตรงกับสเปกหรือ policy ของระบบจริง</li>
           <li>ถ้าใช้เครื่องคนอื่นหรือเครื่องสาธารณะ ควรล้างข้อมูลหลังใช้งาน</li>
         </ul>
       </article>
@@ -434,7 +437,7 @@ body{
     <section class="guide-card">
       <h3>คำศัพท์สั้น ๆ</h3>
       <div class="guide-gloss">
-        <div><b>TOU</b> คือ Time of Use หรือการคิดค่าไฟแยกตามช่วงเวลา เช่น on-peak และ off-peak</div>
+        <div><b>TOU</b> คือ Time of Use หรือการคิดค่าไฟแยกตามช่วงเวลา เช่น on-peak และ off-peak; ก่อนวันเริ่ม TOU แอปจะคิดค่าไฟแบบ Flat ทั้งวัน</div>
         <div><b>K-Factor</b> คืออัตราปรับค่าบาทจากข้อมูล inverter ให้ใกล้บิลจริงมากขึ้น โดยไม่เปลี่ยนค่า kWh ดิบ</div>
         <div><b>Simulation</b> คือการจำลองผลลัพธ์เพิ่มเติม เช่น optimizer, ขายไฟ, หรือเพิ่มแบต เพื่อดูทิศทางความคุ้มค่า</div>
       </div>
@@ -994,6 +997,7 @@ body{
             <div>
               <b style="color:var(--text)">Battery Cycle (EFC):</b><br>
               EFC/day = (Charge_kWh + Discharge_kWh) ÷ (2 × Battery_kWh × 0.9)<br>
+              <i>Battery empty %, recharge %, และ design cycles ปรับได้ในปุ่ม <b>ระบบ</b> ตามสเปกแบตจริงของแต่ละบ้าน</i><br>
               <b>ตัวอย่าง Jun 1:</b> Charge 5.8, Discharge 4.5, Battery 10.24 kWh<br>
               (5.8 + 4.5) ÷ (2 × 10.24 × 0.9) = 0.559 cycle<br>
               <i>EFC = Equivalent Full Cycle หรือรอบใช้งานเทียบเท่าเต็มหนึ่งรอบ ใช้วัดการเสื่อมแบตคร่าว ๆ</i>
@@ -1159,6 +1163,9 @@ body{
           <div class="roi-input"><label>Peak sun h <span class="field-mark calc" title="ใช้คำนวณ"></span></label><input id="sysPeakSun" type="number" step="0.1"></div>
           <div class="roi-input"><label>Battery kWh <span class="field-mark calc" title="ใช้คำนวณ"></span></label><input id="sysBattKwh" type="number" step="0.01"></div>
           <div class="roi-input"><label>Batt Charge (A) <span class="field-mark calc" title="ใช้คำนวณ"></span></label><input id="sysBattAmp" type="number" step="1"></div>
+          <div class="roi-input"><label>Battery empty % <span class="field-mark calc" title="ใช้คำนวณ"></span></label><input id="sysBattEmptyPct" type="number" min="0" max="99" step="1"></div>
+          <div class="roi-input"><label>Battery recharge % <span class="field-mark calc" title="ใช้คำนวณ"></span></label><input id="sysBattRechargePct" type="number" min="1" max="100" step="1"></div>
+          <div class="roi-input"><label>Battery design cycles <span class="field-mark calc" title="ใช้คำนวณ"></span></label><input id="sysBattCycles" type="number" min="1" step="100"></div>
           <div class="roi-input" style="grid-column: 1 / -1;">
             <label>Battery model/type <span class="field-mark display" title="ใช้แสดงผล"></span></label>
             <input id="sysBattModel" type="text" style="width:100%" value="PYLON LiFePO4">
@@ -1174,6 +1181,7 @@ body{
           <div class="roi-input"><label>Start date <span class="field-mark calc" title="ใช้คำนวณ"></span></label><input id="sysStartDate" type="date"></div>
           <div class="roi-input"><label>TOU date <span class="field-mark calc" title="ใช้คำนวณ"></span></label><input id="sysTouStart" type="date"></div>
           <div class="roi-input"><label>Bill day <span class="field-mark calc" title="ใช้คำนวณ"></span></label><input id="sysBillDay" type="number" min="1" max="28"></div>
+          <div class="sys-note" style="grid-column:1 / -1;font-size:.74rem;color:var(--muted)">ก่อนวันเริ่ม TOU ระบบจะคิดค่าไฟแบบ Flat ทั้งวัน และกราฟเปรียบเทียบ String เวอร์ชันนี้รองรับสูงสุด 2 String</div>
         </div>
         <div class="an-box">
           <div class="an-ttl">Electricity Rates</div>
@@ -1281,12 +1289,13 @@ body{
     <div class="modal-body">
       <p class="welcome-lead">แอปนี้ใช้กับไฟล์ export จาก Deye เป็นหลัก ช่วยดูกราฟ พฤติกรรมแบตเตอรี่ ค่าไฟ และการวิเคราะห์รอบบิลได้จาก browser โดยไม่ต้องมี server ของตัวเอง</p>
       <ul class="welcome-list">
-        <li>กด <b>ระบบ</b> เพื่อตั้งค่าวันเริ่ม Solar, วันเริ่ม TOU และค่าไฟ</li>
+        <li>กด <b>ระบบ</b> เพื่อตั้งค่าวันเริ่ม Solar, วันเริ่ม TOU, ค่าไฟ และค่าแบตจริงของบ้าน</li>
         <li>กด <b>inverter data</b> เพื่อนำเข้าไฟล์ XLSX</li>
+        <li>ถ้ายังไม่เริ่ม TOU ระบบจะคิดค่าไฟแบบ Flat ทั้งวันก่อน แล้วค่อยเปลี่ยนเป็น TOU ตามวันที่ตั้งไว้</li>
         <li>ถ้ามีบิลจริงแล้ว ค่อยกรอกเพิ่มที่ <b>ประวัติบิล</b></li>
       </ul>
       <div class="welcome-note">
-        ข้อมูลจะถูกเก็บใน browser ของเครื่องนี้เท่านั้น ถ้าล้าง browser storage ข้อมูลที่บันทึกไว้จะหาย และเวอร์ชันปัจจุบันเหมาะกับ desktop/laptop มากกว่ามือถือ
+        ข้อมูลจะถูกเก็บใน browser ของเครื่องนี้เท่านั้น ถ้าล้าง browser storage ข้อมูลที่บันทึกไว้จะหาย เวอร์ชันปัจจุบันเหมาะกับ desktop/laptop มากกว่ามือถือ และกราฟเปรียบเทียบ String ตอนนี้รองรับสูงสุด 2 String
       </div>
     </div>
     <div class="welcome-actions">
@@ -1307,7 +1316,7 @@ const CLR={solar:'#4ade80',load:'#fb923c',batt:'#818cf8',grid:'#38bdf8',soc:'#c0
 
 // ── Config ───────────────────────────────────────────────────────────────────
 const CFG={
-  sys:{panels:10,wp:645,peakSunH:4.5,battKwh:10.24,battAmp:48,battModel:'PYLON LiFePO4',invKw:5,battCycles:6000,pvModel:'LONGi LR7-72HYD-645M',pvEff:23.9},
+  sys:{panels:10,wp:645,peakSunH:4.5,battKwh:10.24,battAmp:48,battModel:'PYLON LiFePO4',invKw:5,battEmptyPct:21,battRechargePct:25,battCycles:6000,pvModel:'LONGi LR7-72HYD-645M',pvEff:23.9},
   startDate:'2026-04-10',
   touStart:'2026-05-05',   // วันที่ติด meter TOU
   billDay:15,              // วันเริ่มรอบบิล
@@ -1342,13 +1351,17 @@ function fmtD(s){const d=toDate(s);return `${d.getDate()} ${TH_M[d.getMonth()]} 
 function fmtDF(s){const d=toDate(s);return `${TH_D[d.getDay()]}ที่ ${d.getDate()} ${TH_M[d.getMonth()]} ${d.getFullYear()+543}`}
 function fn(v,d=1){return(v==null||isNaN(+v))?'—':(+v).toFixed(d)}
 function tMin(s){const[h,m]=(s||'00:00').split(':').map(Number);return h*60+m}
-const SOC_EMPTY_THRESHOLD = 21
-const SOC_RECHARGED_THRESHOLD = SOC_EMPTY_THRESHOLD + 4
+function getSocEmptyThreshold(){
+  return Math.max(0,Math.min(99,+CFG.sys.battEmptyPct||21))
+}
+function getSocRechargeThreshold(){
+  return Math.max(getSocEmptyThreshold()+1,Math.min(100,+CFG.sys.battRechargePct||25))
+}
 const MONTHLY_BILL_TARGET = 600
 const DAILY_BILL_TARGET = MONTHLY_BILL_TARGET / 30.4
 function batteryEmptyTime(s){
   if(!s)return ''
-  return s.socEmptyT || ((s.socMin||100)<=SOC_EMPTY_THRESHOLD ? s.socMinT : '')
+  return s.socEmptyT || ((s.socMin||100)<=getSocEmptyThreshold() ? s.socMinT : '')
 }
 function batteryEmptyDec(t){
   if(!t||t==='—'||t==='-')return null
@@ -1889,8 +1902,8 @@ function calcSum(rows, date){
   rows.forEach(r=>{
     const s=nv(r,C.soc);
     if(s>0&&s<socMin){socMin=s;socMinT=tStr(r)}
-    if(s>=SOC_RECHARGED_THRESHOLD)socWasRecharged=true
-    else if(s>0&&s<=SOC_EMPTY_THRESHOLD){
+    if(s>=getSocRechargeThreshold())socWasRecharged=true
+    else if(s>0&&s<=getSocEmptyThreshold()){
       if(socWasRecharged&&!socEmptyT)socEmptyT=tStr(r)
       else if(!socWasRecharged&&!socStartEmptyT)socStartEmptyT=tStr(r)
     }
@@ -1991,7 +2004,7 @@ function currentSystemInfo(){
     appName:systemInfo.appName||'Deye Solar Insight',
     invModel:systemInfo.invModel||'DEYE SUN-5K-SG04LP1-EU-SM2',
     invKw:CFG.sys.invKw||5,
-    panels:CFG.sys.panels,wp:CFG.sys.wp,peakSunH:CFG.sys.peakSunH,battKwh:CFG.sys.battKwh,battAmp:CFG.sys.battAmp,battModel:CFG.sys.battModel||'PYLON LiFePO4',
+    panels:CFG.sys.panels,wp:CFG.sys.wp,peakSunH:CFG.sys.peakSunH,battKwh:CFG.sys.battKwh,battAmp:CFG.sys.battAmp,battEmptyPct:CFG.sys.battEmptyPct??21,battRechargePct:CFG.sys.battRechargePct??25,battCycles:CFG.sys.battCycles||6000,battModel:CFG.sys.battModel||'PYLON LiFePO4',
     pvModel:CFG.sys.pvModel,pvEff:CFG.sys.pvEff,
     pvVoc:CFG.pvSpec.voc,pvVmp:CFG.pvSpec.vmp,pvIsc:CFG.pvSpec.isc,pvImp:CFG.pvSpec.imp,
     startDate:CFG.startDate,touStart:CFG.touStart,billDay:CFG.billDay,
@@ -2048,6 +2061,9 @@ function applySystemInfo(info={}){
   CFG.sys.peakSunH=+systemInfo.peakSunH||CFG.sys.peakSunH
   CFG.sys.battKwh=+systemInfo.battKwh||CFG.sys.battKwh
   CFG.sys.battAmp=+systemInfo.battAmp||CFG.sys.battAmp
+  CFG.sys.battEmptyPct=Math.max(0,Math.min(99,+systemInfo.battEmptyPct||CFG.sys.battEmptyPct||21))
+  CFG.sys.battRechargePct=Math.max(CFG.sys.battEmptyPct+1,Math.min(100,+systemInfo.battRechargePct||CFG.sys.battRechargePct||25))
+  CFG.sys.battCycles=Math.max(1,+systemInfo.battCycles||CFG.sys.battCycles||6000)
   CFG.sys.battModel=systemInfo.battModel||CFG.sys.battModel||'PYLON LiFePO4'
   CFG.startDate=systemInfo.startDate||CFG.startDate
   CFG.touStart=systemInfo.touStart||CFG.touStart
@@ -2138,7 +2154,7 @@ function fillSystemInfoForm(){
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v}
   const setCheck=(id,v)=>{const el=document.getElementById(id);if(el)el.checked=!!v}
   set('sysAppName',info.appName||'Deye Solar Insight')
-  set('sysInvModel',info.invModel||'DEYE SUN-5K-SG04LP1-EU-SM2');set('sysInvKw',info.invKw||5);set('sysPanels',info.panels);set('sysWp',info.wp);set('sysPvModel',info.pvModel||'');set('sysPeakSun',info.peakSunH);set('sysBattKwh',info.battKwh);set('sysBattAmp',info.battAmp||48);set('sysBattModel',info.battModel||'PYLON LiFePO4');set('sysStringA',info.stringA||'5 West');set('sysStringB',info.stringB||'3 South + 2 West')
+  set('sysInvModel',info.invModel||'DEYE SUN-5K-SG04LP1-EU-SM2');set('sysInvKw',info.invKw||5);set('sysPanels',info.panels);set('sysWp',info.wp);set('sysPvModel',info.pvModel||'');set('sysPeakSun',info.peakSunH);set('sysBattKwh',info.battKwh);set('sysBattAmp',info.battAmp||48);set('sysBattEmptyPct',info.battEmptyPct??21);set('sysBattRechargePct',info.battRechargePct??25);set('sysBattCycles',info.battCycles||6000);set('sysBattModel',info.battModel||'PYLON LiFePO4');set('sysStringA',info.stringA||'5 West');set('sysStringB',info.stringB||'3 South + 2 West')
   set('sysStartDate',info.startDate);set('sysTouStart',info.touStart);set('sysBillDay',info.billDay)
   set('sysSolarCost',info.solarCost);set('sysTouCost',info.touCost);set('sysTaxDeduct',info.taxDeduction);
   set('sysInflation',info.inflationRate??2.89);setCheck('sysShowSimulation',info.showSimulation===true)
@@ -2149,6 +2165,8 @@ function fillSystemInfoForm(){
     ['String A',info.stringA||'5 West'],
     ['String B',info.stringB||'3 South + 2 West'],
     ['Battery',`${info.battModel||'PYLON LiFePO4'} ${info.battKwh||CFG.sys.battKwh}kWh`],
+    ['Empty / Recharge',`${fn(info.battEmptyPct??21,0)}% / ${fn(info.battRechargePct??25,0)}%`],
+    ['Design cycles',(info.battCycles||6000).toLocaleString()+' cycles'],
     ['Inflation',fn(info.inflationRate??2.89,2)+'%/ปี'],
     ['Simulation',info.showSimulation===true?'แสดง':'ซ่อน'],
     ['Note',info.note||'—']
@@ -2166,7 +2184,7 @@ async function saveSystemInfo(){
   const getCheck=id=>document.getElementById(id).checked
   const info={
     appName:(get('sysAppName')||'').trim()||'Deye Solar Insight',
-    invModel:(get('sysInvModel')||'').trim(),invKw:+get('sysInvKw'),panels:+get('sysPanels'),wp:+get('sysWp'),pvModel:get('sysPvModel').trim(),peakSunH:+get('sysPeakSun'),battKwh:+get('sysBattKwh'),battAmp:+get('sysBattAmp'),
+    invModel:(get('sysInvModel')||'').trim(),invKw:+get('sysInvKw'),panels:+get('sysPanels'),wp:+get('sysWp'),pvModel:get('sysPvModel').trim(),peakSunH:+get('sysPeakSun'),battKwh:+get('sysBattKwh'),battAmp:+get('sysBattAmp'),battEmptyPct:+get('sysBattEmptyPct'),battRechargePct:+get('sysBattRechargePct'),battCycles:+get('sysBattCycles'),
     battModel:(get('sysBattModel')||'').trim()||'PYLON LiFePO4',
     startDate:get('sysStartDate'),touStart:get('sysTouStart'),billDay:+get('sysBillDay'),
     solarCost:+get('sysSolarCost'),touCost:+get('sysTouCost'),taxDeduction:+get('sysTaxDeduct'),
@@ -2184,7 +2202,7 @@ async function saveSystemInfo(){
 }
 async function clearSystemInfo(){
   if(!confirm('ล้างข้อมูลระบบที่บันทึกไว้สำหรับการแชร์/ส่งต่อ? ข้อมูล XLSX จะไม่ถูกลบ'))return
-  applySystemInfo({appName:'Deye Solar Insight',invModel:'DEYE SUN-5K-SG04LP1-EU-SM2',invKw:5,pvModel:'Deye SUN-5K-SG04LP1-EU-SM2',pvEff:97.6,pvVoc:500,pvVmp:425,pvIsc:36,pvImp:18,stringA:'5 West',stringB:'3 South + 2 West',battModel:'PYLON LiFePO4',inflationRate:2.89,showSimulation:false,partialDays:[],note:'',panels:10,wp:645,peakSunH:4.5,battKwh:10.24,battAmp:48,startDate:'2026-04-10',touStart:'2026-05-05',billDay:15,solarCost:209000,touCost:3350,taxDeduction:60000})
+  applySystemInfo({appName:'Deye Solar Insight',invModel:'DEYE SUN-5K-SG04LP1-EU-SM2',invKw:5,pvModel:'Deye SUN-5K-SG04LP1-EU-SM2',pvEff:97.6,pvVoc:500,pvVmp:425,pvIsc:36,pvImp:18,stringA:'5 West',stringB:'3 South + 2 West',battModel:'PYLON LiFePO4',battEmptyPct:21,battRechargePct:25,battCycles:6000,inflationRate:2.89,showSimulation:false,partialDays:[],note:'',panels:10,wp:645,peakSunH:4.5,battKwh:10.24,battAmp:48,startDate:'2026-04-10',touStart:'2026-05-05',billDay:15,solarCost:209000,touCost:3350,taxDeduction:60000})
   await settingsPut('systemInfo',currentSystemInfo())
   fillSystemInfoForm()
   await rerenderAll()
@@ -4036,10 +4054,10 @@ function renderCalendarHeatmap(containerId,dayMap,mode='self'){
   
   if(mode==='soc'){
     const leg=document.getElementById('socLegend');if(leg){
-      leg.innerHTML=`<div class="hmap-leg-c" style="background:#ef4444" title="ก่อน 21:00"></div><div class="hmap-leg-c" style="background:#f97316" title="21:00–21:59 ยัง On-peak"></div><div class="hmap-leg-c" style="background:#22c55e" title="22:00–23:59 Off-peak เริ่มแล้ว"></div><div class="hmap-leg-c" style="background:#166534" title="หลังเที่ยงคืน หรือแบตไม่หมด"></div><span style="margin-left:6px;color:var(--muted)">22:00+ = OK ด้านค่าไฟ</span>`
+      leg.innerHTML=`<div class="hmap-leg-c" style="background:#ef4444" title="ก่อน 21:00"></div><div class="hmap-leg-c" style="background:#f97316" title="21:00–21:59 ยัง On-peak"></div><div class="hmap-leg-c" style="background:#22c55e" title="22:00–23:59 Off-peak เริ่มแล้ว"></div><div class="hmap-leg-c" style="background:#166534" title="หลังเที่ยงคืน หรือแบตไม่หมด"></div><span style="margin-left:6px;color:var(--muted)">22:00+ = OK ด้านค่าไฟ (เฉพาะวัน TOU)</span>`
     }
     const legY=document.getElementById('socLegendY');if(legY){
-      legY.innerHTML=`<div class="hmap-leg-c" style="background:#ef4444" title="ก่อน 21:00"></div><div class="hmap-leg-c" style="background:#f97316" title="21:00–21:59 ยัง On-peak"></div><div class="hmap-leg-c" style="background:#22c55e" title="22:00–23:59 Off-peak เริ่มแล้ว"></div><div class="hmap-leg-c" style="background:#166534" title="หลังเที่ยงคืน หรือแบตไม่หมด"></div><span style="margin-left:6px;color:var(--muted)">22:00+ = OK ด้านค่าไฟ</span>`
+      legY.innerHTML=`<div class="hmap-leg-c" style="background:#ef4444" title="ก่อน 21:00"></div><div class="hmap-leg-c" style="background:#f97316" title="21:00–21:59 ยัง On-peak"></div><div class="hmap-leg-c" style="background:#22c55e" title="22:00–23:59 Off-peak เริ่มแล้ว"></div><div class="hmap-leg-c" style="background:#166534" title="หลังเที่ยงคืน หรือแบตไม่หมด"></div><span style="margin-left:6px;color:var(--muted)">22:00+ = OK ด้านค่าไฟ (เฉพาะวัน TOU)</span>`
     }
   } else if (mode==='self') {
     const legHTML = `
@@ -4693,8 +4711,10 @@ function renderBattHealth(days){
   document.getElementById('battHealthRows').innerHTML=[
     ['ข้อมูล',days.length+' วัน'],
     ['SOC ต่ำสุด (เฉลี่ย)',fn(avgSoc,0)+'%'],
-    ['Battery','PYLON LiFePO4 10.24kWh · 51.2V 200Ah'],
-    ['Design life','6,000 cycles (C/2 @ 25°C)'],
+    ['Battery',`${CFG.sys.battModel||'Battery'} ${fn(CFG.sys.battKwh,2)}kWh`],
+    ['Empty cutoff',fn(getSocEmptyThreshold(),0)+'%'],
+    ['Recharge threshold',fn(getSocRechargeThreshold(),0)+'%'],
+    ['Design life',(CFG.sys.battCycles||6000).toLocaleString()+' cycles'],
   ].map(([l,v])=>`<div class="an-row"><span>${l}</span><b>${v}</b></div>`).join('')
 }
 

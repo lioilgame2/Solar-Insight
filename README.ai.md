@@ -101,6 +101,8 @@ const CFG = {
     battAmp: 48,
     battModel: 'PYLON LiFePO4',
     invKw: 5,
+    battEmptyPct: 21,
+    battRechargePct: 25,
     battCycles: 6000,
     pvModel: 'LONGi LR7-72HYD-645M',
     pvEff: 23.9,
@@ -148,8 +150,8 @@ System modal metadata also includes:
 ### Thresholds
 
 ```javascript
-SOC_EMPTY_THRESHOLD = 21
-SOC_RECHARGED_THRESHOLD = 25
+getSocEmptyThreshold() => default 21
+getSocRechargeThreshold() => default 25
 MONTHLY_BILL_TARGET = 600
 DAILY_BILL_TARGET = 600 / 30.4
 ```
@@ -189,7 +191,7 @@ Main outputs:
 - `sellKwh`, `sellCost`
 - `socMin`, `socMinT`, `socEmptyT`
 - `chg`, `dis`
-- PV string totals: `pv1`, `pv2`
+- PV string totals: `pv1`, `pv2` (current UI compares up to 2 strings)
 - temperature stats and bands: `bmsT`, `batT`, `dcT`, `acT`, `tempT`
 - voltage/current stats
 - override flags: `isBilledOverride`, `isProjectedOverride`
@@ -197,6 +199,7 @@ Main outputs:
 Important logic:
 
 - TOU active when `date >= CFG.touStart`
+- Before `CFG.touStart`, bill logic uses whole-day flat-rate calculation
 - Weekends and `THAI_HOLIDAYS` are off-peak
 - Service fee is prorated daily as `P.srv / 30.4` in raw daily calculation
 - VAT is `1.07`
