@@ -939,8 +939,10 @@ body{
               <b style="color:var(--text)">ค่าไฟพื้นฐาน (Raw Cost):</b><br>
               <b>TOU:</b> OnCost = On_kWh × (OnRate + Ft) × 1.07<br>
               OffCost = (Off_kWh × (OffRate + Ft) + ServiceFee ÷ 30.4) × 1.07<br>
+              <b>ก่อนเริ่ม TOU:</b> FlatCost = (Import_kWh × (FlatRate + Ft) + ServiceFee ÷ 30.4) × 1.07<br>
               <b>ตัวอย่าง:</b> On 10 kWh → 10 × (5.7982 + 0.0972) × 1.07 = ฿63.08<br>
               Off 20 kWh → (20 × (2.6369 + 0.0972) + 24.62 ÷ 30.4) × 1.07 = ฿59.06<br>
+              ถ้ายังไม่ถึงวันเริ่ม TOU ระบบใช้ FlatCost ทั้งวัน แม้กรอกในช่อง off-peak เพื่อเก็บข้อมูลรอบก่อน TOU<br>
               <i>kWh ที่โชว์ยังเป็นค่าจาก inverter; เฉพาะค่าเงินบาทที่มี * จะถูก override หรือ apply K-Factor</i>
             </div>
             <div>
@@ -956,9 +958,12 @@ body{
               Investment = SolarCost + TOUCost - TaxDeduction<br>
               PaybackYears = Investment ÷ (Saving/day × 365)<br>
               MonthlySaving = Saving/day × 30.4<br>
+              MonthlyInflation = (1 + Inflation)^(1/12) - 1<br>
+              DiscountedSaving(m) = MonthlySaving ÷ (1 + MonthlyInflation)^m แล้วสะสมจนถึง Investment<br>
               <b>ตัวอย่าง:</b> Investment ฿152,350 และ Saving ฿80/วัน<br>
               Payback = 152,350 ÷ (80 × 365) = 5.2 ปี<br>
-              <i>สูตรนี้เป็นประมาณการจากโหลดจริง ไม่ใช่การเทียบบิลเก่าจริง รายการ “ก่อน vs หลังติด solar” จะใช้บิลจริง/ฐานย้อนหลังถ้ามีข้อมูล</i>
+              ถ้า Inflation 2.89%/ปี ระบบจะลดมูลค่าเงินประหยัดรายเดือนในอนาคตลง แล้วหาเดือนที่ยอดสะสมคุ้มทุน<br>
+              <i>สูตรนี้เป็นประมาณการจากโหลดจริงและค่าไฟจริง/K-Factor ที่มี ไม่ใช่การเทียบบิลเก่าทุกเดือนโดยตรง รายการ “ก่อน vs หลังติด solar” จะใช้บิลจริง/ฐานย้อนหลังถ้ามีข้อมูล</i>
             </div>
             <div>
               <b style="color:var(--text)">🔮 Simulation: + ติด Optimizer</b><br>
@@ -987,11 +992,12 @@ body{
             </div>
             <div>
               <b style="color:var(--text)">Potential P90 & Clipping:</b><br>
+              ระบบกวาดข้อมูล <b>"ทั้งหมดที่คุณอัปโหลด"</b> เพื่อหากำลังผลิตสูงสุดที่น่าเชื่อถือ โดยใช้ Percentile 90 หรือตัดช่วงพีคผิดปกติ 10% บนออก<br>
               Potential P90 = กำลังผลิตระดับ Percentile 90 จากข้อมูลทั้งหมดที่อัปโหลด<br>
               ClippingWh = min(max(0, P90 - ActualSolar), 1.5 kW) × Δt และจำกัดทั้งวันไม่เกิน 5 kWh<br>
               <b>ตัวอย่าง:</b> P90 4.8 kW, ผลิตจริง 3.6 kW นาน 30 นาที<br>
               Clipping = min(1.2, 1.5) × 0.5 = 0.6 kWh<br>
-              เงื่อนไขจะนับเมื่อแบตเต็ม หรือแบตชาร์จชนลิมิต เพื่อกันการนับวันเมฆมากผิดเป็น clipping<br>
+              เงื่อนไขจะนับเมื่อแบตเต็ม หรือแบตชาร์จชนลิมิต (Max Charge A) เพื่อกันการนับวันเมฆมากผิดเป็น clipping<br>
               <i>วันที่ทดลองปล่อยไฟออกเต็มระบบ เช่น 16–19 เม.ย. ช่วยเป็น baseline ให้ P90 ได้ดี เพราะไม่ถูกแบตจำกัด แต่ถ้ามีข้อมูลน้อยวันมาก P90 อาจสูงเกินจริงเล็กน้อยจนกว่าจะมีข้อมูลสะสมเพิ่ม</i>
             </div>
             <div>
