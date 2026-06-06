@@ -1367,6 +1367,7 @@ const MONTHLY_BILL_TARGET = 600
 const DAILY_BILL_TARGET = MONTHLY_BILL_TARGET / 30.4
 function batteryEmptyTime(s){
   if(!s)return ''
+  if(Object.prototype.hasOwnProperty.call(s,'socEmptyT'))return s.socEmptyT||''
   return s.socEmptyT || ((s.socMin||100)<=getSocEmptyThreshold() ? s.socMinT : '')
 }
 function batteryEmptyDec(t){
@@ -1903,7 +1904,7 @@ function calcSum(rows, date){
   const pImp=peak.length?Math.max(0,nv(peak[peak.length-1],C.purchase)-nv(peak[0],C.purchase)):0
   const pLoad=peak.length?Math.max(0,nv(peak[peak.length-1],C.loadK)-nv(peak[0],C.loadK)):0
 
-  let socMin=Infinity,socMinT='',socEmptyT='',socStartEmptyT='',socWasRecharged=false
+  let socMin=Infinity,socMinT='',socEmptyT='',socWasRecharged=false
   let clipRows=0;
   rows.forEach(r=>{
     const s=nv(r,C.soc);
@@ -1911,7 +1912,6 @@ function calcSum(rows, date){
     if(s>=getSocRechargeThreshold())socWasRecharged=true
     else if(s>0&&s<=getSocEmptyThreshold()){
       if(socWasRecharged&&!socEmptyT)socEmptyT=tStr(r)
-      else if(!socWasRecharged&&!socStartEmptyT)socStartEmptyT=tStr(r)
     }
     
     const battAmp = CFG.sys.battAmp || 48;
@@ -1919,7 +1919,8 @@ function calcSum(rows, date){
     if(nv(r,C.solar)>200 && ((s>=95 && nv(r,C.batt)>-100) || (nv(r,C.batt) <= -(maxChargeW - 150)))) clipRows++;
   })
   if(socMin===Infinity)socMin=0
-  if(!socEmptyT)socEmptyT=socStartEmptyT
+  // If the day starts already at/under the empty threshold, do not count that
+  // as today's run-out time. Count only a drop after SOC has been above recharge threshold.
 
   const arr=k=>rows.map(r=>nv(r,k)).filter(v=>v>0)
   const mx=a=>a.length?Math.max(...a):0
