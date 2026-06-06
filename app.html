@@ -1378,6 +1378,21 @@ function batteryEmptyDec(t){
   if(d>12)d-=24
   return d
 }
+function carryNextDayBatteryEmpty(days){
+  if(!Array.isArray(days)||!days.length)return days
+  const byDate=new Map(days.filter(d=>d&&d.date&&d.s).map(d=>[d.date,d]))
+  days.forEach(d=>{
+    if(!d||!d.s||d.s.socEmptyT)return
+    const nd=toDate(d.date);nd.setDate(nd.getDate()+1)
+    const next=byDate.get(dateKey(nd))
+    const nextPre=next&&next.s&&next.s.socPreDayEmptyT
+    if(nextPre){
+      d.s.socEmptyT=nextPre
+      d.s.socEmptyFromNextDay=true
+    }
+  })
+  return days
+}
 function bandVal(o,k){
   const b=o&&o.bands?o.bands:{}
   return b[k]||b[k.replace('–','-')]||0
@@ -1904,23 +1919,27 @@ function calcSum(rows, date){
   const pImp=peak.length?Math.max(0,nv(peak[peak.length-1],C.purchase)-nv(peak[0],C.purchase)):0
   const pLoad=peak.length?Math.max(0,nv(peak[peak.length-1],C.loadK)-nv(peak[0],C.loadK)):0
 
-  let socMin=Infinity,socMinT='',socEmptyT='',socWasRecharged=false
+  let socMin=Infinity,socMinT='',socEmptyT='',socPreDayEmptyT='',socDayChargeT='',socWasRecharged=false
   let clipRows=0;
   rows.forEach(r=>{
-    const s=nv(r,C.soc);
+    const s=nv(r,C.soc), t=tStr(r), solarW=nv(r,C.solar), battW=nv(r,C.batt);
     if(s>0&&s<socMin){socMin=s;socMinT=tStr(r)}
-    if(s>=getSocRechargeThreshold())socWasRecharged=true
+    if(t>='06:00'&&t<='18:00'&&s>=getSocRechargeThreshold()&&(solarW>200||battW<-100)){
+      if(!socWasRecharged)socDayChargeT=t
+      socWasRecharged=true
+    }
     else if(s>0&&s<=getSocEmptyThreshold()){
       if(socWasRecharged&&!socEmptyT)socEmptyT=tStr(r)
+      else if(!socWasRecharged&&!socPreDayEmptyT)socPreDayEmptyT=tStr(r)
     }
     
     const battAmp = CFG.sys.battAmp || 48;
     const maxChargeW = battAmp * 51.2;
-    if(nv(r,C.solar)>200 && ((s>=95 && nv(r,C.batt)>-100) || (nv(r,C.batt) <= -(maxChargeW - 150)))) clipRows++;
+    if(solarW>200 && ((s>=95 && battW>-100) || (battW <= -(maxChargeW - 150)))) clipRows++;
   })
   if(socMin===Infinity)socMin=0
   // If the day starts already at/under the empty threshold, do not count that
-  // as today's run-out time. Count only a drop after SOC has been above recharge threshold.
+  // as today's run-out time. Count only a drop after daytime solar/charge recovery.
 
   const arr=k=>rows.map(r=>nv(r,k)).filter(v=>v>0)
   const mx=a=>a.length?Math.max(...a):0
@@ -1974,7 +1993,7 @@ function calcSum(rows, date){
     self:load>0?Math.min(100,Math.max(0,(load-imp)/load*100)):0,
     selfP:pLoad>0?Math.min(100,Math.max(0,(pLoad-pImp)/pLoad*100)):0,
     chg:nv(last,C.chgK),dis:nv(last,C.disK),
-    socS:nv(first,C.soc),socE:nv(last,C.soc),socMin,socMinT,socEmptyT,
+    socS:nv(first,C.soc),socE:nv(last,C.soc),socMin,socMinT,socEmptyT,socPreDayEmptyT,socDayChargeT,
     bmsT:{min:mn(aBms),avg:av(aBms),max:mx(aBms),bands:bands(C.bmsT,[[40,45],[45,null]])},
     batT:{min:mn(aBat),avg:av(aBat),max:mx(aBat),bands:bands(C.batT,[[40,45],[45,null]])},
     dcT: {min:mn(aDc), avg:av(aDc), max:mx(aDc), bands:bands(C.dcT, [[45,50],[50,55],[55,60],[60,null]])},
@@ -2439,6 +2458,16 @@ async function renderDay(date){
   const all=await dbAll();
   if(day.rows&&day.rows.length) detectC(day.rows[0])
   const s=calcSum(day.rows,date)||day.summary
+  const batteryDays=all.sort((a,b)=>a.date.localeCompare(b.date)).map(x=>{
+    if(x.cols)Object.assign(C,x.cols)
+    return{date:x.date,s:calcSum(x.rows,x.date)||x.summary,rows:x.rows}
+  }).filter(d=>d.s)
+  carryNextDayBatteryEmpty(batteryDays)
+  const carried=batteryDays.find(d=>d.date===date)
+  if(s&&carried&&carried.s){
+    s.socEmptyT=carried.s.socEmptyT
+    s.socEmptyFromNextDay=carried.s.socEmptyFromNextDay
+  }
   if(s) applyCalibration(s, date)
   const isPartial=CFG.partialDays.includes(date)
 
@@ -3193,9 +3222,12 @@ async function renderWeek(date){
   document.getElementById('wEmpty').style.display='none';document.getElementById('wContent').style.display=''
   const fm=d=>`${d.getDate()} ${TH_M[d.getMonth()]} ${d.getFullYear()+543}`
 
-  const ss=wk.map(x=>{if(x.cols)Object.assign(C,x.cols); const s = calcSum(x.rows,x.date)||x.summary; if(s) applyCalibration(s, x.date); return s; })
+  const allDayObjs=all.map(x=>{if(x.cols)Object.assign(C,x.cols); const s = calcSum(x.rows,x.date)||x.summary; if(s) applyCalibration(s, x.date); return{date:x.date,s} }).filter(d=>d.s)
+  carryNextDayBatteryEmpty(allDayObjs)
+  const wkDays=allDayObjs.filter(x=>{const dd=toDate(x.date);return dd>=mon&&dd<=sun})
+  const ss=wkDays.map(d=>d.s)
   // Patch for May 16-17 system downtime (approximate by summing both half-days)
-  const p16 = wk.findIndex(x => x.date === '2026-05-16'), p17 = wk.findIndex(x => x.date === '2026-05-17');
+  const p16 = wkDays.findIndex(x => x.date === '2026-05-16'), p17 = wkDays.findIndex(x => x.date === '2026-05-17');
   if(p16 >= 0 && p17 >= 0) {
     const s16 = ss[p16], s17 = ss[p17];
     if(s16 && s17) {
@@ -3208,7 +3240,7 @@ async function renderWeek(date){
       Object.assign(ss[p16], m); Object.assign(ss[p17], m);
     }
   }
-  const lbl=wk.map(x=>{const dd=toDate(x.date);return `${dd.getDate()} ${TH_M[dd.getMonth()]}`})
+  const lbl=wkDays.map(x=>{const dd=toDate(x.date);return `${dd.getDate()} ${TH_M[dd.getMonth()]}`})
   const tot=k=>ss.reduce((s,x)=>s+(x[k]||0),0)
   const tS=tot('solar'),tL=tot('load'),tOnI=tot('onPeakImp'),tOffI=tot('offPeakImp')
   const tOn=tot('costOn'),tOff=tot('costOff'),tCost=+(tOn+tOff).toFixed(2),tI=tot('imp'),tE=tot('exp')
@@ -3276,7 +3308,7 @@ async function renderWeek(date){
       ctx.font = '11px Outfit'; ctx.textAlign = 'center';
       meta.data.forEach((p, i) => {
         const d = ss[i];
-        if(!d || CFG.partialDays.includes(wk[i].date)) return;
+        if(!d || CFG.partialDays.includes(wkDays[i].date)) return;
         const emptyT = batteryEmptyTime(d);
         if(emptyT) {
           ctx.fillStyle = 'rgba(192,132,252,1)';
@@ -3290,7 +3322,7 @@ async function renderWeek(date){
     }
   }
   const socTimesDec = ss.map((s,i) => {
-    if(CFG.partialDays.includes(wk[i].date)) return null;
+    if(CFG.partialDays.includes(wkDays[i].date)) return null;
     return batteryEmptyDec(batteryEmptyTime(s));
   });
   const validTimes = socTimesDec.filter(v=>v!=null);
@@ -3345,6 +3377,7 @@ async function renderMonth(){
     }
     byMonth[k].push({...s,date:x.date})
   })
+  carryNextDayBatteryEmpty(Object.values(byMonth).flat().map(s=>({date:s.date,s})))
   const months=Object.keys(byMonth).sort()
   months.forEach(m => {
     const ss = byMonth[m];
@@ -3608,6 +3641,7 @@ async function renderYear(){
     }
     return{date:x.date,s}
   }).filter(d=>d.s)
+  carryNextDayBatteryEmpty(days)
   const byM=Array.from({length:12},()=>[])
   days.forEach(d=>{ d.s._date = d.date; byM[toDate(d.date).getMonth()].push(d.s); })
   const agg=byM.map(ss=>{
@@ -3830,6 +3864,7 @@ async function renderAllTime(){
     if(s) s.probs = getDayProblems(s, x.rows)
     return{date:x.date,s}
   }).filter(d=>d.s)
+  carryNextDayBatteryEmpty(days)
 
   const byY={}
   days.forEach(d=>{
@@ -4190,6 +4225,7 @@ async function renderAnalysis(){
     if(x.cols)Object.assign(C,x.cols)
     return{date:x.date,s:calcSum(x.rows,x.date)||x.summary,rows:x.rows}
   }).filter(d=>d.s)
+  carryNextDayBatteryEmpty(days)
   // Full days only (ตัด partial days ออกจาก efficiency / min-max)
   const fullDays=days.filter(d=>!CFG.partialDays.includes(d.date))
   const calcDays=fullDays.length>0?fullDays:days
