@@ -442,6 +442,13 @@ body{
         <div><b>Simulation</b> คือการจำลองผลลัพธ์เพิ่มเติม เช่น optimizer, ขายไฟ, หรือเพิ่มแบต เพื่อดูทิศทางความคุ้มค่า</div>
       </div>
     </section>
+    <section class="guide-card">
+      <h3>อ่านรายละเอียดเพิ่ม</h3>
+      <ul>
+        <li><a href="https://github.com/lioilgame2/Solar-Insight#readme" target="_blank" rel="noopener" style="color:var(--accent);font-weight:800">README.md</a> คือคู่มือเต็มและภาพรวมสำหรับผู้ใช้ทั่วไป</li>
+        <li><a href="https://github.com/lioilgame2/Solar-Insight/blob/master/README.ai.md" target="_blank" rel="noopener" style="color:var(--accent);font-weight:800">README.ai.md</a> คือรายละเอียดเทคนิค สูตรคำนวณ และบริบทสำหรับให้ AI/Developer ช่วยต่อยอด</li>
+      </ul>
+    </section>
   </div>
 </div>
 
@@ -1529,7 +1536,7 @@ async function dbGet(k){
   }catch(e){dbOffline=true;console.warn('IndexedDB get skipped:',e);return null}
 }
 
-// Phase 5: New Real Bill Calibration Logic
+// Real bill calibration logic
 let CYCLE_CALIBRATION = {};
 
 function getCycleKeyForDate(date, bd) {
