@@ -1,6 +1,8 @@
+> This README starts with a Thai user guide. The English section is below.
+> เอกสารนี้เปิดด้วยภาษาไทย ส่วนภาษาอังกฤษอยู่ด้านล่าง
+
 # คู่มือใช้งาน Deye Solar Insight (Public Beta)
 
-เอกสารนี้เปิดด้วยภาษาไทย ส่วนภาษาอังกฤษอยู่ด้านล่าง
 
 [เปิดใช้งานผ่าน GitHub Pages](https://lioilgame2.github.io/Solar-Insight/) · [อ่านรายละเอียดเทคนิคสำหรับ AI/Developer](README.ai.md)
 
