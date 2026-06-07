@@ -1213,9 +1213,13 @@ body{
           <div class="roi-input"><label>System note <span class="field-mark display" title="ใช้แสดงผล"></span></label><input id="sysNote" type="text" style="width:230px;text-align:left"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-primary" onclick="saveSystemInfo()">บันทึกข้อมูลระบบ</button>
+            <button class="btn btn-sec" onclick="exportSettingsBackup()">Export backup</button>
+            <button class="btn btn-sec" onclick="document.getElementById('settingsBackupFile').click()">Import backup</button>
             <button class="btn btn-sec" onclick="resetSystemInfoForm()">รีเซ็ตฟอร์ม</button>
             <button class="btn btn-danger" onclick="clearSystemInfo()">ล้างข้อมูลระบบ</button>
+            <input id="settingsBackupFile" type="file" accept="application/json,.json" style="display:none" onchange="importSettingsBackup(this.files)">
           </div>
+          <div class="sys-note" style="grid-column:1 / -1;font-size:.74rem;color:var(--muted)">Backup นี้รวมเฉพาะข้อมูลระบบและประวัติบิลที่กรอกเอง ไม่รวมไฟล์ inverter ที่ import แล้ว</div>
         </div>
       </div>
     </div>
@@ -2205,10 +2209,10 @@ function openSystemInfo(){
 }
 function closeSystemInfo(){document.getElementById('sysModal').style.display='none'}
 function resetSystemInfoForm(){fillSystemInfoForm()}
-async function saveSystemInfo(){
+function readSystemInfoForm(){
   const get=id=>document.getElementById(id).value
   const getCheck=id=>document.getElementById(id).checked
-  const info={
+  return{
     appName:(get('sysAppName')||'').trim()||'Deye Solar Insight',
     invModel:(get('sysInvModel')||'').trim(),invKw:+get('sysInvKw'),panels:+get('sysPanels'),wp:+get('sysWp'),pvModel:get('sysPvModel').trim(),peakSunH:+get('sysPeakSun'),battKwh:+get('sysBattKwh'),battAmp:+get('sysBattAmp'),battEmptyPct:+get('sysBattEmptyPct'),battRechargePct:+get('sysBattRechargePct'),battCycles:+get('sysBattCycles'),
     battModel:(get('sysBattModel')||'').trim()||'PYLON LiFePO4',
@@ -2220,11 +2224,73 @@ async function saveSystemInfo(){
     partialDays:get('sysPartialDays').split(',').map(x=>x.trim()).filter(Boolean),
     note:get('sysNote').trim()
   }
+}
+async function saveSystemInfo(){
+  const info=readSystemInfoForm()
   applySystemInfo(info)
   await settingsPut('systemInfo',currentSystemInfo())
   fillSystemInfoForm()
   await rerenderAll()
   alert('บันทึกข้อมูลระบบแล้ว')
+}
+async function exportSettingsBackup(){
+  try{
+    const sysModal=document.getElementById('sysModal')
+    const nextInfo=sysModal&&sysModal.style.display!=='none'?readSystemInfoForm():currentSystemInfo()
+    applySystemInfo(nextInfo)
+    await settingsPut('systemInfo',currentSystemInfo())
+    const backup={
+      type:'DeyeSolarInsightSettingsBackup',
+      version:1,
+      exportedAt:new Date().toISOString(),
+      systemInfo:currentSystemInfo(),
+      histBills:histBills||[],
+      actualBills:actualBills||[]
+    }
+    const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'})
+    const url=URL.createObjectURL(blob)
+    const a=document.createElement('a')
+    a.href=url
+    a.download=`deye-solar-insight-backup-${new Date().toISOString().slice(0,10)}.json`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+    fillSystemInfoForm()
+  }catch(err){
+    alert('Export backup ไม่สำเร็จ: '+err.message)
+  }
+}
+async function importSettingsBackup(files){
+  const input=document.getElementById('settingsBackupFile')
+  try{
+    const file=files&&files[0]
+    if(!file)return
+    const data=JSON.parse(await file.text())
+    const hasSettings=data&&typeof data==='object'&&(data.systemInfo||data.histBills||data.actualBills)
+    if(!hasSettings)throw new Error('ไฟล์นี้ไม่มีข้อมูล backup ที่รองรับ')
+    if(!confirm('Import backup จะเขียนทับข้อมูลระบบและประวัติบิลที่กรอกเองบน browser นี้ ต้องการดำเนินการต่อ?'))return
+    if(data.systemInfo){
+      applySystemInfo(data.systemInfo)
+      await settingsPut('systemInfo',currentSystemInfo())
+    }
+    if(Array.isArray(data.histBills)){
+      histBills=data.histBills
+      await settingsPut('histBills',histBills)
+    }
+    if(Array.isArray(data.actualBills)){
+      actualBills=data.actualBills
+      await settingsPut('actualBills',actualBills)
+    }
+    fillSystemInfoForm()
+    renderActualBills()
+    await rerenderAll()
+    alert('Import backup แล้ว')
+  }catch(err){
+    alert('Import backup ไม่สำเร็จ: '+err.message)
+  }finally{
+    if(input)input.value=''
+  }
 }
 async function clearSystemInfo(){
   if(!confirm('ล้างข้อมูลระบบที่บันทึกไว้สำหรับการแชร์/ส่งต่อ? ข้อมูล XLSX จะไม่ถูกลบ'))return
@@ -4079,18 +4145,9 @@ function renderHeatmap(containerId,data,label){
 }
 function renderCostHeatmap(containerId,data){
   const el=document.getElementById(containerId);if(!el)return
-  const cells=data.map(({date,v,partial})=>{
-    const d=toDate(date)
-    const border=partial?'2px solid rgba(251,191,36,.7)':''
-    return`<div style="text-align:center">
-      <div style="font-size:.58rem;color:var(--muted);margin-bottom:2px">${TH_D[d.getDay()]}</div>
-      <div class="hmap-day" style="background:${costColor(v)};${border?'border:'+border:''}" title="${fmtD(date)}: ฿${fn(v,2)}${partial?' (บางส่วน)':''}">
-        <span style="font-size:.58rem;color:rgba(255,255,255,.85);font-weight:700">${fn(v,0)}</span>
-      </div>
-    </div>`
-  }).join('')
-  el.innerHTML=`<div style="display:flex;gap:6px;flex-wrap:wrap">${cells}</div>
-    <div class="hmap-legend"><span>ต่ำกว่าเป้า</span><div class="hmap-legend-cells">${[0.7,1,1.25,1.5,2.1].map(r=>`<div class="hmap-legend-cell" style="background:${costColor(DAILY_BILL_TARGET*r)}" title="~฿${fn(DAILY_BILL_TARGET*r,0)}/วัน"></div>`).join('')}</div><span>เกินเป้า</span><span style="margin-left:6px;color:var(--muted)">เป้า ฿${fn(DAILY_BILL_TARGET,0)}/วัน</span></div>`
+  const dayMap={}
+  data.forEach(({date,v,partial})=>{dayMap[date]={v,partial}})
+  renderCalendarHeatmap(containerId,dayMap,'cost')
 }
 
 function renderCalendarHeatmap(containerId,dayMap,mode='self'){
@@ -4154,7 +4211,7 @@ function renderCalendarHeatmap(containerId,dayMap,mode='self'){
         }
         else { bg=selfColor(info.v, info.partial); text=info.v }
       }
-      const border=''
+      const border=info&&info.partial?'border:2px solid rgba(251,191,36,.6);':''
       let titleTooltip = fmtD(date);
       if(info) {
         if(mode==='cost') titleTooltip += ': ฿' + fn(info.v,2);
@@ -4184,7 +4241,7 @@ function renderCalendarHeatmap(containerId,dayMap,mode='self'){
             if(info.v===1) { bg='#ef4444'; text='⚠️' }
             else { bg='rgba(255,255,255,.04)'; text='' }
           }
-          else { bg=selfColor(info.v); text=info.v }
+          else { bg=selfColor(info.v, info.partial); text=info.v }
         }
         const border=info&&info.partial?'border:2px solid rgba(251,191,36,.6);':''
         let titleTooltip = fmtD(date);
@@ -4205,7 +4262,11 @@ function renderCalendarHeatmap(containerId,dayMap,mode='self'){
     html+=`</div>`
   })
   html+=`</div>`
-  el.innerHTML=html
+  let legend=''
+  if(mode==='cost'){
+    legend=`<div class="hmap-legend"><span>ต่ำกว่าเป้า</span><div class="hmap-legend-cells">${[0.7,1,1.25,1.5,2.1].map(r=>`<div class="hmap-legend-cell" style="background:${costColor(DAILY_BILL_TARGET*r)}" title="~฿${fn(DAILY_BILL_TARGET*r,0)}/วัน"></div>`).join('')}</div><span>เกินเป้า</span><span style="margin-left:6px;color:var(--muted)">เป้า ฿${fn(DAILY_BILL_TARGET,0)}/วัน</span></div>`
+  }
+  el.innerHTML=html+legend
 }
 
 function jumpDay(date){
