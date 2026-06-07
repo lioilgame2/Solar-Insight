@@ -1,68 +1,96 @@
-# README.ai.md — Deye Solar Insight Technical Reference
+# README.ai.md - Deye Solar Insight Technical Reference
 
-เอกสารนี้มีไว้ให้ AI assistant หรือ developer เข้าใจ `app.html` โดยไม่ต้อง reverse engineer ใหม่ทุกครั้ง
+This file is an English-only technical handoff for AI assistants and developers working on `app.html`.
 
-> สถานะเอกสาร: อัปเดตให้ตรงกับ `app.html` หลังงาน bill calibration, ROI, simulation, heatmap, battery empty time และ Glossary ล่าสุด
+It should stay consistent with:
 
----
+- `README.md`: public user guide and project overview
+- `app.html`: the actual single-file application and in-app guide
 
 ## 1. Project Snapshot
 
-| รายการ | ค่า |
+| Item | Current State |
 |---|---|
 | Project | Deye Solar Insight |
-| Main file | `app.html` ไฟล์เดียว |
+| Main file | `app.html` |
 | App type | Offline-first browser dashboard |
 | Stack | HTML / CSS / Vanilla JavaScript / Chart.js / SheetJS / IndexedDB |
-| UI language | ไทย |
-| Primary data | XLSX export จาก hybrid inverter |
-| Storage | Browser IndexedDB ชื่อ `SolarInsight` |
-| Main hardware profile | DEYE hybrid inverter, 10 × 645 W panels, PYLON LiFePO4 10.24 kWh |
+| UI language | Thai |
+| Documentation language | `README.md` is Thai first with English below; `README.ai.md` is English only |
+| Primary input | XLSX exports from Deye hybrid inverter reports |
+| Compatibility scope | Built and tested mainly for Deye XLSX exports; other inverter brands are not guaranteed |
+| Storage | Browser IndexedDB database `SolarInsight`, with localStorage fallback for settings |
+| Best device | Desktop/laptop; not mobile-first |
+| PV string comparison | Up to 2 strings |
+| Meter mode | Best for TOU meters; pre-TOU periods use flat-rate billing |
 
-หมายเหตุ: ตัวเลขขนาดไฟล์และจำนวนบรรทัดไม่ควรถูก hardcode ในเอกสาร เพราะ `app.html` เปลี่ยนบ่อย
+Do not hardcode current file size, line count, or gzip size in documentation. `app.html` changes often.
 
----
+## 2. Architecture
 
-## 2. Current Architecture
+The project intentionally stays as a single static HTML app.
 
 ```text
 app.html
-├── <head>
-│   ├── CSS variables + layout styles
+├── head
+│   ├── CSS variables and layout styles
 │   ├── SheetJS XLSX CDN
 │   └── Chart.js CDN
-├── <body>
-│   ├── Daily tab
-│   ├── Weekly tab
-│   ├── Monthly billing-cycle tab
-│   ├── Yearly tab
-│   ├── All-time tab
-│   ├── Analysis tab
-│   ├── System modal
-│   ├── File manager modal
-│   └── Bill history modal
-└── <script>
-    ├── Config/constants
-    ├── IndexedDB + settings helpers
+├── body
+│   ├── main navigation tabs
+│   ├── daily / weekly / monthly / yearly / all-time panes
+│   ├── analysis pane
+│   ├── in-app guide pane
+│   ├── system settings modal
+│   ├── bill history modal
+│   ├── file manager modal
+│   └── first-run welcome modal
+└── script
+    ├── configuration constants
+    ├── IndexedDB and settings helpers
     ├── XLSX parsing
-    ├── Daily summary calculation
-    ├── Bill-cycle calibration
-    ├── Render functions
-    ├── Chart builders/plugins
-    ├── Heatmap renderers
-    └── Analysis/ROI/simulation functions
+    ├── daily summary calculation
+    ├── real bill calibration and K-Factor projection
+    ├── render functions
+    ├── Chart.js helpers/plugins
+    ├── calendar heatmap renderers
+    ├── ROI and simulation logic
+    └── backup import/export helpers
 ```
 
-Important design constraint: the project intentionally stays as a single-file dashboard. Do not split into modules unless the user explicitly asks.
+Avoid splitting into multiple modules unless the user explicitly asks for that direction.
 
----
+## 3. User-Facing Documentation Contract
 
-## 3. Data Flow
+The three user-facing documentation surfaces must agree:
+
+| Surface | Role |
+|---|---|
+| `README.md` | Public user guide, Thai first and English below |
+| in-app guide tab | Short onboarding guide inside the app |
+| first-run welcome modal | Very short start guidance for GitHub Pages visitors |
+
+Required shared claims:
+
+- The app is built and tested mainly with Deye XLSX exports.
+- Other inverter brands may work only if columns and units are similar.
+- The app is best for TOU users, but pre-TOU periods are supported with flat-rate billing.
+- Data is stored in the current browser; it is not sent to a project server.
+- Clearing browser storage can remove saved data.
+- Using another browser or another machine will not automatically carry data over.
+- The current UI is best on desktop/laptop, not mobile-first.
+- PV string comparison currently supports up to 2 strings.
+- Simulation results are directional estimates, not guarantees.
+- Battery empty %, recharge %, and design cycles are configurable in system settings.
+- Manual system settings and bill history can be backed up via Export backup / Import backup.
+- Backup files do not include imported inverter rows; users should keep original XLSX files.
+
+## 4. Data Flow
 
 ```text
 User imports XLSX
   ↓
-parseXLSX(buf)
+parseXLSX(buffer)
   ↓
 detectC(firstRow)
   ↓
@@ -83,13 +111,13 @@ applyCalibration(summary, date)
 renderDay / renderWeek / renderMonth / renderYear / renderAllTime / renderAnalysis
 ```
 
-`dbAll()` is important because it recomputes calibration every time. IndexedDB should keep raw daily summaries; calibrated values are applied in memory.
+`dbAll()` recomputes calibration on read. IndexedDB stores raw imported daily summaries and rows; calibrated currency values are applied in memory.
 
----
-
-## 4. Core Config
+## 5. Core Configuration
 
 ### `CFG`
+
+Representative defaults:
 
 ```javascript
 const CFG = {
@@ -115,10 +143,10 @@ const CFG = {
   pvSpec: { pmax: 645, voc: 54.12, isc: 15.06, vmp: 44.77, imp: 14.41 },
   strings: { aLabel: 'String A', aSpec: '5 West', bLabel: 'String B', bSpec: '3 South + 2 West' },
   partialDays: ['2026-04-10', '2026-05-16', '2026-05-17'],
-}
+};
 ```
 
-System modal metadata also includes:
+System settings metadata also includes:
 
 ```javascript
 {
@@ -130,9 +158,11 @@ System modal metadata also includes:
 }
 ```
 
-`showSimulation` defaults to `false` for new/cleared system profiles because the simulation card is directional and system-specific. Saved user settings should be respected.
+`showSimulation` defaults to `false` for new or cleared system profiles because simulation assumptions are system-specific.
 
-### `getP()`
+### Electricity Rates
+
+`getP()` reads current UI values and falls back to defaults:
 
 ```javascript
 {
@@ -145,20 +175,16 @@ System modal metadata also includes:
 }
 ```
 
-ค่าเหล่านี้มาจาก input ใน UI ถ้ามี ถ้าไม่มีจะใช้ default ข้างบน
-
 ### Thresholds
 
 ```javascript
-getSocEmptyThreshold() => default 21
-getSocRechargeThreshold() => default 25
+getSocEmptyThreshold()    // default 21
+getSocRechargeThreshold() // default 25
 MONTHLY_BILL_TARGET = 600
 DAILY_BILL_TARGET = 600 / 30.4
 ```
 
----
-
-## 5. Storage
+## 6. Storage
 
 ### IndexedDB
 
@@ -167,21 +193,35 @@ DAILY_BILL_TARGET = 600 / 30.4
 | `days` | `date` | `{ date, rows, summary, cols }` |
 | `settings` | `key` | `{ key, value }` |
 
-### Settings keys
+### Settings Keys
 
 | Key | Shape |
 |---|---|
-| `systemInfo` | system config saved from system modal |
-| `histBills` | pre-solar baseline: `[{ m, kwh, cost }]` |
-| `actualBills` | real bills: `[{ y, m, cost, normalKwh, onPeakKwh, offPeakKwh, ft }]` |
+| `systemInfo` | System settings saved from the system modal |
+| `histBills` | Pre-solar baseline bills: `[{ m, kwh, cost }]` |
+| `actualBills` | Real bills: `[{ y, m, cost, normalKwh, onPeakKwh, offPeakKwh, ft }]` |
+| `ui:welcomeDismissed` | Whether the welcome modal was dismissed |
+| `ui:welcomeHide` | Whether the welcome modal should stay hidden |
 
-Legacy note: older docs mention `actualBills.kwh`. Current save path deletes legacy `kwh` and `serviceFee`, then stores separated kWh fields.
+Older docs may mention `actualBills.kwh`. The current save path deletes legacy `kwh` and `serviceFee`, then stores separated kWh fields.
 
----
+### Backup
 
-## 6. `calcSum(rows, date)`
+`exportSettingsBackup()` exports a JSON file with:
 
-Daily summary calculator. This is the highest-impact function in the app.
+- `systemInfo`
+- `histBills`
+- `actualBills`
+
+It does not export:
+
+- imported inverter rows
+- daily raw IndexedDB data
+- original XLSX files
+
+`importSettingsBackup(files)` imports the JSON backup and overwrites the current browser's manual system settings and bill history after confirmation.
+
+## 7. Daily Summary: `calcSum(rows, date)`
 
 Main outputs:
 
@@ -189,82 +229,86 @@ Main outputs:
 - `onPeakImp`, `offPeakImp`
 - `costOn`, `costOff`, `costTotal`
 - `sellKwh`, `sellCost`
-- `socMin`, `socMinT`, `socEmptyT`
+- `socMin`, `socMinT`, `socEmptyT`, `socPreDayEmptyT`
 - `chg`, `dis`
-- PV string totals: `pv1`, `pv2` (current UI compares up to 2 strings)
+- `pv1`, `pv2`
 - temperature stats and bands: `bmsT`, `batT`, `dcT`, `acT`, `tempT`
 - voltage/current stats
 - override flags: `isBilledOverride`, `isProjectedOverride`
 
 Important logic:
 
-- TOU active when `date >= CFG.touStart`
-- Before `CFG.touStart`, bill logic uses whole-day flat-rate calculation
-- Weekends and `THAI_HOLIDAYS` are off-peak
-- Service fee is prorated daily as `P.srv / 30.4` in raw daily calculation
-- VAT is `1.07`
-- Clipping estimate:
-  - count samples where solar is active and battery is full/charge-limited
-  - convert sample count into kWh using interval minutes
-  - cap at `1.5 kW` and `5 kWh/day`
-- `sellKwh = exp + clipKwh` is a daily summary fallback. Visible sell-if cards and sell simulation should use dynamic P90 clipping via `estimateSellProjection()` / `renderHourlyAnalysis()` when row data exists.
+- TOU is active when `date >= CFG.touStart`.
+- Before `CFG.touStart`, billing uses whole-day flat-rate calculation.
+- Weekends and configured Thai holidays are off-peak.
+- Service fee is prorated as `P.srv / 30.4`.
+- VAT is `1.07`.
+- kWh values shown to users remain raw inverter values.
+- Currency values can be adjusted by real bill override or K-Factor projection and are marked with `*`.
 
-P90 reference note:
+## 8. Battery Empty Time
 
-- Full-export trial days are useful P90 reference days because production is less battery-limited
-- In this project, Apr 16-19 were used as full-production trial context
-- Early in the dataset, a few very clear full-export days can make P90 slightly optimistic
-- The app only counts P90 gap as clipping when battery is full or charge-limited, so cloudy days are less likely to be falsely counted
+Battery empty detection intentionally avoids treating an early-morning low SOC as the current day's empty event.
 
-Battery empty time:
+Current behavior:
 
-- The app does not simply use minimum SOC time
-- It waits until battery has meaningfully recharged first (`>= 25%`)
-- Then records first SOC `<= 21%`
-- This avoids false empty time near midnight or after stale data
+- The app waits for meaningful daytime solar/charge recovery before recording same-day empty time.
+- Default recharge threshold is 25%, configurable by the user.
+- Empty threshold defaults to 21%, configurable by the user.
+- Early-morning empty before daytime recharge is stored as `socPreDayEmptyT`.
+- `carryNextDayBatteryEmpty(days)` can carry next day's pre-day empty time back to the previous day when appropriate.
 
----
+Example:
 
-## 7. Bill Calibration
+```text
+2026-06-06 03:22 is the overnight empty event for 2026-06-05,
+not the empty event for 2026-06-06, if the battery had not yet recharged on 2026-06-06.
+```
 
-Current calibration system is **not** `updateCalibrationFactor()`, `kwhFactor`, or `costFactor`.
+Heatmap interpretation:
 
-Current functions:
+- Empty before 22:00 is a warning during TOU because it is still on-peak.
+- Empty at 22:00 or later is OK from a bill-cost perspective because off-peak has started.
+- Before TOU starts, battery empty status is less meaningful for TOU cost.
+
+## 9. Bill Calibration
+
+Current calibration functions:
 
 - `computeCycleCalibrations(validBills, P)`
 - `applyCalibration(summary, dateStr)`
 - global `CYCLE_CALIBRATION`
 
-### Cycle key
+### Cycle Key
 
 `getCycleKeyForDate(date, billDay)` maps a day into a bill cycle ending month.
 
 Example with bill day 15:
 
 ```text
-2026-05-14 → 2026-05 cycle
-2026-05-15 → 2026-06 cycle
+2026-05-14 -> 2026-05 cycle
+2026-05-15 -> 2026-06 cycle
 ```
 
-### Real bill override
+### Real Bill Override
 
 For a bill cycle with a real cost:
 
 ```text
-EstimatedBill = Σ RawCost(day, billFt)
+EstimatedBill = sum RawCost(day, billFt)
 BillRatio = ActualBill / EstimatedBill
-CalibratedCost(day) = RawCost(day, billFt) × BillRatio
+CalibratedCost(day) = RawCost(day, billFt) * BillRatio
 ```
 
-The daily rows get:
+Daily summaries get:
 
 - `isBilledOverride = true`
 - `isProjectedOverride = false`
-- `costTotal`, `costOn`, `costOff` adjusted
+- adjusted `costTotal`, `costOn`, and `costOff`
 
-### K-Factor projection
+### K-Factor Projection
 
-For cycles where the real cost is not available yet:
+For cycles where real cost is not available yet:
 
 ```text
 K_normal = BillNormal_kWh / InverterNormal_kWh
@@ -272,153 +316,117 @@ K_on     = BillOnPeak_kWh / InverterOnPeak_kWh
 K_off    = BillOffPeak_kWh / InverterOffPeak_kWh
 ```
 
-`activeK` uses the latest stable K-Factor set, or average of the latest 3 when values do not swing too much.
+`activeK` uses the latest stable K-Factor set, or the average of the latest 3 when values do not swing too much.
 
-Projected daily costs get:
+Projected daily summaries get:
 
 - `isBilledOverride = false`
 - `isProjectedOverride = true`
 
-Important: kWh display remains raw inverter kWh. Only currency values are adjusted. The UI marks adjusted currency with `*`.
+Important: kWh display remains raw inverter kWh. Only currency values are adjusted.
 
----
+## 10. ROI And Simulation
 
-## 8. `renderHistROI(days)`
+### ROI
 
-This renders the before-vs-after electricity bill comparison chart in Analysis Overview.
-
-Current behavior:
-
-- The chart only uses post-solar real bills as the main month keys
-- For each post-solar bill month:
-  - After bar = actual post-solar bill from `actualBills`
-  - Before bar = same-month pre-solar actual bill if available
-  - Otherwise before bar = `histBills` baseline for that month
-- It does not fall back to inverter-estimated monthly cost for the after bar
-- Bars are rendered as separated labels:
-  - `ก่อน / พ.ค. 68`
-  - `หลัง / พ.ค. 69`
-  - then the next month pair
-
-This means the chart grows month by month as real post-solar bills are added. With 12 real post-solar bills, it becomes a full 12-month before/after comparison.
-
----
-
-## 9. ROI And Simulation
-
-### `calcROI()`
-
-ROI uses actual load to create a no-solar baseline.
+ROI uses actual load to estimate a no-solar baseline.
 
 ```text
-NoSolarCostPerDay = (Load_kWh × (P.flat + P.ft) + P.srv / 30.4) × 1.07
+NoSolarCostPerDay = (Load_kWh * (P.flat + P.ft) + P.srv / 30.4) * 1.07
 ActualSolarCostPerDay = average(summary.costTotal)
 SavingPerDay = max(0, NoSolarCostPerDay - ActualSolarCostPerDay)
-MonthlySaving = SavingPerDay × 30.4
-YearlySaving = SavingPerDay × 365
+MonthlySaving = SavingPerDay * 30.4
+YearlySaving = SavingPerDay * 365
+Investment = SolarCost + TOUCost - TaxDeduction
 PaybackYears = Investment / YearlySaving
 NominalPaybackMonths = Investment / MonthlySaving
-DiscountedPaybackMonths = month where sum(MonthlySaving / (1 + monthlyInflation)^month) >= Investment
+DiscountedPaybackMonths = first month where
+  sum(MonthlySaving / (1 + monthlyInflation)^month) >= Investment
 ```
 
-The ROI card also displays the daily formula:
+The ROI card displays the Thai inflation rate used for discounting.
 
-```text
-Before Solar avg/day - After Solar avg/day = Saving/day
-```
+### Sell-To-MEA Simulation
 
-### Sell-to-MEA payback
-
-The sell simulation in `simSellRoi` is a new payback period, not a monthly saving number.
+The sell simulation shows a new payback period, not a monthly saving number.
 
 ```text
 P90Clipping = renderHourlyAnalysis(rowDays, null, null, allRowsForP90).totalClipped
-SellValuePerYear = avg((Export_kWh + P90Clipping_kWh) × SellRate) × 365
+SellValuePerYear = average((Export_kWh + P90Clipping_kWh) * SellRate) * 365
 PaybackWithSell = Investment / (YearlySaving + SellValuePerYear)
 ```
 
 If row data is not available, the app falls back to `summary.sellCost`.
 
-### Optimizer simulation
-
-The optimizer simulation estimates recoverable imbalance energy:
+### Optimizer Simulation
 
 ```text
-RecoverableWh = max(0, min(max(PV1, PV2) × 2, inverterW) - SolarW) × Δt
-OptimizerWh = RecoverableWh × 50%
-Saving = min(OptimizerWh, GridImportWh) × rate
+RecoverableWh = max(0, min(max(PV1, PV2) * 2, inverterW) - SolarW) * deltaTime
+OptimizerWh = RecoverableWh * 50%
+Saving = min(OptimizerWh, GridImportWh) * rate
 ```
 
-The `50%` factor is intentional and matches the UI tooltip.
+The 50% factor is intentional and matches the UI tooltip.
 
-### Battery 10 → 16 kWh simulation
+### Battery 10 -> 16 kWh Simulation
 
-This is a rough directional estimate:
+This is a directional estimate, not a full hourly SOC simulation.
 
 ```text
-ExtraUsableBatt = 6 × (1 - 0.21)
+ExtraUsableBatt = 6 * (1 - 0.21)
 Storeable = min(export + 2 kWh rough clipping allowance, ExtraUsableBatt)
-BatterySaving = min(Storeable, nightImport) × offPeakRateWithVAT
+BatterySaving = min(Storeable, nightImport) * offPeakRateWithVAT
 ```
 
-It is not a full hourly SOC simulation.
-
----
-
-## 10. Battery Cycle
+## 11. Battery Cycle
 
 Function: `renderBattCycles(days)`
 
 Current method is Equivalent Full Cycle (EFC):
 
 ```text
-usableKwh = CFG.sys.battKwh × 0.9
-EFC/day = (Charge_kWh + Discharge_kWh) / (2 × usableKwh)
+usableKwh = CFG.sys.battKwh * 0.9
+EFC/day = (Charge_kWh + Discharge_kWh) / (2 * usableKwh)
 ```
 
 Partial days are excluded.
 
 This replaced the older charge-only method because charge-only overstates cycle count when charge and discharge are imbalanced.
 
----
-
-## 11. Temperature Charts
+## 12. Temperature Charts
 
 Monthly, yearly, and all-time temperature stack charts use AC temperature bands:
 
 ```text
-45–50°C
-50–55°C
-55–60°C
->60°C
+45-50 C
+50-55 C
+55-60 C
+>60 C
 ```
 
-Weekly temperature chart still compares multiple temperature sources. That is why weekly title is `อุณหภูมิ`, while monthly/year/all-time use `อุณหภูมิ (AC)`.
+Weekly temperature chart can still compare multiple temperature sources. That is why weekly temperature naming can differ from monthly/year/all-time AC-specific views.
 
----
+## 13. Heatmaps
 
-## 12. Heatmaps
+Current placement:
 
-Current heatmap placement:
-
-- Weekly tab: no heatmap
+- Weekly tab: no heatmap.
 - Monthly tab:
-  - self-sufficiency heatmap
-  - daily cost heatmap
-  - problem heatmap
-- Analysis/month and year panes use calendar heatmaps where applicable
+  - self-sufficiency calendar heatmap
+  - battery empty calendar heatmap
+  - problem day calendar heatmap
+  - daily cost calendar heatmap
+- Analysis month/year panes use calendar heatmaps where applicable.
 
 Color logic:
 
-- `selfColor()` maps self-sufficiency from red → yellow → green
-- `costColor()` maps daily bill against `DAILY_BILL_TARGET`
-- Current default monthly target is `฿600/month`, so daily target is about `฿19.74/day`
-- `socTimeColor()` treats battery empty before 22:00 as warning because it is still TOU on-peak
-- Battery empty at 22:00 or later is OK from a bill-cost perspective because TOU off-peak has started
+- `selfColor()` maps self-sufficiency from red to yellow to green.
+- `costColor()` maps daily bill against `DAILY_BILL_TARGET`.
+- Current default monthly target is 600 baht/month, so daily target is about 19.74 baht/day.
+- `socTimeColor()` treats battery empty before 22:00 as warning because it is still TOU on-peak.
+- Battery empty at 22:00 or later is OK from a bill-cost perspective because off-peak has started.
 
----
-
-## 13. Important Render Flow
+## 14. Render Flow
 
 `refresh()` calls render functions and catches render errors per section.
 
@@ -433,46 +441,35 @@ Key functions:
 
 `switchTab(t)` calls `renderVisibleTab(t)` to avoid blank Chart.js rendering after hidden canvas tabs become visible.
 
----
-
-## 14. Chart Helpers
+## 15. Chart Helpers
 
 ### `mkChart(id, type, labels, datasets, yOverride, plugins)`
 
-Handles normal bar/line/pie chart creation.
-
 Important behavior:
 
-- Destroys existing chart before creating a new one
-- Adds bar value labels automatically for non-timeY bar charts
-- Supports:
-  - `stacked`
-  - `timeY`
-  - `tooltipExtra`
-  - `legend: false`
+- Destroys an existing chart before creating a new one.
+- Adds bar value labels automatically for non-timeY bar charts.
+- Supports `stacked`, `timeY`, `tooltipExtra`, and `legend: false`.
 
 ### `barValueLabelsPlugin()`
 
-- Non-stacked bars: label is outside the bar
-- Stacked bars: label is inside segment when enough height exists
-- Adds top padding/grace to avoid overlap
+- Non-stacked bars: label is outside the bar.
+- Stacked bars: label is inside the segment when there is enough height.
+- Adds top padding/grace to reduce label overlap.
 
----
-
-## 15. Known Risks / Technical Debt
+## 16. Known Risks And Technical Debt
 
 | Risk | Notes |
 |---|---|
 | Single large HTML file | Easy to run, harder to maintain |
 | Multiple render functions call `dbAll()` | Works, but can be optimized later |
 | Holiday list is hardcoded | Must be updated for future years |
-| Some simulation constants are rough | Especially `+2 kWh` clipping allowance for bigger battery simulation |
+| Simulation constants are rough | Especially bigger-battery and optimizer assumptions |
 | Browser storage is local | Clearing browser data deletes saved dashboard data |
-| CDN dependency | Needs internet the first time Chart.js/SheetJS are loaded |
+| Backup excludes raw inverter rows | Users need original XLSX files for full restore |
+| CDN dependency | Chart.js and SheetJS require network access unless cached |
 
----
-
-## 16. Safe Editing Rules
+## 17. Safe Editing Rules
 
 1. Do not change IndexedDB schema unless migration is handled.
 2. Do not alter `calcSum()` without tracing downstream cards/charts.
@@ -480,15 +477,25 @@ Important behavior:
 4. Do not change kWh display semantics: raw inverter kWh must remain raw.
 5. Keep adjusted currency values marked with `*`.
 6. Keep `app.html` single-file unless the user explicitly asks for a multi-file app.
-7. Before claiming a fix is complete, run inline script syntax check:
+7. Keep README, README.ai, the in-app guide, and the welcome modal aligned on tested scope, storage, backup, TOU, and limitations.
+8. Before claiming a fix is complete, run the inline script syntax check.
+
+Recommended syntax check:
 
 ```powershell
-node -e "const fs=require('fs'),vm=require('vm');const code=fs.readFileSync('app.html','utf8');const scripts=[...code.matchAll(/<script(?!(?:[^>]*src=))[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]);for(const [i,s] of scripts.entries()){new vm.Script(s,{filename:'inline-script-'+(i+1)+'.js'});}console.log('SCRIPT_OK scripts='+scripts.length+' lines='+code.split(/\r?\n/).length);"
+$src=Get-Content -Path app.html -Raw -Encoding UTF8
+$scripts=[regex]::Matches($src,'<script[^>]*>([\s\S]*?)</script>')
+$i=0
+foreach($m in $scripts){
+  $i++
+  $p=Join-Path $env:TEMP ("solar_app_script_$i.js")
+  Set-Content -Path $p -Value $m.Groups[1].Value -Encoding UTF8
+  node --check $p
+}
+"SCRIPT_OK scripts=$i"
 ```
 
----
-
-## 17. Diagnostic Checklist
+## 18. Diagnostic Checklist
 
 When a user reports wrong numbers:
 
@@ -502,6 +509,7 @@ When a user reports wrong numbers:
 [ ] Is the value raw kWh or adjusted currency?
 [ ] Is the date in a weekend/holiday off-peak period?
 [ ] Is the browser opened from the same file path/origin as before?
+[ ] Was an overnight battery empty event carried to the previous day correctly?
 ```
 
 When a chart looks blank or incomplete:
@@ -512,4 +520,13 @@ When a chart looks blank or incomplete:
 [ ] Is the canvas id unique?
 [ ] Did mkChart destroy an existing chart with the same id?
 [ ] Are labels and dataset lengths equal?
+```
+
+When documentation changes:
+
+```text
+[ ] README.md public scope still matches app.html.
+[ ] README.ai.md technical scope still matches app.html.
+[ ] In-app guide still matches README.md.
+[ ] No personal paths, mojibake, internal phase names, or outdated repo URLs leaked.
 ```
