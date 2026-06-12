@@ -111,7 +111,7 @@ applyCalibration(summary, date)
 renderDay / renderWeek / renderMonth / renderYear / renderAllTime / renderAnalysis
 ```
 
-`dbAll()` recomputes calibration on read. IndexedDB stores raw imported daily summaries and rows; calibrated currency values are applied in memory.
+`dbAll()` recomputes calibration on read and caches the processed result (`_dbAllCache`). Per-day summaries are cached in `_sumCache` via `getSum(x)`. Both caches are cleared by `invalidateDataCache()`, which runs at the start of `refresh()` and on `dbPut/dbDel/dbClear`. Render functions must use `getSum(x)` instead of calling `calcSum` directly, and must not mutate cached summaries for display-only transforms (copy first — see the partial-day merge in weekly/monthly renders). IndexedDB stores raw imported daily summaries and rows; calibrated currency values are applied in memory.
 
 ## 5. Core Configuration
 
@@ -153,6 +153,8 @@ System settings metadata also includes:
   appName: 'Deye Solar Insight',
   inflationRate: 2.89,
   showSimulation: false,
+  billTarget: 600,
+  customHolidays: [],
   stringA: '5 West',
   stringB: '3 South + 2 West',
 }
@@ -180,9 +182,25 @@ System settings metadata also includes:
 ```javascript
 getSocEmptyThreshold()    // default 21
 getSocRechargeThreshold() // default 25
-MONTHLY_BILL_TARGET = 600
-DAILY_BILL_TARGET = 600 / 30.4
+getMonthlyBillTarget()    // default 600, user-configurable (systemInfo.billTarget)
+getDailyBillTarget()      // getMonthlyBillTarget() / 30.4
 ```
+
+### Off-Peak Holidays
+
+```javascript
+TOU_HOLIDAYS_BY_YEAR  // { 2026: [...19 dates per MEA/ERC announcement] }
+customHolidays        // user-entered dates from systemInfo.customHolidays
+isOffPeakHoliday(dateStr)
+holidayYearVerified(year)
+updateHolidayWarning(dates)  // shows #holidayWarn banner for unverified years
+```
+
+Rules that must not regress:
+
+- Off-peak all day = Saturday/Sunday + holidays per the annual ERC/MEA announcement.
+- Substitution holidays (วันหยุดชดเชย), Royal Ploughing Day (วันพืชมงคล), and special cabinet holidays are NOT off-peak.
+- The list must be re-verified every year; unverified data years trigger a visible warning and users can add dates via the system modal.
 
 ## 6. Storage
 
@@ -240,7 +258,7 @@ Important logic:
 
 - TOU is active when `date >= CFG.touStart`.
 - Before `CFG.touStart`, billing uses whole-day flat-rate calculation.
-- Weekends and configured Thai holidays are off-peak.
+- Weekends and verified ERC/MEA off-peak holidays are off-peak (`isOffPeakHoliday`); substitution/special holidays are not.
 - Service fee is prorated as `P.srv / 30.4`.
 - VAT is `1.07`.
 - kWh values shown to users remain raw inverter values.
@@ -311,12 +329,19 @@ Daily summaries get:
 For cycles where real cost is not available yet:
 
 ```text
-K_normal = BillNormal_kWh / InverterNormal_kWh
-K_on     = BillOnPeak_kWh / InverterOnPeak_kWh
-K_off    = BillOffPeak_kWh / InverterOffPeak_kWh
+K_normal = BillNormal_kWh / InverterImport_kWh (pre-TOU days in the cycle only)
+K_on     = BillOnPeak_kWh / InverterOnPeak_kWh (TOU days only)
+K_off    = BillOffPeak_kWh / InverterOffPeak_kWh (TOU days only)
 ```
 
+Each K compares bill kWh against inverter kWh of the **same day type**. This matters for the meter-transition cycle that mixes pre-TOU and TOU days: pre-TOU days store their whole import in `offPeakImp`, so lumping them into the K_off denominator would crush K_off (e.g. 0.24) and poison projections.
+
 `activeK` uses the latest stable K-Factor set, or the average of the latest 3 when values do not swing too much.
+
+K history rules:
+
+- Only bills that include kWh breakdown (normal/on-peak/off-peak kWh) enter `kHistory`. Cost-only bills still drive the real-bill override but never overwrite `activeK` with K = 1.
+- Each billed cycle records `coverage = inverter days / days in cycle`. When a billed cycle has coverage below 80%, the Analysis K-Factor box shows a warning because daily `*` values may be distributed inaccurately.
 
 Projected daily summaries get:
 
@@ -373,7 +398,7 @@ The 50% factor is intentional and matches the UI tooltip.
 This is a directional estimate, not a full hourly SOC simulation.
 
 ```text
-ExtraUsableBatt = 6 * (1 - 0.21)
+ExtraUsableBatt = 6 * (1 - batteryEmptyPct/100)
 Storeable = min(export + 2 kWh rough clipping allowance, ExtraUsableBatt)
 BatterySaving = min(Storeable, nightImport) * offPeakRateWithVAT
 ```
@@ -385,9 +410,11 @@ Function: `renderBattCycles(days)`
 Current method is Equivalent Full Cycle (EFC):
 
 ```text
-usableKwh = CFG.sys.battKwh * 0.9
+usableKwh = CFG.sys.battKwh * (1 - batteryEmptyPct/100)
 EFC/day = (Charge_kWh + Discharge_kWh) / (2 * usableKwh)
 ```
+
+The usable capacity follows the user-configurable battery empty threshold (default 21% → factor 0.79) so EFC stays consistent with the rest of the battery logic.
 
 Partial days are excluded.
 
@@ -421,8 +448,8 @@ Current placement:
 Color logic:
 
 - `selfColor()` maps self-sufficiency from red to yellow to green.
-- `costColor()` maps daily bill against `DAILY_BILL_TARGET`.
-- Current default monthly target is 600 baht/month, so daily target is about 19.74 baht/day.
+- `costColor()` maps daily bill against `getDailyBillTarget()`.
+- Default monthly target is 600 baht/month (daily ≈ 19.74 baht); users can change it in system settings (`billTarget`).
 - `socTimeColor()` treats battery empty before 22:00 as warning because it is still TOU on-peak.
 - Battery empty at 22:00 or later is OK from a bill-cost perspective because off-peak has started.
 
@@ -462,8 +489,8 @@ Important behavior:
 | Risk | Notes |
 |---|---|
 | Single large HTML file | Easy to run, harder to maintain |
-| Multiple render functions call `dbAll()` | Works, but can be optimized later |
-| Holiday list is hardcoded | Must be updated for future years |
+| `dbAll()`/`calcSum` results are cached per refresh | `invalidateDataCache()` must be called on any data/settings mutation path |
+| Holiday list needs annual update | App warns on unverified years; users can add dates via system settings, but the verified list in `TOU_HOLIDAYS_BY_YEAR` should be refreshed from the ERC/MEA announcement each year |
 | Simulation constants are rough | Especially bigger-battery and optimizer assumptions |
 | Browser storage is local | Clearing browser data deletes saved dashboard data |
 | Backup excludes raw inverter rows | Users need original XLSX files for full restore |

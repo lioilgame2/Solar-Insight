@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script>console.log("New Version 2.0.1");</script>
+<script>console.log("New Version 2.1.0");</script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -64,6 +64,8 @@ body{
 .btn-sec:hover{background:var(--s3)}
 .btn-danger{background:rgba(248,113,113,.1);color:#fca5a5;border:1px solid rgba(248,113,113,.25)}
 .btn-danger:hover{background:rgba(248,113,113,.2)}
+.icon-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:2px 8px;border-radius:6px;transition:all .15s}
+.icon-btn:hover{color:var(--text);background:var(--s2)}
 
 /* TABS BAR */
 .tabs{
@@ -382,6 +384,8 @@ body{
 
 <div class="content">
 
+<div id="holidayWarn" class="partial-note" style="display:none;margin-bottom:14px"></div>
+
 <!-- GUIDE -->
 <div id="paneR" style="display:none">
   <div class="guide-page">
@@ -438,7 +442,7 @@ body{
     <section class="guide-card">
       <h3>คำศัพท์สั้น ๆ</h3>
       <div class="guide-gloss">
-        <div><b>TOU</b> คือ Time of Use หรือการคิดค่าไฟแยกตามช่วงเวลา เช่น on-peak และ off-peak; ก่อนวันเริ่ม TOU แอปจะคิดค่าไฟแบบ Flat ทั้งวัน</div>
+        <div><b>TOU</b> คือ Time of Use หรือการคิดค่าไฟแยกตามช่วงเวลา เช่น on-peak และ off-peak; ก่อนวันเริ่ม TOU แอปจะคิดค่าไฟแบบ Flat ทั้งวัน · วัน off-peak ทั้งวันคือ เสาร์–อาทิตย์ และวันหยุดราชการตามประกาศ กกพ./MEA (วันหยุดชดเชย วันพืชมงคล และวันหยุดพิเศษ ครม. <b>ไม่นับ</b>) ซึ่งต้องอัปเดตรายการทุกปี — ถ้าปีไหนยังไม่ยืนยัน แอปจะขึ้นแถบเตือนและกรอกเพิ่มได้ในปุ่ม <b>ระบบ</b></div>
         <div><b>K-Factor</b> คืออัตราปรับค่าบาทจากข้อมูล inverter ให้ใกล้บิลจริงมากขึ้น โดยไม่เปลี่ยนค่า kWh ดิบ</div>
         <div><b>Simulation</b> คือการจำลองผลลัพธ์เพิ่มเติม เช่น optimizer, ขายไฟ, หรือเพิ่มแบต เพื่อดูทิศทางความคุ้มค่า</div>
       </div>
@@ -613,7 +617,7 @@ body{
 
 <!-- WEEKLY -->
 <div id="paneW" style="display:none">
-  <div id="wEmpty" class="empty"><h2>ต้องการข้อมูล ≥ 2 วันในสัปดาห์เดียวกัน</h2></div>
+  <div id="wEmpty" class="empty"><h2>ต้องการข้อมูลอย่างน้อย 1 วันในสัปดาห์ที่เลือก</h2></div>
   <div id="wContent" style="display:none">
     <div class="cards" id="wCards" style="margin-bottom:14px"></div>
     <div class="cgrid">
@@ -951,6 +955,7 @@ body{
               <b>ตัวอย่าง:</b> On 10 kWh → 10 × (5.7982 + 0.0972) × 1.07 = ฿63.08<br>
               Off 20 kWh → (20 × (2.6369 + 0.0972) + 24.62 ÷ 30.4) × 1.07 = ฿59.06<br>
               ถ้ายังไม่ถึงวันเริ่ม TOU ระบบใช้ FlatCost ทั้งวัน แม้กรอกในช่อง off-peak เพื่อเก็บข้อมูลรอบก่อน TOU<br>
+              วัน Off-peak ทั้งวัน = เสาร์–อาทิตย์ + วันหยุดราชการตามประกาศ กกพ./MEA (<b>ไม่รวมวันหยุดชดเชย วันพืชมงคล และวันหยุดพิเศษ ครม.</b>)<br>
               <i>kWh ที่โชว์ยังเป็นค่าจาก inverter; เฉพาะค่าเงินบาทที่มี * จะถูก override หรือ apply K-Factor</i>
             </div>
             <div>
@@ -991,7 +996,7 @@ body{
             </div>
             <div>
               <b style="color:var(--text)">🔮 Simulation: + แบตเตอรี่ 10 → 16 kWh</b><br>
-              ExtraUsableBatt = 6 × (1 - 0.21) = 4.74 kWh<br>
+              ExtraUsableBatt = 6 × (1 − Battery empty%) เช่น empty 21% → 4.74 kWh<br>
               Storeable = min(Export_kWh + 2 kWh, ExtraUsableBatt)<br>
               BatterySaving/day = min(Storeable, NightImport_kWh) × OffPeakRateWithVAT<br>
               <b>ตัวอย่าง:</b> Export 3, NightImport 4 kWh<br>
@@ -1010,10 +1015,10 @@ body{
             </div>
             <div>
               <b style="color:var(--text)">Battery Cycle (EFC):</b><br>
-              EFC/day = (Charge_kWh + Discharge_kWh) ÷ (2 × Battery_kWh × 0.9)<br>
+              EFC/day = (Charge_kWh + Discharge_kWh) ÷ (2 × Battery_kWh × (1 − empty%))<br>
               <i>Battery empty %, recharge %, และ design cycles ปรับได้ในปุ่ม <b>ระบบ</b> ตามสเปกแบตจริงของแต่ละบ้าน</i><br>
-              <b>ตัวอย่าง Jun 1:</b> Charge 5.8, Discharge 4.5, Battery 10.24 kWh<br>
-              (5.8 + 4.5) ÷ (2 × 10.24 × 0.9) = 0.559 cycle<br>
+              <b>ตัวอย่าง Jun 1:</b> Charge 5.8, Discharge 4.5, Battery 10.24 kWh, empty 21%<br>
+              (5.8 + 4.5) ÷ (2 × 10.24 × 0.79) = 0.637 cycle<br>
               <i>EFC = Equivalent Full Cycle หรือรอบใช้งานเทียบเท่าเต็มหนึ่งรอบ ใช้วัดการเสื่อมแบตคร่าว ๆ</i>
             </div>
             <div>
@@ -1212,6 +1217,12 @@ body{
           <div class="roi-input"><label>TOU cost <span class="field-mark calc" title="ใช้คำนวณ"></span></label><input id="sysTouCost" type="number"></div>
           <div class="roi-input"><label>Tax deduction <span class="field-mark calc" title="ใช้คำนวณ"></span></label><input id="sysTaxDeduct" type="number"></div>
           <div class="roi-input"><label>เงินเฟ้อไทย (%/ปี) <span class="field-mark calc" title="ใช้คำนวณ"></span></label><input id="sysInflation" type="number" step="0.01"></div>
+          <div class="roi-input"><label>เป้าค่าไฟ (฿/เดือน) <span class="field-mark calc" title="ใช้คำนวณสี heatmap ค่าไฟรายวัน"></span></label><input id="sysBillTarget" type="number" min="1" step="50"></div>
+          <div class="roi-input" style="grid-column: 1 / -1;">
+            <label>วันหยุด Off-Peak เพิ่มเติม <span class="field-mark calc" title="ใช้คำนวณ — สำหรับปีที่แอปยังไม่มีรายการประกาศ"></span></label>
+            <input id="sysCustomHolidays" type="text" style="width:100%;text-align:left" placeholder="2027-01-01,2027-04-06,...">
+          </div>
+          <div class="sys-note" style="grid-column:1 / -1;font-size:.72rem;color:var(--muted)">วันหยุด Off-Peak อิงประกาศ กกพ./MEA รายปี (ปีที่ยืนยันแล้ว: <span id="sysHolidayYears">—</span>) · <b>วันหยุดชดเชย วันพืชมงคล และวันหยุดพิเศษ ครม. ไม่เป็น off-peak</b> · ปีใหม่ต้องตรวจประกาศแล้วกรอกเพิ่มที่ช่องด้านบน</div>
           <div class="roi-input" style="grid-column: 1 / -1;">
             <label>แสดง Simulation</label>
             <input id="sysShowSimulation" type="checkbox" style="width:auto" onchange="updateSimulationVisibility(this.checked)">
@@ -1306,6 +1317,42 @@ body{
     <div class="modal-ttl">👋 ยินดีต้อนรับสู่ Deye Solar Insight</div>
     <div class="modal-body">
       <p class="welcome-lead">แอปนี้ใช้กับไฟล์ export จาก Deye เป็นหลัก ช่วยดูกราฟ พฤติกรรมแบตเตอรี่ ค่าไฟ และการวิเคราะห์รอบบิลได้จาก browser โดยไม่ต้องมี server ของตัวเอง</p>
+      <!-- ภาพตัวอย่างขั้นตอนใช้งาน (inline SVG — ไม่ต้องโหลดรูปจากภายนอก) -->
+      <svg viewBox="0 0 660 190" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;margin:4px 0" role="img" aria-label="ขั้นตอนใช้งาน 3 ขั้น">
+        <!-- step 1: ตั้งค่าระบบ -->
+        <rect x="2" y="14" width="196" height="160" rx="10" fill="var(--s2)" stroke="var(--border)"/>
+        <text x="100" y="38" text-anchor="middle" fill="var(--solar)" font-size="14" font-weight="700" font-family="Outfit,sans-serif">① กดปุ่ม "ระบบ"</text>
+        <rect x="18" y="52" width="164" height="20" rx="5" fill="var(--s3)"/>
+        <text x="26" y="66" fill="var(--text)" font-size="10.5" font-family="Outfit,sans-serif">วันเริ่ม Solar · วันเริ่ม TOU</text>
+        <rect x="18" y="78" width="164" height="20" rx="5" fill="var(--s3)"/>
+        <text x="26" y="92" fill="var(--text)" font-size="10.5" font-family="Outfit,sans-serif">ค่าไฟ On/Off-peak · Ft</text>
+        <rect x="18" y="104" width="164" height="20" rx="5" fill="var(--s3)"/>
+        <text x="26" y="118" fill="var(--text)" font-size="10.5" font-family="Outfit,sans-serif">แบตเตอรี่ kWh · empty %</text>
+        <text x="100" y="156" text-anchor="middle" fill="var(--muted)" font-size="10" font-family="Outfit,sans-serif">ตั้งครั้งเดียว แก้ทีหลังได้</text>
+        <!-- arrow -->
+        <path d="M204 94 h18 m-6 -6 l6 6 l-6 6" stroke="var(--muted)" stroke-width="2" fill="none"/>
+        <!-- step 2: import -->
+        <rect x="232" y="14" width="196" height="160" rx="10" fill="var(--s2)" stroke="var(--border)"/>
+        <text x="330" y="38" text-anchor="middle" fill="var(--grid)" font-size="14" font-weight="700" font-family="Outfit,sans-serif">② Import ไฟล์ XLSX</text>
+        <rect x="258" y="56" width="144" height="56" rx="8" fill="none" stroke="var(--grid)" stroke-dasharray="5 4"/>
+        <text x="330" y="80" text-anchor="middle" fill="var(--text)" font-size="11" font-family="Outfit,sans-serif">📂 inverter data</text>
+        <text x="330" y="98" text-anchor="middle" fill="var(--muted)" font-size="9.5" font-family="Outfit,sans-serif">Day report จาก deyecloud.com</text>
+        <rect x="258" y="124" width="64" height="18" rx="9" fill="rgba(74,222,128,.15)"/>
+        <text x="290" y="137" text-anchor="middle" fill="var(--solar)" font-size="9.5" font-family="Outfit,sans-serif">.xlsx ✓</text>
+        <text x="330" y="160" text-anchor="middle" fill="var(--muted)" font-size="10" font-family="Outfit,sans-serif">เลือกหลายไฟล์พร้อมกันได้</text>
+        <!-- arrow -->
+        <path d="M434 94 h18 m-6 -6 l6 6 l-6 6" stroke="var(--muted)" stroke-width="2" fill="none"/>
+        <!-- step 3: dashboard -->
+        <rect x="462" y="14" width="196" height="160" rx="10" fill="var(--s2)" stroke="var(--border)"/>
+        <text x="560" y="38" text-anchor="middle" fill="var(--warn)" font-size="14" font-weight="700" font-family="Outfit,sans-serif">③ ดูผลวิเคราะห์</text>
+        <rect x="480" y="118" width="22" height="34" rx="3" fill="var(--solar)" opacity=".85"/>
+        <rect x="508" y="96" width="22" height="56" rx="3" fill="var(--solar)" opacity=".85"/>
+        <rect x="536" y="76" width="22" height="76" rx="3" fill="var(--solar)" opacity=".85"/>
+        <rect x="564" y="100" width="22" height="52" rx="3" fill="var(--load)" opacity=".85"/>
+        <rect x="592" y="84" width="22" height="68" rx="3" fill="var(--load)" opacity=".85"/>
+        <path d="M480 70 C510 56, 560 88, 614 60" stroke="var(--soc, #c084fc)" stroke-width="2" fill="none" stroke-dasharray="4 3"/>
+        <text x="560" y="166" text-anchor="middle" fill="var(--muted)" font-size="10" font-family="Outfit,sans-serif">รายวัน · รายเดือน · ROI · ค่าไฟ</text>
+      </svg>
       <ul class="welcome-list">
         <li>กด <b>ระบบ</b> เพื่อตั้งค่าวันเริ่ม Solar, วันเริ่ม TOU, ค่าไฟ และค่าแบตจริงของบ้าน</li>
         <li>กด <b>inverter data</b> เพื่อนำเข้าไฟล์ XLSX</li>
@@ -1342,7 +1389,6 @@ const CFG={
   costNote:{solar:209000,tou:3350,taxDeduction:60000},
   pvSpec:{pmax:645,voc:54.12,isc:15.06,vmp:44.77,imp:14.41,tolerance:'0~+3%',maxSystemV:1500,fuseA:30},
   strings:{aLabel:'String A',aSpec:'5 West',bLabel:'String B',bSpec:'3 South + 2 West'},
-  flatRate:4.18,           // ค่าไฟ flat ก่อนติด TOU (บาท/หน่วย)
   // วันที่ไม่ได้รันเต็มวัน — ตัดออกจาก efficiency/min-max calculation
   partialDays:['2026-04-10','2026-05-16','2026-05-17'],
 }
@@ -1350,24 +1396,47 @@ function getP(){return{on:parseFloat(document.getElementById('cfgOn').value)||5.
 function touActive(date){return !date||date>=CFG.touStart}
 
 // ── Thresholds ───────────────────────────────────────────────────────────────
-const THR={bmsTemp:{w:40,a:45},battTemp:{w:40,a:45},dcTemp:{w:45,a:60},acTemp:{w:45,a:60},socLow:20,rated:5000}
+const THR={bmsTemp:{w:40,a:45},battTemp:{w:40,a:45},dcTemp:{w:45,a:60},acTemp:{w:45,a:60},rated:5000}
 const TH_M=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']
 const TH_D=['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.']
-// วันหยุดราชการ — อัปเดตเพิ่มได้เมื่อมีปีใหม่
-const THAI_HOLIDAYS = [
-  '2026-01-01','2026-04-06','2026-04-13','2026-04-14','2026-04-15',
-  '2026-05-01','2026-05-04','2026-05-11','2026-05-22','2026-06-03',
-  '2026-07-20','2026-07-21','2026-07-28','2026-08-12',
-  '2026-10-13','2026-10-23','2026-12-05','2026-12-10','2026-12-31',
-  '2027-01-01','2027-04-06','2027-04-13','2027-04-14','2027-04-15',
-  '2027-05-01','2027-05-04','2027-06-03','2027-07-28',
-  '2027-08-12','2027-10-13','2027-10-23','2027-12-05','2027-12-10','2027-12-31',
-]
+// วันหยุดที่เป็น Off-Peak ทั้งวันตามประกาศ กกพ./กฟน. (MEA) — ต้องยืนยันใหม่ทุกปี
+// กติกา TOU: off-peak = เสาร์-อาทิตย์ + วันแรงงาน + วันหยุดราชการตามปกติ
+// "วันหยุดชดเชย", "วันพืชมงคล" และ "วันหยุดพิเศษ (ครม.)" คิดเป็น on-peak ปกติ
+const TOU_HOLIDAYS_BY_YEAR = {
+  2026: [  // ตามประกาศ MEA ปี 2569 (19 วัน)
+    '2026-01-01','2026-03-03','2026-04-06','2026-04-13','2026-04-14','2026-04-15',
+    '2026-05-01','2026-05-04','2026-05-31','2026-06-03',
+    '2026-07-28','2026-07-29','2026-07-30','2026-08-12',
+    '2026-10-13','2026-10-23','2026-12-05','2026-12-10','2026-12-31',
+  ],
+  // ปี 2570 ยังไม่มีประกาศ — เมื่อ กกพ./MEA ประกาศแล้วให้เพิ่ม key 2027 ที่นี่
+  // หรือผู้ใช้กรอกเองได้ในปุ่ม "ระบบ" ช่อง "วันหยุด Off-Peak เพิ่มเติม"
+}
+let customHolidays=[]   // มาจาก system settings
+function isOffPeakHoliday(dateStr){
+  const y=+String(dateStr).substring(0,4)
+  return (TOU_HOLIDAYS_BY_YEAR[y]||[]).includes(dateStr)||customHolidays.includes(dateStr)
+}
+function holidayYearVerified(y){return !!TOU_HOLIDAYS_BY_YEAR[y]}
+function updateHolidayWarning(dateList){
+  const el=document.getElementById('holidayWarn');if(!el)return
+  const years=[...new Set((dateList||[]).map(d=>+String(d).substring(0,4)))]
+  const missing=years.filter(y=>!holidayYearVerified(y)).sort()
+  if(missing.length){
+    el.style.display=''
+    el.innerHTML=`⚠️ ปี ${missing.map(y=>y+543).join(', ')} ยังไม่มีรายการวันหยุด Off-Peak ที่ยืนยันจากประกาศ กกพ./MEA — ระบบจะคิด off-peak เฉพาะ ส.–อา. ของปีนั้น จนกว่าจะอัปเดต (เพิ่มวันหยุดเองได้ที่ปุ่ม <b>ระบบ</b> · วันหยุดชดเชยไม่นับเป็น off-peak)`
+  }else{
+    el.style.display='none'
+    el.innerHTML=''
+  }
+}
 
 function toDate(s){const p=s.replace(/\//g,'-').substring(0,10).split('-');return new Date(+p[0],+p[1]-1,+p[2])}
 function fmtD(s){const d=toDate(s);return `${d.getDate()} ${TH_M[d.getMonth()]} ${d.getFullYear()+543}`}
 function fmtDF(s){const d=toDate(s);return `${TH_D[d.getDay()]}ที่ ${d.getDate()} ${TH_M[d.getMonth()]} ${d.getFullYear()+543}`}
 function fn(v,d=1){return(v==null||isNaN(+v))?'—':(+v).toFixed(d)}
+// escape ข้อความที่ผู้ใช้กรอกก่อนฉีดเข้า innerHTML
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function tMin(s){const[h,m]=(s||'00:00').split(':').map(Number);return h*60+m}
 function getSocEmptyThreshold(){
   return Math.max(0,Math.min(99,+CFG.sys.battEmptyPct||21))
@@ -1375,8 +1444,8 @@ function getSocEmptyThreshold(){
 function getSocRechargeThreshold(){
   return Math.max(getSocEmptyThreshold()+1,Math.min(100,+CFG.sys.battRechargePct||25))
 }
-const MONTHLY_BILL_TARGET = 600
-const DAILY_BILL_TARGET = MONTHLY_BILL_TARGET / 30.4
+function getMonthlyBillTarget(){return Math.max(1,+systemInfo.billTarget||600)}
+function getDailyBillTarget(){return getMonthlyBillTarget()/30.4}
 function batteryEmptyTime(s){
   if(!s)return ''
   if(Object.prototype.hasOwnProperty.call(s,'socEmptyT'))return s.socEmptyT||''
@@ -1475,6 +1544,18 @@ let dbReady
 let dbOffline=false
 const memoryDays=new Map()
 let allDaysSummary=[];
+// Cache ผลคำนวณต่อรอบ refresh — ลดการอ่าน DB และ calcSum ซ้ำทุก tab
+let _dbAllCache=null
+const _sumCache=new Map()
+function invalidateDataCache(){_dbAllCache=null;_sumCache.clear()}
+// คำนวณ summary ของวันเดียว (cache) — แทน pattern calcSum(x.rows,x.date)||x.summary
+function getSum(x){
+  if(_sumCache.has(x.date))return _sumCache.get(x.date)
+  if(x.cols)Object.assign(C,x.cols)
+  const s=(x.rows&&x.rows.length?calcSum(x.rows,x.date):null)||x.summary
+  _sumCache.set(x.date,s)
+  return s
+}
 function wait(ms,msg){
   return new Promise((_,rej)=>setTimeout(()=>rej(new Error(msg)),ms))
 }
@@ -1511,18 +1592,21 @@ const os=(m='readonly')=>db.transaction('days',m).objectStore('days')
 const sos=(m='readonly')=>db.transaction('settings',m).objectStore('settings')
 async function dbPut(o){
   memoryDays.set(o.date,o)
+  invalidateDataCache()
   if(!db)return
   try{await new Promise((r,j)=>{const q=os('readwrite').put(o);q.onsuccess=r;q.onerror=j})}
   catch(e){dbOffline=true;console.warn('IndexedDB save skipped:',e)}
 }
 async function dbDel(k){
   memoryDays.delete(k)
+  invalidateDataCache()
   if(!db)return
   try{await new Promise((r,j)=>{const q=os('readwrite').delete(k);q.onsuccess=r;q.onerror=j})}
   catch(e){dbOffline=true;console.warn('IndexedDB delete skipped:',e)}
 }
 async function dbClear(){
   memoryDays.clear()
+  invalidateDataCache()
   if(!db)return
   try{await new Promise((r,j)=>{const q=os('readwrite').clear();q.onsuccess=r;q.onerror=j})}
   catch(e){dbOffline=true;console.warn('IndexedDB clear skipped:',e)}
@@ -1561,14 +1645,18 @@ function computeCycleCalibrations(validBills, P) {
    const bd = CFG.billDay || 15;
    
    // 1. Group memoryDays into cycles
+   // สำคัญ: ต้องใช้ getSum(x) (คำนวณสดด้วย settings ปัจจุบัน) ให้ตรงกับฝั่งแสดงผล
+   // ถ้าใช้ x.summary ที่เก็บไว้ตอน import การแบ่ง on/off-peak อาจมาจาก settings เก่า
+   // ทำให้ EstimatedBill ไม่ตรงกับผลรวมรายวันที่แสดง → ยอดรอบบิลไม่เท่าบิลจริง
    let cycleSums = {};
    for (let x of memoryDays.values()) {
-      if (!x.date || !x.summary) continue;
-      
+      if (!x.date) continue;
+
       const isPartial = CFG.partialDays && CFG.partialDays.includes(x.date);
       if (isPartial) continue; // Ignore partial days
-      
-      const s = x.summary;
+
+      const s = getSum(x);
+      if (!s) continue;
       const orig = s._orig || s;
       const d = new Date(x.date);
       let cycleKey = getCycleKeyForDate(d, bd);
@@ -1577,8 +1665,9 @@ function computeCycleCalibrations(validBills, P) {
           cycleSums[cycleKey] = {
               days: 0,
               imp: 0,
-              onPeakImp: 0,
-              offPeakImp: 0,
+              normalImp: 0,   // ไฟซื้อรวมของ "วันก่อนเริ่ม TOU" — เทียบกับช่อง Normal kWh ของบิล
+              onPeakImp: 0,   // เฉพาะวัน TOU เท่านั้น
+              offPeakImp: 0,  // เฉพาะวัน TOU เท่านั้น
               invBaseNoFt: 0,
               invFtKwh: 0,
               daysInCycle: 0
@@ -1586,9 +1675,16 @@ function computeCycleCalibrations(validBills, P) {
       }
       cycleSums[cycleKey].days++;
       cycleSums[cycleKey].imp += orig.imp || 0;
-      cycleSums[cycleKey].onPeakImp += orig.onPeakImp || 0;
-      cycleSums[cycleKey].offPeakImp += orig.offPeakImp || 0;
-      
+      // แยกถังตามประเภทวัน — รอบบิลคาบเกี่ยว pre-TOU/TOU (เช่นรอบที่เปลี่ยนมิเตอร์)
+      // ห้ามเอาไฟทั้งวันของวันก่อน TOU ไปอยู่ในตัวหารของ K_off ไม่งั้น K เพี้ยนหนัก
+      const isTouK = touActive(x.date);
+      if (isTouK) {
+          cycleSums[cycleKey].onPeakImp += orig.onPeakImp || 0;
+          cycleSums[cycleKey].offPeakImp += orig.offPeakImp || 0;
+      } else {
+          cycleSums[cycleKey].normalImp += orig.imp || orig.offPeakImp || 0;
+      }
+
       const onPeakImp = orig.onPeakImp || 0;
       const offPeakImp = orig.offPeakImp || 0;
       
@@ -1600,7 +1696,7 @@ function computeCycleCalibrations(validBills, P) {
       const daysInCycle = Math.round((cEnd - cStart) / (1000 * 60 * 60 * 24)) + 1;
       
       const isTou = touActive(x.date);
-      const isOffDay = d.getDay()===0 || d.getDay()===6 || THAI_HOLIDAYS.includes(x.date);
+      const isOffDay = d.getDay()===0 || d.getDay()===6 || isOffPeakHoliday(x.date);
       
       let baseNoFt = 0, ftKwh = 0;
       if (isTou && !isOffDay) {
@@ -1644,7 +1740,9 @@ function computeCycleCalibrations(validBills, P) {
            }
            
            let kN = 1, kO = 1, kF = 1;
-           if (b.normalKwh !== undefined && sum.imp > 0) kN = parseFloat(b.normalKwh) / sum.imp;
+           // เทียบ kWh ของบิลกับ inverter เฉพาะวันประเภทเดียวกัน:
+           // Normal ↔ วันก่อน TOU, On/Off ↔ วัน TOU เท่านั้น
+           if (b.normalKwh !== undefined && sum.normalImp > 0) kN = parseFloat(b.normalKwh) / sum.normalImp;
            if (b.onPeakKwh !== undefined && sum.onPeakImp > 0) kO = parseFloat(b.onPeakKwh) / sum.onPeakImp;
            if (b.offPeakKwh !== undefined && sum.offPeakImp > 0) kF = parseFloat(b.offPeakKwh) / sum.offPeakImp;
            
@@ -1660,7 +1758,10 @@ function computeCycleCalibrations(validBills, P) {
                coverage: sum.days / (sum.daysInCycle || sum.days || 1),
                billObj: b
            };
-           kHistory.push({ y: b.y, m: b.m, kN, kO, kF, cycleKey });
+           // เก็บเข้า kHistory เฉพาะบิลที่มี kWh breakdown จริง
+           // กันบิลที่กรอกแค่ยอดเงิน (K=1) ไปทับ activeK จน projection ปิดเงียบ ๆ
+           const hasKwhDetail = b.normalKwh !== undefined || b.onPeakKwh !== undefined || b.offPeakKwh !== undefined;
+           if (hasKwhDetail) kHistory.push({ y: b.y, m: b.m, kN, kO, kF, cycleKey });
        }
    }
    
@@ -1722,7 +1823,7 @@ function applyCalibration(s, dateStr) {
   const vat = 1.07;
   
   const isTou = touActive(dateStr);
-  const isOffDay = d.getDay()===0 || d.getDay()===6 || THAI_HOLIDAYS.includes(dateStr);
+  const isOffDay = d.getDay()===0 || d.getDay()===6 || isOffPeakHoliday(dateStr);
   
   const baseCostCalc = (k_n, k_o, k_f, ft=P.ft) => {
       let eOn = 0, eOff = 0;
@@ -1774,6 +1875,7 @@ function applyCalibration(s, dateStr) {
 }
 
 async function dbAll(){
+  if(_dbAllCache)return _dbAllCache
   let res = [];
   if(db){
     try{
@@ -1799,15 +1901,16 @@ async function dbAll(){
   CYCLE_CALIBRATION = computeCycleCalibrations(validBills, P);
   
   res.forEach(x => {
-    if (x.summary && x.summary.sellKwh === undefined) {
-      x.summary.sellKwh = x.summary.exp || 0;
-      x.summary.sellCost = x.summary.sellKwh * P.sell;
+    // calibrate ลงบน summary ชุดเดียวกับที่ render ทุก tab ใช้ (getSum cache)
+    const s = getSum(x);
+    if (!s) return;
+    if (s.sellKwh === undefined) {
+      s.sellKwh = s.exp || 0;
+      s.sellCost = s.sellKwh * P.sell;
     }
-    
-    if (x.summary) {
-      applyCalibration(x.summary, x.date);
-    }
+    applyCalibration(s, x.date);
   });
+  _dbAllCache=res;
   return res;
 }
 const settingsGet=k=>new Promise((r,j)=>{
@@ -1905,7 +2008,7 @@ function calcSum(rows, date){
   let onPeakImp,offPeakImp,costOn,costOff
   const srvPerDay = P.srv / 30.4;
   const dObj = new Date(date);
-  const isOffDay = dObj.getDay()===0 || dObj.getDay()===6 || THAI_HOLIDAYS.includes(date);
+  const isOffDay = dObj.getDay()===0 || dObj.getDay()===6 || isOffPeakHoliday(date);
   if(isTou && !isOffDay){
     onPeakImp=Math.max(0,v22i-v9i)
     offPeakImp=Math.max(0,vEi-onPeakImp)
@@ -2050,6 +2153,8 @@ function currentSystemInfo(){
     stringA:CFG.strings.aSpec,stringB:CFG.strings.bSpec,
     inflationRate:systemInfo.inflationRate??2.89,
     showSimulation:systemInfo.showSimulation===true,
+    billTarget:+systemInfo.billTarget||600,
+    customHolidays:[...customHolidays],
     partialDays:[...CFG.partialDays],note:systemInfo.note||''
   }
 }
@@ -2113,6 +2218,7 @@ function applySystemInfo(info={}){
   CFG.strings.bSpec=systemInfo.stringB||CFG.strings.bSpec
   CFG.systemCost=Math.max(0,CFG.costNote.solar+CFG.costNote.tou-CFG.costNote.taxDeduction)
   CFG.partialDays=Array.isArray(systemInfo.partialDays)?systemInfo.partialDays.filter(Boolean):CFG.partialDays
+  customHolidays=Array.isArray(systemInfo.customHolidays)?systemInfo.customHolidays.filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)):customHolidays
   const roi=document.getElementById('roiCost');if(roi)roi.value=CFG.systemCost
   const roiInflation=document.getElementById('roiInflation');if(roiInflation)roiInflation.value=(systemInfo.inflationRate??2.89)
   updateBranding(systemInfo.appName)
@@ -2120,7 +2226,7 @@ function applySystemInfo(info={}){
   const spec=document.querySelector('.nav-spec')
   if(spec){
     const pvEffTxt=CFG.sys.pvEff>0?` · Eff ${fn(CFG.sys.pvEff,1)}%`:''
-    spec.innerHTML=`<b>Inverter:</b> ${systemInfo.invModel||'DEYE SUN-5K-SG04LP1-EU-SM2'} · ${CFG.sys.invKw}kW Hybrid · <b>TOU:</b> On-peak 09:00–22:00<br><b>PV:</b> ${(CFG.sys.panels*CFG.sys.wp/1000).toFixed(2)}kWp (${CFG.sys.panels}×${CFG.sys.wp}Wp) · ${CFG.sys.pvModel}${pvEffTxt} · String A: ${CFG.strings.aSpec} · String B: ${CFG.strings.bSpec} · <b>Battery:</b> ${CFG.sys.battModel} ${CFG.sys.battKwh}kWh`
+    spec.innerHTML=`<b>Inverter:</b> ${esc(systemInfo.invModel||'DEYE SUN-5K-SG04LP1-EU-SM2')} · ${CFG.sys.invKw}kW Hybrid · <b>TOU:</b> On-peak 09:00–22:00<br><b>PV:</b> ${(CFG.sys.panels*CFG.sys.wp/1000).toFixed(2)}kWp (${CFG.sys.panels}×${CFG.sys.wp}Wp) · ${esc(CFG.sys.pvModel)}${pvEffTxt} · String A: ${esc(CFG.strings.aSpec)} · String B: ${esc(CFG.strings.bSpec)} · <b>Battery:</b> ${esc(CFG.sys.battModel)} ${CFG.sys.battKwh}kWh`
   }
   const touEl = document.getElementById('cfgTouDate');
   const solarEl = document.getElementById('cfgSolarDate');
@@ -2196,6 +2302,10 @@ function fillSystemInfoForm(){
   set('sysStartDate',info.startDate);set('sysTouStart',info.touStart);set('sysBillDay',info.billDay)
   set('sysSolarCost',info.solarCost);set('sysTouCost',info.touCost);set('sysTaxDeduct',info.taxDeduction);
   set('sysInflation',info.inflationRate??2.89);setCheck('sysShowSimulation',info.showSimulation===true)
+  set('sysBillTarget',info.billTarget||600)
+  set('sysCustomHolidays',(info.customHolidays||[]).join(','))
+  const hy=document.getElementById('sysHolidayYears')
+  if(hy)hy.textContent=Object.keys(TOU_HOLIDAYS_BY_YEAR).map(y=>+y+543).join(', ')||'—'
   set('sysPartialDays',info.partialDays.join(','));set('sysNote',info.note||'')
   const view=document.getElementById('sysView')
   if(view)view.innerHTML=[
@@ -2206,9 +2316,10 @@ function fillSystemInfoForm(){
     ['Empty / Recharge',`${fn(info.battEmptyPct??21,0)}% / ${fn(info.battRechargePct??25,0)}%`],
     ['Design cycles',(info.battCycles||6000).toLocaleString()+' cycles'],
     ['Inflation',fn(info.inflationRate??2.89,2)+'%/ปี'],
+    ['เป้าค่าไฟ','฿'+fn(info.billTarget||600,0)+'/เดือน'],
     ['Simulation',info.showSimulation===true?'แสดง':'ซ่อน'],
     ['Note',info.note||'—']
-  ].map(([l,v])=>`<div class="an-row"><span>${l}</span><b>${v}</b></div>`).join('')
+  ].map(([l,v])=>`<div class="an-row"><span>${esc(l)}</span><b>${esc(v)}</b></div>`).join('')
 }
 function openSystemInfo(){
   initDatalists()
@@ -2229,6 +2340,8 @@ function readSystemInfoForm(){
     stringA:(get('sysStringA')||'').trim()||'5 West',stringB:(get('sysStringB')||'').trim()||'3 South + 2 West',
     inflationRate:+get('sysInflation'),
     showSimulation:getCheck('sysShowSimulation'),
+    billTarget:+get('sysBillTarget')||600,
+    customHolidays:get('sysCustomHolidays').split(',').map(x=>x.trim()).filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)),
     partialDays:get('sysPartialDays').split(',').map(x=>x.trim()).filter(Boolean),
     note:get('sysNote').trim()
   }
@@ -2243,10 +2356,7 @@ async function saveSystemInfo(){
 }
 async function exportSettingsBackup(){
   try{
-    const sysModal=document.getElementById('sysModal')
-    const nextInfo=sysModal&&sysModal.style.display!=='none'?readSystemInfoForm():currentSystemInfo()
-    applySystemInfo(nextInfo)
-    await settingsPut('systemInfo',currentSystemInfo())
+    // export จากค่าที่บันทึกล่าสุดเท่านั้น — ถ้าแก้ฟอร์มอยู่ต้องกด "บันทึกข้อมูลระบบ" ก่อน
     const backup={
       type:'DeyeSolarInsightSettingsBackup',
       version:1,
@@ -2264,7 +2374,6 @@ async function exportSettingsBackup(){
     a.click()
     a.remove()
     URL.revokeObjectURL(url)
-    fillSystemInfoForm()
   }catch(err){
     alert('Export backup ไม่สำเร็จ: '+err.message)
   }
@@ -2302,7 +2411,7 @@ async function importSettingsBackup(files){
 }
 async function clearSystemInfo(){
   if(!confirm('ล้างข้อมูลระบบที่บันทึกไว้สำหรับการแชร์/ส่งต่อ? ข้อมูล XLSX จะไม่ถูกลบ'))return
-  applySystemInfo({appName:'Deye Solar Insight',invModel:'DEYE SUN-5K-SG04LP1-EU-SM2',invKw:5,pvModel:'Deye SUN-5K-SG04LP1-EU-SM2',pvEff:97.6,pvVoc:500,pvVmp:425,pvIsc:36,pvImp:18,stringA:'5 West',stringB:'3 South + 2 West',battModel:'PYLON LiFePO4',battEmptyPct:21,battRechargePct:25,battCycles:6000,inflationRate:2.89,showSimulation:false,partialDays:[],note:'',panels:10,wp:645,peakSunH:4.5,battKwh:10.24,battAmp:48,startDate:'2026-04-10',touStart:'2026-05-05',billDay:15,solarCost:209000,touCost:3350,taxDeduction:60000})
+  applySystemInfo({appName:'Deye Solar Insight',invModel:'DEYE SUN-5K-SG04LP1-EU-SM2',invKw:5,pvModel:'LONGi LR7-72HYD-645M',pvEff:23.9,pvVoc:54.12,pvVmp:44.77,pvIsc:15.06,pvImp:14.41,stringA:'5 West',stringB:'3 South + 2 West',battModel:'PYLON LiFePO4',battEmptyPct:21,battRechargePct:25,battCycles:6000,inflationRate:2.89,showSimulation:false,billTarget:600,customHolidays:[],partialDays:[],note:'',panels:10,wp:645,peakSunH:4.5,battKwh:10.24,battAmp:48,startDate:'2026-04-10',touStart:'2026-05-05',billDay:15,solarCost:209000,touCost:3350,taxDeduction:60000})
   await settingsPut('systemInfo',currentSystemInfo())
   fillSystemInfoForm()
   await rerenderAll()
@@ -2343,9 +2452,11 @@ document.getElementById('file-input').addEventListener('change',async e=>{
 
 async function refresh(){
   await ensureDB()
+  invalidateDataCache()  // ข้อมูล/settings อาจเปลี่ยน — คำนวณใหม่รอบเดียวแล้วให้ทุก tab ใช้ cache ร่วมกัน
   const all=await dbAll()
   dates=all.map(d=>d.date).sort()
   document.getElementById('db-status').textContent=dates.length?`มีข้อมูล ${dates.length} วัน`:'ไม่มีข้อมูล'
+  updateHolidayWarning(dates)
   if(!dates.length){resetEmptyState();return}
   if(!cur||!dates.includes(cur))cur=dates[dates.length-1]
   const errors=[]
@@ -2401,8 +2512,7 @@ function resetEmptyState(){
   const navA=document.getElementById('tabDateNavA');if(navA)navA.style.display='none'
   const periodRow=document.getElementById('periodSelectRow');if(periodRow)periodRow.style.display=''
 }
-async function rerenderDay(){if(cur)await renderDay(cur)}
-async function rerenderAll(){if(cur){await renderDay(cur);await renderWeek(cur);await renderMonth();await renderYear();await renderAnalysis()}}
+// rerenderAll นิยามไว้ที่เดียว (ด้านล่าง) = refresh() — เดิมมีนิยามซ้ำสองที่
 async function navDay(d){const i=dates.indexOf(cur)+d;if(i<0||i>=dates.length)return;cur=dates[i];await renderDay(cur)}
 function renderDateChips(){
   const el=document.getElementById('dateChipLine');if(!el)return
@@ -2530,12 +2640,12 @@ async function renderDay(date){
   await ensureDB()
   const day=await dbGet(date);if(!day)return
   const all=await dbAll();
-  if(day.rows&&day.rows.length) detectC(day.rows[0])
-  const s=calcSum(day.rows,date)||day.summary
-  const batteryDays=all.sort((a,b)=>a.date.localeCompare(b.date)).map(x=>{
-    if(x.cols)Object.assign(C,x.cols)
-    return{date:x.date,s:calcSum(x.rows,x.date)||x.summary,rows:x.rows}
-  }).filter(d=>d.s)
+  const batteryDays=all.sort((a,b)=>a.date.localeCompare(b.date)).map(x=>(
+    {date:x.date,s:getSum(x),rows:x.rows}
+  )).filter(d=>d.s)
+  if(day.cols)Object.assign(C,day.cols)
+  else if(day.rows&&day.rows.length)detectC(day.rows[0])
+  const s=getSum(day)
   carryNextDayBatteryEmpty(batteryDays)
   const carried=batteryDays.find(d=>d.date===date)
   if(s&&carried&&carried.s){
@@ -2597,7 +2707,7 @@ async function renderDay(date){
 
   window._lastDayRows=day  // สำหรับ renderVoltageChart
   
-  renderAlerts(s,day.rows)
+  renderAlerts(s,day.rows,date)
   renderTips(s,eff,theo)
   const rows=day.rows
   const step=Math.max(1,Math.floor(rows.length/288))
@@ -2817,7 +2927,6 @@ async function saveHistBills() {
       actualBills[i].y = parseInt(y);
       actualBills[i].m = parseInt(m);
     }
-    actualBills[i].kwh = document.getElementById(`abK${i}`).value;
     actualBills[i].cost = document.getElementById(`abC${i}`).value;
     
     // Read new detail inputs
@@ -2949,10 +3058,10 @@ function renderHistROI(days) {
   document.getElementById('histSummary').innerHTML = `<span class="stat-chip">เปรียบเทียบ ${lbls.length} เดือนที่ผ่านมา ประหยัดไฟไปแล้วรวม <b style="color:var(--good)">฿${fn(totalSaved, 2)}</b></span><span class="stat-chip"><span class="cdot" style="background:rgba(156,163,175,0.65)"></span>ก่อนติด</span><span class="stat-chip"><span class="cdot" style="background:rgba(56,189,248,0.85)"></span>หลังติด</span>${usesRealBill ? ' <span class="stat-chip" style="font-size:0.78rem;color:var(--good)">✅ ใช้บิลจริงจาก MEA/PEA</span>' : ''} ${kStr}`;
 }
 
-function getDayProblems(s, rows) {
+function getDayProblems(s, rows, date) {
   let probs = [];
   const nv = (r,k) => parseFloat(r[k])||0;
-  if(s.load < 2 || (s.solar === 0 && s.load > 0) || s.date === '2026-05-16' || s.date === '2026-05-17') probs.push("ข้อมูลขาดหาย/ไฟดับ");
+  if(s.load < 2 || (s.solar === 0 && s.load > 0) || (date && CFG.partialDays.includes(date))) probs.push("ข้อมูลขาดหาย/ไม่เต็มวัน");
   if(rows&&C.pv1&&C.pv2){
     const pr=rows.filter(r=>nv(r,C.solar)>500);
     if(pr.length>20){
@@ -2991,9 +3100,9 @@ function getDayProblems(s, rows) {
   return probs;
 }
 
-function renderAlerts(s,rows){
+function renderAlerts(s,rows,date){
   let h='',ok=true;
-  const probs = getDayProblems(s, rows);
+  const probs = getDayProblems(s, rows, date);
   if(probs.length > 0) {
     probs.forEach(p => {
       let icon='⚠️', cls='aw';
@@ -3005,7 +3114,7 @@ function renderAlerts(s,rows){
     });
     ok=false;
   }
-  if(s.socMin>0&&s.socMin<=THR.socLow){h+=`<div class="ai aw">🟡<div><b>SOC ต่ำสุด ${fn(s.socMin,0)}%</b> เวลา ${s.socMinT} — ต่ำกว่า ${THR.socLow}% เสี่ยงอายุแบต</div></div>`;ok=false;}
+  if(s.socMin>0&&s.socMin<=getSocEmptyThreshold()){h+=`<div class="ai aw">🟡<div><b>SOC ต่ำสุด ${fn(s.socMin,0)}%</b> เวลา ${s.socMinT} — ถึงเกณฑ์แบตหมด ${fn(getSocEmptyThreshold(),0)}% เสี่ยงอายุแบต</div></div>`;ok=false;}
   if(ok)h='<div class="ai ok">✅ ระบบทำงานปกติ</div>';
   document.getElementById('alertBox').innerHTML=h;
   // Update health badge in tab bar
@@ -3104,7 +3213,7 @@ const syncCrosshairPlugin = {
     }
   }
 };
-Chart.register(syncCrosshairPlugin);
+if(typeof Chart!=='undefined')Chart.register(syncCrosshairPlugin);
 
 function buildPowerChart(id,lbl,datasets,soc){
   if(charts[id])charts[id].destroy()
@@ -3296,9 +3405,10 @@ async function renderWeek(date){
   document.getElementById('wEmpty').style.display='none';document.getElementById('wContent').style.display=''
   const fm=d=>`${d.getDate()} ${TH_M[d.getMonth()]} ${d.getFullYear()+543}`
 
-  const allDayObjs=all.map(x=>{if(x.cols)Object.assign(C,x.cols); const s = calcSum(x.rows,x.date)||x.summary; if(s) applyCalibration(s, x.date); return{date:x.date,s} }).filter(d=>d.s)
+  const allDayObjs=all.map(x=>{const s=getSum(x); if(s) applyCalibration(s, x.date); return{date:x.date,s} }).filter(d=>d.s)
   carryNextDayBatteryEmpty(allDayObjs)
-  const wkDays=allDayObjs.filter(x=>{const dd=toDate(x.date);return dd>=mon&&dd<=sun})
+  // ใช้สำเนา summary — การ merge วัน partial ด้านล่างต้องไม่แก้ object ใน cache กลาง
+  const wkDays=allDayObjs.filter(x=>{const dd=toDate(x.date);return dd>=mon&&dd<=sun}).map(d=>({date:d.date,s:{...d.s}}))
   const ss=wkDays.map(d=>d.s)
   // Patch for May 16-17 system downtime (approximate by summing both half-days)
   const p16 = wkDays.findIndex(x => x.date === '2026-05-16'), p17 = wkDays.findIndex(x => x.date === '2026-05-17');
@@ -3312,10 +3422,11 @@ async function renderWeek(date){
         pv1: +( (s16.pv1||0)+(s17.pv1||0) ).toFixed(1), pv2: +( (s16.pv2||0)+(s17.pv2||0) ).toFixed(1)
       };
       Object.assign(ss[p16], m); Object.assign(ss[p17], m);
+      ss[p17]._mergedDup=true  // แสดงค่ารวมทั้งสองแท่ง แต่ยอดรวมนับครั้งเดียว
     }
   }
   const lbl=wkDays.map(x=>{const dd=toDate(x.date);return `${dd.getDate()} ${TH_M[dd.getMonth()]}`})
-  const tot=k=>ss.reduce((s,x)=>s+(x[k]||0),0)
+  const tot=k=>ss.reduce((s,x)=>s+(x._mergedDup?0:(x[k]||0)),0)
   const tS=tot('solar'),tL=tot('load'),tOnI=tot('onPeakImp'),tOffI=tot('offPeakImp')
   const tOn=tot('costOn'),tOff=tot('costOff'),tCost=+(tOn+tOff).toFixed(2),tI=tot('imp'),tE=tot('exp')
   const dynClip = renderHourlyAnalysis(wk, null, null, all).totalClipped * wk.length;
@@ -3326,7 +3437,7 @@ async function renderWeek(date){
   
   const prevStart=new Date(mon);prevStart.setDate(mon.getDate()-7)
   const prevEnd=new Date(sun);prevEnd.setDate(sun.getDate()-7)
-  const prev=all.filter(x=>{const dd=toDate(x.date);return dd>=prevStart&&dd<=prevEnd}).map(x=>{ const s = calcSum(x.rows,x.date)||x.summary; if(s) applyCalibration(s, x.date); return s; })
+  const prev=all.filter(x=>{const dd=toDate(x.date);return dd>=prevStart&&dd<=prevEnd}).map(x=>{ const s=getSum(x); if(s) applyCalibration(s, x.date); return s; })
   const prevCost=prev.reduce((s,x)=>s+(x.costTotal||0),0)
   const wow=prevCost>0?((tCost-prevCost)/prevCost*100):null
   const hasOv = ss.some(x=>x.isBilledOverride||x.isProjectedOverride)?'<span style="color:#ef4444" title="ปรับตามบิลจริงหรือประเมินด้วย K-Factor">*</span>':'';
@@ -3337,8 +3448,8 @@ async function renderWeek(date){
     <div class="card cv"><div class="card-lbl">🌿 พึ่งตัวเองสัปดาห์</div><div><span class="card-val">${fn(avgSelf,0)}</span><span class="card-unit">%</span></div><div class="card-sub">ค่าเฉลี่ยของสัปดาห์</div></div>
     <div style="width:20px;flex-shrink:0;"></div>
     <div class="card" style="border-color:#10b981"><div class="card-lbl" style="color:#10b981" title="คิดจากไฟ Export ปกติ + ประเมินไฟ Clipping ที่จะขายได้ (ถ้าปลดกันย้อน)">💡 ขายไฟ(if)</div><div><span class="card-val" style="color:#10b981">${fn(dynSellKwh)}</span><span class="card-unit" style="color:#10b981">kWh</span></div><div class="card-price" style="color:#10b981">฿${fn(dynSellCost,2)}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน">เฉลี่ย ฿${fn(dynSellCost/wk.length,1)}/วัน</div></div>
-    <div class="card cg"><div class="card-lbl">⚡ On-peak ซื้อ</div><div><span class="card-val">${fn(tOnI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tOn/1.07,2)}${hasOv}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน">เฉลี่ย ฿${fn(tOn/1.07/wk.length,1)}/วัน</div></div>
-    <div class="card co"><div class="card-lbl">🌙 Off-peak ซื้อ</div><div><span class="card-val">${fn(tOffI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tOff/1.07,2)}${hasOv}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน">เฉลี่ย ฿${fn(tOff/1.07/wk.length,1)}/วัน</div></div>
+    <div class="card cg"><div class="card-lbl">⚡ On-peak ซื้อ</div><div><span class="card-val">${fn(tOnI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tOn,2)}${hasOv}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน (รวม VAT)">เฉลี่ย ฿${fn(tOn/wk.length,1)}/วัน</div></div>
+    <div class="card co"><div class="card-lbl">🌙 Off-peak ซื้อ</div><div><span class="card-val">${fn(tOffI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tOff,2)}${hasOv}</div><div class="card-sub" title="คิดจากยอดรวมหารด้วยจำนวนวัน (รวม VAT)">เฉลี่ย ฿${fn(tOff/wk.length,1)}/วัน</div></div>
     <div class="card cy"><div class="card-lbl">🛒 รวมซื้อ</div><div><span class="card-val">${fn(tI)}</span><span class="card-unit">kWh</span></div><div class="card-price">฿${fn(tCost,2)}${hasOv}</div><div class="card-sub" title="WoW = Week over Week (เทียบสัปดาห์นี้กับสัปดาห์ที่แล้ว)">เฉลี่ย ฿${fn(tCost/wk.length,1)}/วัน<br>WoW ${wow==null?'-':(wow>=0?'+':'')+fn(wow,1)+'%'}</div></div>`
 
   const wEnergyDs=[{label:'Solar',data:ss.map(s=>s.solar),bg:'rgba(74,222,128,.75)',bp:0.6,cp:0.7},{label:'ใช้ไป',data:ss.map(s=>s.load),bg:'rgba(251,146,60,.75)',bp:0.6,cp:0.7},{label:'On-peak ซื้อ',data:ss.map(s=>s.onPeakImp),bg:'rgba(56,189,248,.75)',bp:0.6,cp:0.7},{label:'Off-peak ซื้อ',data:ss.map(s=>s.offPeakImp),bg:'rgba(107,114,128,.6)',bp:0.6,cp:0.7}]
@@ -3443,13 +3554,12 @@ async function renderMonth(){
   all.forEach(x=>{
     const k=billPeriodKey(x.date)
     if(!byMonth[k])byMonth[k]=[]
-    if(x.cols)Object.assign(C,x.cols)
-    const s=calcSum(x.rows,x.date)||x.summary
+    const s=getSum(x)
     if(s) {
       applyCalibration(s, x.date)
-      s.probs = getDayProblems(s, x.rows)
+      s.probs = getDayProblems(s, x.rows, x.date)
     }
-    byMonth[k].push({...s,date:x.date})
+    byMonth[k].push({...s,date:x.date})  // สำเนา — merge ด้านล่างต้องไม่แตะ cache
   })
   carryNextDayBatteryEmpty(Object.values(byMonth).flat().map(s=>({date:s.date,s})))
   const months=Object.keys(byMonth).sort()
@@ -3466,6 +3576,7 @@ async function renderMonth(){
           pv1: +( (s16.pv1||0)+(s17.pv1||0) ).toFixed(1), pv2: +( (s16.pv2||0)+(s17.pv2||0) ).toFixed(1)
         };
         Object.assign(ss[p16], mg); Object.assign(ss[p17], mg);
+        ss[p17]._mergedDup=true  // แสดงค่ารวมทั้งสองช่อง แต่ยอดรวมนับครั้งเดียว
       }
     }
   });
@@ -3479,7 +3590,7 @@ async function renderMonth(){
   const mi=months.indexOf(curMonthKey)
   const agg=months.map(m=>{
     const ss=byMonth[m]
-    const totAll=k=>ss.reduce((s,x)=>s+(x[k]||0),0)
+    const totAll=k=>ss.reduce((s,x)=>s+(x._mergedDup?0:(x[k]||0)),0)
     return {
       days: ss.length,
       solar: totAll('solar'), load: totAll('load'),
@@ -3525,9 +3636,10 @@ async function renderMonth(){
   const weekKeys = Object.keys(weekDict).sort();
   const mss = weekKeys.map(wk => {
     const arr = weekDict[wk];
+    const arrSum = arr.filter(x=>!x._mergedDup);  // ยอดรวมรายสัปดาห์ไม่นับวัน merge ซ้ำ
     const tot = k => {
-        if(typeof k==='function') return arr.reduce((sum, x) => sum + k(x), 0);
-        return arr.reduce((sum, x) => sum + (x[k]||0), 0);
+        if(typeof k==='function') return arrSum.reduce((sum, x) => sum + k(x), 0);
+        return arrSum.reduce((sum, x) => sum + (x[k]||0), 0);
     }
     const validSocDays = arr.filter(x=>batteryEmptyTime(x) && !CFG.partialDays.includes(x.date));
     let avgTStr = null;
@@ -3599,8 +3711,8 @@ async function renderMonth(){
     document.getElementById('mCostPieLeg').innerHTML=`<span style="color:#fbbf24">■</span> On-peak: ฿${fn(tOn,1)} (${rOnC}%)<br><span style="color:#9ca3af">■</span> Off-peak: ฿${fn(tOff,1)} (${100-rOnC}%)`
   }
 
-  const tpv1 = selectedDays.reduce((s,x)=>s+(x.pv1||0),0);
-  const tpv2 = selectedDays.reduce((s,x)=>s+(x.pv2||0),0);
+  const tpv1 = selectedDays.reduce((s,x)=>s+(x._mergedDup?0:(x.pv1||0)),0);
+  const tpv2 = selectedDays.reduce((s,x)=>s+(x._mergedDup?0:(x.pv2||0)),0);
 
   const mStrBox=document.getElementById('mStringBox')
   if(mStrBox) mStrBox.style.display=(tpv1>0||tpv2>0)?'flex':'none'
@@ -3707,11 +3819,10 @@ async function renderYear(){
   }
 
   const days=all.filter(x=>toDate(x.date).getFullYear()===curYear).map(x=>{
-    if(x.cols)Object.assign(C,x.cols)
-    const s = calcSum(x.rows,x.date)||x.summary
+    const s=getSum(x)
     if(s) {
       applyCalibration(s, x.date)
-      s.probs = getDayProblems(s, x.rows)
+      s.probs = getDayProblems(s, x.rows, x.date)
     }
     return{date:x.date,s}
   }).filter(d=>d.s)
@@ -3765,7 +3876,7 @@ async function renderYear(){
   })
   const tot=k=>agg.reduce((s,x)=>s+(x[k]||0),0)
   const avgSelf=days.length?days.reduce((s,x)=>s+x.s.self,0)/days.length:0
-  const prevDays=all.filter(x=>toDate(x.date).getFullYear()===curYear-1).map(x=>calcSum(x.rows,x.date)||x.summary)
+  const prevDays=all.filter(x=>toDate(x.date).getFullYear()===curYear-1).map(x=>getSum(x))
   const prevCost=prevDays.reduce((s,x)=>s+(x.costTotal||0),0)
   const yCost=tot('costTotal')
   const yoy=prevCost>0?((yCost-prevCost)/prevCost*100):null
@@ -3933,9 +4044,8 @@ async function renderAllTime(){
   document.getElementById('tEmpty').style.display='none';document.getElementById('tContent').style.display=''
   
   const days=all.map(x=>{
-    if(x.cols)Object.assign(C,x.cols)
-    const s = calcSum(x.rows,x.date)||x.summary
-    if(s) s.probs = getDayProblems(s, x.rows)
+    const s=getSum(x)
+    if(s) s.probs = getDayProblems(s, x.rows, x.date)
     return{date:x.date,s}
   }).filter(d=>d.s)
   carryNextDayBatteryEmpty(days)
@@ -4109,7 +4219,7 @@ function selfColor(v, partial=false){
 }
 function costColor(v){
   if(v===null||v===undefined) return'rgba(255,255,255,.06)'
-  const r=v/DAILY_BILL_TARGET
+  const r=v/getDailyBillTarget()
   if(r<=0.75) return '#166534'
   if(r<=1.00) return '#22c55e'
   if(r<=1.25) return '#a3e635'
@@ -4272,7 +4382,7 @@ function renderCalendarHeatmap(containerId,dayMap,mode='self'){
   html+=`</div>`
   let legend=''
   if(mode==='cost'){
-    legend=`<div class="hmap-legend"><span>ต่ำกว่าเป้า</span><div class="hmap-legend-cells">${[0.7,1,1.25,1.5,2.1].map(r=>`<div class="hmap-legend-cell" style="background:${costColor(DAILY_BILL_TARGET*r)}" title="~฿${fn(DAILY_BILL_TARGET*r,0)}/วัน"></div>`).join('')}</div><span>เกินเป้า</span><span style="margin-left:6px;color:var(--muted)">เป้า ฿${fn(DAILY_BILL_TARGET,0)}/วัน</span></div>`
+    legend=`<div class="hmap-legend"><span>ต่ำกว่าเป้า</span><div class="hmap-legend-cells">${[0.7,1,1.25,1.5,2.1].map(r=>`<div class="hmap-legend-cell" style="background:${costColor(getDailyBillTarget()*r)}" title="~฿${fn(getDailyBillTarget()*r,0)}/วัน"></div>`).join('')}</div><span>เกินเป้า</span><span style="margin-left:6px;color:var(--muted)">เป้า ฿${fn(getDailyBillTarget(),0)}/วัน (ตั้งได้ในปุ่ม ระบบ)</span></div>`
   }
   el.innerHTML=html+legend
 }
@@ -4290,10 +4400,9 @@ async function renderAnalysis(){
   await ensureDB()
   const all=await dbAll()
   if(!all.length)return
-  const days=all.sort((a,b)=>a.date.localeCompare(b.date)).map(x=>{
-    if(x.cols)Object.assign(C,x.cols)
-    return{date:x.date,s:calcSum(x.rows,x.date)||x.summary,rows:x.rows}
-  }).filter(d=>d.s)
+  const days=all.sort((a,b)=>a.date.localeCompare(b.date)).map(x=>(
+    {date:x.date,s:getSum(x),rows:x.rows}
+  )).filter(d=>d.s)
   carryNextDayBatteryEmpty(days)
   // Full days only (ตัด partial days ออกจาก efficiency / min-max)
   const fullDays=days.filter(d=>!CFG.partialDays.includes(d.date))
@@ -4351,7 +4460,7 @@ async function renderAnalysis(){
     s2Save += (s2p/1000)*pPeak + (s2o/1000)*pOff;
 
     let excessKwh = (d.s.exp||0) + 2; // rough clipping allowance
-    let usableExtraBatt = 6 * (1 - 0.21); // usable capacity (หัก 21%)
+    let usableExtraBatt = 6 * (1 - getSocEmptyThreshold()/100); // usable หัก empty% ที่ผู้ใช้ตั้ง
     let extraBattKwh = Math.min(excessKwh, usableExtraBatt);
     let nightImport = (d.s.imp||0) - (d.s.onPeakImp||0) + (isTou?0:(d.s.onPeakImp||0));
     let bSaveKwh = Math.min(extraBattKwh, nightImport);
@@ -4369,7 +4478,12 @@ async function renderAnalysis(){
   set('sysAge',ageDays+' วัน ('+Math.floor(ageDays/30.4)+' เดือน)')
   
   const aK = CYCLE_CALIBRATION.activeK || { kNormal: 1, kOn: 1, kOff: 1 };
-  const akHtml = `<b>Active K-Factors:</b> On-Peak <span style="color:#f59e0b">${fn(aK.kOn, 3)}</span> &middot; Off-Peak <span style="color:#10b981">${fn(aK.kOff, 3)}</span> &middot; Flat <span style="color:#38bdf8">${fn(aK.kNormal, 3)}</span>`;
+  let akHtml = `<b>Active K-Factors:</b> On-Peak <span style="color:#f59e0b">${fn(aK.kOn, 3)}</span> &middot; Off-Peak <span style="color:#10b981">${fn(aK.kOff, 3)}</span> &middot; Flat <span style="color:#38bdf8">${fn(aK.kNormal, 3)}</span>`;
+  // เตือนเมื่อรอบบิลจริงมีข้อมูล inverter ไม่ครบรอบ — ค่า * รายวันจะกระจายคลาดเคลื่อน
+  const lowCov=Object.entries(CYCLE_CALIBRATION)
+    .filter(([k,v])=>k!=='activeK'&&v&&v.hasBill&&(v.coverage||0)<0.8)
+    .map(([k])=>k)
+  if(lowCov.length) akHtml += `<br><span style="color:var(--warn)">⚠️ รอบ ${lowCov.join(', ')} มีข้อมูล inverter ไม่ครบรอบบิล (&lt;80%) — ค่า * รายวันอาจคลาดเคลื่อน</span>`;
   set('activeKDisplay', akHtml);
 
   allDaysSummary=days
@@ -4467,7 +4581,8 @@ function periodClipKwh(days, allDaysForP90=allDaysSummary){
 }
 
 function efcForDays(days){
-  const usableKwh=CFG.sys.battKwh*0.9
+  // usable = ความจุที่หมุนจริงตาม empty threshold ของผู้ใช้ (เช่น 21% → 0.79)
+  const usableKwh=CFG.sys.battKwh*(1-getSocEmptyThreshold()/100)
   const valid=(days||[]).filter(d=>d&&d.s&&!CFG.partialDays.includes(d.date)&&((d.s.chg||0)>0||(d.s.dis||0)>0))
   const cycles=valid.reduce((s,d)=>s+((d.s.chg||0)+(d.s.dis||0))/(2*usableKwh),0)
   return{cycles,days:valid.length,avgPerDay:valid.length?cycles/valid.length:0}
@@ -4725,12 +4840,15 @@ function calcROI(){
   const cv=parseFloat(document.getElementById('roiCost').value)||0
   if(!allDaysSummary.length)return
   const P=getP()
-  const avgCostPerDay=allDaysSummary.reduce((s,d)=>s+(d.s.costTotal||0),0)/allDaysSummary.length
+  // ตัด partial days ออกจากค่าเฉลี่ย — วันครึ่งวันทำให้ baseline/saving เพี้ยน
+  const roiDaysFull=allDaysSummary.filter(d=>!CFG.partialDays.includes(d.date))
+  const roiDays=roiDaysFull.length?roiDaysFull:allDaysSummary
+  const avgCostPerDay=roiDays.reduce((s,d)=>s+(d.s.costTotal||0),0)/roiDays.length
   const srvPerDay = P.srv / 30.4;
-  const avgFullCost=allDaysSummary.reduce((s,d)=>{
+  const avgFullCost=roiDays.reduce((s,d)=>{
     const costNoVat = d.s.load*(P.flat+P.ft) + srvPerDay;
     return s + (costNoVat * 1.07);
-  },0)/allDaysSummary.length
+  },0)/roiDays.length
   const saving=Math.max(0,avgFullCost-avgCostPerDay)
   const inflation=parseFloat(document.getElementById('roiInflation')?.value)||0
   const savingPerMonth=saving*30.4
@@ -4838,8 +4956,8 @@ function renderBattCycles(days){
   const subEl=document.getElementById('battCycleSub')
   const rowsEl=document.getElementById('battCycleRows')
   if(!el)return
-  // Equivalent Full Cycle: average charge/discharge throughput over usable capacity.
-  const usableKwh=CFG.sys.battKwh*0.9
+  // Equivalent Full Cycle: throughput ÷ ความจุที่ใช้จริงตาม empty threshold
+  const usableKwh=CFG.sys.battKwh*(1-getSocEmptyThreshold()/100)
   const validDays=days.filter(d=>!CFG.partialDays.includes(d.date)&&((d.s.chg||0)>0||(d.s.dis||0)>0))
   const totalCycles=validDays.reduce((s,d)=>s+((d.s.chg||0)+(d.s.dis||0))/(2*usableKwh),0)
   const design=CFG.sys.battCycles||6000
@@ -5011,8 +5129,8 @@ function renderStringComparison(days){
   }
 
   document.getElementById('stringInfo').innerHTML=
-    `${CFG.strings.aLabel} (${CFG.strings.aSpec}): <b style="color:#fbbf24">${fn(totPV1,3)} kW avg เฉลี่ย</b> · `+
-    `${CFG.strings.bLabel} (${CFG.strings.bSpec}): <b style="color:#38bdf8">${fn(totPV2,3)} kW avg เฉลี่ย</b> · `+
+    `${esc(CFG.strings.aLabel)} (${esc(CFG.strings.aSpec)}): <b style="color:#fbbf24">${fn(totPV1,3)} kW avg เฉลี่ย</b> · `+
+    `${esc(CFG.strings.bLabel)} (${esc(CFG.strings.bSpec)}): <b style="color:#38bdf8">${fn(totPV2,3)} kW avg เฉลี่ย</b> · `+
     `สัดส่วน A:B = <b>${fn(ratio,0)}%:${fn(100-ratio,0)}%</b>${diffText}`
 
   mkChart('stringChart','bar',labels,[
@@ -5025,6 +5143,11 @@ function renderStringComparison(days){
 async function bootApp(){
   const el=document.getElementById('db-status')
   if(el)el.textContent='กำลังเปิดหน้า...'
+  if(typeof Chart==='undefined'||typeof XLSX==='undefined'){
+    const warn=document.getElementById('holidayWarn')
+    if(warn){warn.style.display='';warn.innerHTML='🔴 โหลด library จาก CDN ไม่สำเร็จ (Chart.js/SheetJS) — ครั้งแรกต้องเปิดขณะมี internet แล้ว browser จะ cache ไว้ กรุณาเช็กการเชื่อมต่อแล้ว reload'}
+    if(el)el.textContent='CDN ไม่พร้อม'
+  }
   await loadSystemInfo()
   await loadHistBills().catch(e=>console.warn('Load system info skipped:',e))
   await ensureDB()
